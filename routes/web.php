@@ -13,9 +13,9 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+     Route::get('/teacher/profile/edit', [App\Http\Controllers\Teacher\ProfileController::class, 'edit'])->name('teacher.profile.edit');// donot remove
+     Route::put('/teacher/profile', [App\Http\Controllers\Teacher\ProfileController::class, 'update'])->name('teacher.profile.update'); //donot remove
+     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -53,7 +53,22 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
         ->name('reports.class-record');
 
           Route::get('/profile', [App\Http\Controllers\Teacher\ProfileController::class, 'index'])->name('profile');
-    Route::get('/settings', [App\Http\Controllers\Teacher\ProfileController::class, 'settings'])->name('settings');
+         
+            
+
+    // Update settings
+   // Route::put('/settings', [App\Http\Controllers\Teacher\ProfileController::class, 'updateSettings'])->name('settings.update');
+    
+   // Route::get('/settings', [App\Http\Controllers\Teacher\ProfileController::class, 'settings'])->name('settings');
+    
+
+   // SETTINGS ROUTE
+     Route::get('/settings', [App\Http\Controllers\Teacher\SettingsController::class, 'index'])->name('settings');
+    Route::put('/settings', [App\Http\Controllers\Teacher\SettingsController::class, 'update'])->name('settings.update');
+    Route::delete('/settings/sessions/{session}', [App\Http\Controllers\Teacher\SettingsController::class, 'revokeSession'])->name('settings.revoke-session');
+    Route::delete('/settings/sessions', [App\Http\Controllers\Teacher\SettingsController::class, 'revokeAllSessions'])->name('settings.revoke-all-sessions');
+    Route::get('/settings/export', [App\Http\Controllers\Teacher\SettingsController::class, 'exportData'])->name('settings.export-data');
+    Route::delete('/settings/account', [App\Http\Controllers\Teacher\SettingsController::class, 'deleteAccount'])->name('settings.delete-account');
 
 });
 
