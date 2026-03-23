@@ -70,6 +70,10 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
     Route::get('/settings/export', [App\Http\Controllers\Teacher\SettingsController::class, 'exportData'])->name('settings.export-data');
     Route::delete('/settings/account', [App\Http\Controllers\Teacher\SettingsController::class, 'deleteAccount'])->name('settings.delete-account');
 
+
+      Route::get('sections/{section}/students', [App\Http\Controllers\Teacher\SectionsController::class, 'students'])->name('sections.students');
+    Route::get('sections/{section}/attendance', [App\Http\Controllers\Teacher\SectionsController::class, 'attendance'])->name('sections.attendance');
+    Route::get('sections/{section}/grades', [App\Http\Controllers\Teacher\SectionsController::class, 'grades'])->name('sections.grades');
 });
 
 Route::middleware(['auth', 'role:Teacher'])->prefix('teacher')->group(function () {

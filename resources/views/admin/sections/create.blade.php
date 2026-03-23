@@ -540,17 +540,20 @@
                                 <div class="input-group">
                                     <label class="form-label">Adviser (Teacher)</label>
                                     <i class="fas fa-chalkboard-teacher input-icon"></i>
-                                    <select name="teacher_id" class="form-select" id="teacherSelect">
-                                        <option value="">No Adviser Assigned</option>
-                                        @foreach($teachers as $teacher)
-                                            <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }} data-name="{{ $teacher->full_name }}">
-                                                {{ $teacher->full_name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                 <select name="teacher_id" class="form-select" id="teacherSelect">
+    <option value="">No Adviser Assigned</option>
+    @foreach($teachers as $teacher)
+        <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>
+            {{ $teacher->full_name }} 
+            @if($teacher->sections->count())
+                ({{ $teacher->sections->count() }} section{{ $teacher->sections->count() > 1 ? 's' : '' }})
+            @endif
+        </option>
+    @endforeach
+</select>
                                     <p class="input-hint" id="teacherHint">
                                         <i class="fas fa-info-circle"></i>
-                                        Only teachers without sections are shown
+                                        Adviser selection.
                                     </p>
                                     @error('teacher_id')
                                         <p class="error-message">

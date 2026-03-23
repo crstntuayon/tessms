@@ -620,20 +620,29 @@
                                 </h3>
                                 <form action="{{ route('teacher.dashboard') }}" method="GET" id="sectionForm">
                                     <select name="section_id" onchange="document.getElementById('sectionForm').submit()" 
-                                            class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 hover:bg-white transition-all cursor-pointer font-medium text-slate-700 shadow-sm">
-                                        @foreach($teacher->sections ?? [] as $section)
-                                            <option value="{{ $section->id }}" {{ ($activeSection->id ?? '') == $section->id ? 'selected' : '' }}>
-                                                Grade {{ $section->grade_level }} - {{ $section->name }} ({{ $section->students->count() }} students)
-                                            </option>
-                                        @endforeach
-                                    </select>
+        class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 hover:bg-white transition-all cursor-pointer font-medium text-slate-700 shadow-sm">
+    
+    @foreach($sections ?? [] as $section)
+        <option value="{{ $section->id }}" {{ ($activeSection->id ?? '') == $section->id ? 'selected' : '' }}>
+            Grade {{ $section->gradeLevel->name ?? 'N/A' }} 
+            - {{ $section->name }} 
+            ({{ $section->students->count() }} students)
+        </option>
+    @endforeach
+
+</select>
                                 </form>
                                 
                                 @if($activeSection ?? false)
                                 <div class="mt-4 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100">
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="text-sm font-medium text-indigo-800">Adviser:</span>
-                                        <span class="text-sm text-indigo-600 font-medium">{{ $activeSection->adviser->user->name ?? 'N/A' }}</span>
+                                        <span class="text-sm text-indigo-600 font-medium">{{ 
+    ($activeSection->teacher->first_name ?? '') . ' ' . 
+    ($activeSection->teacher->middle_name ?? '') . ' ' . 
+    ($activeSection->teacher->last_name ?? '') 
+    ?: 'N/A' 
+}}</span>
                                     </div>
                                     <div class="flex justify-between items-center">
                                         <span class="text-sm font-medium text-indigo-800">Room:</span>

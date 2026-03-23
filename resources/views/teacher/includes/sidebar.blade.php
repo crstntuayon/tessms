@@ -1,5 +1,11 @@
 <!-- Teacher Sidebar - Light Theme with Glass Morphism -->
 
+@php
+$sections = \App\Models\Section::with('gradeLevel')
+    ->where('teacher_id', auth()->user()->teacher->id ?? null)
+    ->where('is_active', true) // only active sections
+    ->get();
+@endphp
 
 <div class="flex flex-col w-72 h-screen bg-white/80 backdrop-blur-xl text-slate-800 fixed border-r border-white/50 shadow-2xl shadow-slate-200/50">
     

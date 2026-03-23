@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Teacher;
 
-use App\Http\Controllers\Controller; // must import the base controller
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Teacher;
 use App\Models\Section;
-use App\Models\Student;
+use App\Models\Student; 
 use App\Models\Attendance;
 use App\Models\Grade;
 use App\Models\Subject;
@@ -14,16 +15,17 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-
-
     public function index(Request $request)
     {
+
+    
+        // Logged-in teacher user
         $user = auth()->user();
         if (!$user) {
             return redirect('/login')->with('error', 'Please login first.');
         }
 
-        
+        // Fetch the teacher record
         $teacher = Teacher::firstOrCreate(
             ['user_id' => $user->id],
             [
@@ -32,12 +34,20 @@ class DashboardController extends Controller
             ]
         );
 
+        // Fetch only sections assigned to this teacher and eager load gradeLevel, students, adviser
+       $sections = Section::with(['students', 'teacher.user', 'gradeLevel'])
+    ->where('is_active', true)
+    ->get();
+    
+
         // -----------------------------
-        // Active Section
+        // Active Section (from query or default first section)
         // -----------------------------
-        $activeSection = $request->section_id
-            ? Section::with(['students.attendances', 'students.grades'])->find($request->section_id)
-            : $teacher->sections()->with(['students.attendances', 'students.grades'])->first();
+        $activeSection = null;
+        if ($request->section_id) {
+            $activeSection = $sections->where('id', $request->section_id)->first();
+        }
+        $activeSection ??= $sections->first();
 
         $students = $activeSection ? $activeSection->students : collect();
 
@@ -52,7 +62,6 @@ class DashboardController extends Controller
         // Attendance Today
         // -----------------------------
         $today = Carbon::today();
-
         $todayAttendances = Attendance::whereDate('date', $today)
             ->whereIn('student_id', $students->pluck('id'))
             ->get();
@@ -88,10 +97,7 @@ class DashboardController extends Controller
 
         foreach ($subjects as $subject) {
             $subjectGrades = $grades->where('subject_id', $subject->id);
-
-            $avg = $subjectGrades->avg(function ($g) {
-                return $this->calculateFinalGrade($g);
-            });
+            $avg = $subjectGrades->avg(fn($g) => $this->calculateFinalGrade($g));
 
             $subjectStats[] = [
                 'subject_id'      => $subject->id,
@@ -110,11 +116,9 @@ class DashboardController extends Controller
         // -----------------------------
         // At-Risk Students
         // -----------------------------
-        $atRiskStudents = $students->filter(function ($student) use ($grades) {
-            return $grades->where('student_id', $student->id)
-                ->filter(fn($g) => $this->calculateFinalGrade($g) < 75)
-                ->count() > 0;
-        });
+        $atRiskStudents = $students->filter(fn($student) => 
+            $grades->where('student_id', $student->id)->filter(fn($g) => $this->calculateFinalGrade($g) < 75)->count() > 0
+        );
 
         $atRiskCount = $atRiskStudents->count();
         $failingGradesCount = $grades->filter(fn($g) => $this->calculateFinalGrade($g) < 75)->count();
@@ -136,9 +140,9 @@ class DashboardController extends Controller
         $unreadNotifications = $user->unreadNotifications()->count();
 
         // -----------------------------
-        // Deadlines
+        // Deadlines (avoid undefined variable error)
         // -----------------------------
-        $upcomingDeadlines = collect([]);
+        $upcomingDeadlines = collect();
 
         // -----------------------------
         // School Days
@@ -146,11 +150,9 @@ class DashboardController extends Controller
         $schoolDaysTotal = 200;
         $daysCompleted = now()->dayOfYear;
 
-        // -----------------------------
-        // Return view
-        // -----------------------------
         return view('teacher.dashboard', compact(
             'teacher',
+            'sections',
             'students',
             'activeSection',
             'schoolYear',
@@ -177,6 +179,7 @@ class DashboardController extends Controller
             'daysCompleted'
         ));
     }
+
     /**
      * Calculate final grade
      */

@@ -51,14 +51,7 @@ public function index(Request $request)
         
         // Only teachers without sections in active school year
         $activeYear = SchoolYear::getActive();
-        $teachers = Teacher::whereDoesntHave('section', function ($q) use ($activeYear) {
-                if ($activeYear) {
-                    $q->where('school_year_id', $activeYear->id);
-                }
-            })
-            ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->get();
+        $teachers = Teacher::with('sections')->get();
 
         $schoolYears = SchoolYear::orderBy('start_date', 'desc')->get();
         $activeSchoolYear = $activeYear;
