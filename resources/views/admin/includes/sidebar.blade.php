@@ -259,7 +259,17 @@ $sidebarTeacherCount = \App\Models\Teacher::count();
     <span class="ml-auto bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold">{{ $sidebarSectionCount }}</span>
 </a>
 
-        <a href="{{ route('admin.attendance.index') }}" class="nav-item {{ request()->routeIs('admin.attendance.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl font-medium transition-all group">
+<a href="{{ route('admin.pending-registrations.index') }}" 
+   class="nav-item {{ request()->routeIs('admin.pending-registrations.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.pending-registrations.*') ? 'text-amber-600 bg-amber-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+    <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.pending-registrations.*') ? 'bg-amber-100' : 'bg-slate-100 group-hover:bg-amber-50' }} flex items-center justify-center transition-colors">
+        <i class="fas fa-user-clock text-sm {{ request()->routeIs('admin.pending-registrations.*') ? 'text-amber-600' : 'group-hover:text-amber-600' }}"></i>
+    </div>
+    <span>Pending Registrations</span>
+    <span class="ml-auto bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">
+        {{ \App\Models\Student::where('status', 'pending')->count() }}
+    </span>
+</a>
+    <!--    <a href="{{ route('admin.attendance.index') }}" class="nav-item {{ request()->routeIs('admin.attendance.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl font-medium transition-all group">
             <div class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-emerald-50 flex items-center justify-center transition-colors">
                 <i class="fas fa-calendar-check text-sm group-hover:text-emerald-600"></i>
             </div>
@@ -271,7 +281,7 @@ $sidebarTeacherCount = \App\Models\Teacher::count();
                 <i class="fas fa-clipboard-list text-sm group-hover:text-amber-600"></i>
             </div>
             <span>Grades</span>
-        </a>
+        </a> -->
         
         <a href="{{ route('admin.reports.index') }}" class="nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl font-medium transition-all group">
             <div class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-rose-50 flex items-center justify-center transition-colors">

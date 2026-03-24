@@ -2,151 +2,130 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register | Student Management System</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-gray-100">
 
-<body class="min-h-screen bg-gradient-to-br from-indigo-100 via-blue-100 to-purple-200 flex items-center justify-center px-4 py-10">
+<div class="max-w-lg mx-auto mt-10 p-6 bg-white rounded-2xl shadow-md">
+    <h2 class="text-2xl font-bold mb-6 text-center">Student Registration</h2>
 
-<div class="w-full max-w-2xl backdrop-blur-xl bg-white/90 border border-white/40 rounded-3xl shadow-2xl p-8 md:p-10 animate-slide-up">
-
-    <!-- Header -->
-    <div class="text-center mb-8">
-        <img src="{{ asset('images/logo.jpg') }}"
-             class="mx-auto h-20 w-20 rounded-full shadow-lg mb-4 ring-4 ring-indigo-200"
-             alt="School Logo">
-
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">
-            Student Management System
-        </h1>
-        <p class="text-sm text-gray-500 mt-1">
-            Tugawe Elementary School
-        </p>
-    </div>
-
-    <!-- Registration Form -->
-    <form method="POST" action="{{ route('register') }}" class="space-y-5">
+    <form action="{{ route('register') }}" method="POST">
         @csrf
 
-        <!-- LRN -->
-        <div>
-            <x-input-label for="lrn" value="LRN" />
-            <x-text-input id="lrn" name="lrn"
-                class="mt-1 block w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                required />
-            <x-input-error :messages="$errors->get('lrn')" class="mt-1" />
+        {{-- LRN --}}
+        <div class="mb-4">
+            <label for="lrn" class="block font-medium text-gray-700">LRN</label>
+            <input type="text" name="lrn" id="lrn" value="{{ old('lrn') }}"
+                   class="mt-1 block w-full border rounded-md px-3 py-2 @error('lrn') border-red-500 @enderror">
+            @error('lrn')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
         </div>
 
-        <!-- Name Fields -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <x-input-label for="first_name" value="First Name" />
-                <x-text-input id="first_name" name="first_name"
-                    class="mt-1 block w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    required />
-            </div>
-
-            <div>
-                <x-input-label for="middle_name" value="Middle Name" />
-                <x-text-input id="middle_name" name="middle_name"
-                    class="mt-1 block w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" />
-            </div>
-
-            <div>
-                <x-input-label for="last_name" value="Last Name" />
-                <x-text-input id="last_name" name="last_name"
-                    class="mt-1 block w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    required />
-            </div>
+        {{-- First Name --}}
+        <div class="mb-4">
+            <label for="first_name" class="block font-medium text-gray-700">First Name</label>
+            <input type="text" name="first_name" id="first_name" value="{{ old('first_name') }}"
+                   class="mt-1 block w-full border rounded-md px-3 py-2 @error('first_name') border-red-500 @enderror">
+            @error('first_name')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
         </div>
 
-        <!-- Suffix & Birthday -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <x-input-label for="suffix" value="Suffix (optional)" />
-                <x-text-input id="suffix" name="suffix"
-                    class="mt-1 block w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    placeholder="Jr., III" />
-            </div>
-
-            <div>
-                <x-input-label for="birthday" value="Birthday" />
-                <x-text-input id="birthday" type="date" name="birthday"
-                    class="mt-1 block w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    required />
-            </div>
+        {{-- Middle Name --}}
+        <div class="mb-4">
+            <label for="middle_name" class="block font-medium text-gray-700">Middle Name</label>
+            <input type="text" name="middle_name" id="middle_name" value="{{ old('middle_name') }}"
+                   class="mt-1 block w-full border rounded-md px-3 py-2 @error('middle_name') border-red-500 @enderror">
+            @error('middle_name')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
         </div>
 
-        <!-- Username -->
-        <div>
-            <x-input-label for="username" value="Username" />
-            <x-text-input id="username" name="username"
-                class="mt-1 block w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                required />
-            <x-input-error :messages="$errors->get('username')" class="mt-1" />
+        {{-- Last Name --}}
+        <div class="mb-4">
+            <label for="last_name" class="block font-medium text-gray-700">Last Name</label>
+            <input type="text" name="last_name" id="last_name" value="{{ old('last_name') }}"
+                   class="mt-1 block w-full border rounded-md px-3 py-2 @error('last_name') border-red-500 @enderror">
+            @error('last_name')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
         </div>
 
-        <!-- Email -->
-        <div>
-            <x-input-label for="email" value="Email Address" />
-            <x-text-input id="email" type="email" name="email"
-                class="mt-1 block w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                required />
-            <x-input-error :messages="$errors->get('email')" class="mt-1" />
+        {{-- Suffix --}}
+        <div class="mb-4">
+            <label for="suffix" class="block font-medium text-gray-700">Suffix (Optional)</label>
+            <input type="text" name="suffix" id="suffix" value="{{ old('suffix') }}"
+                   class="mt-1 block w-full border rounded-md px-3 py-2 @error('suffix') border-red-500 @enderror">
+            @error('suffix')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
         </div>
 
-        <!-- Password -->
-        <div>
-            <x-input-label for="password" value="Password" />
-            <x-text-input id="password" type="password" name="password"
-                class="mt-1 block w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                required />
+        {{-- Birthday --}}
+        <div class="mb-4">
+            <label for="birthday" class="block font-medium text-gray-700">Birthday</label>
+            <input type="date" name="birthday" id="birthday" value="{{ old('birthday') }}"
+                   class="mt-1 block w-full border rounded-md px-3 py-2 @error('birthday') border-red-500 @enderror">
+            @error('birthday')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
         </div>
 
-        <!-- Confirm Password -->
-        <div>
-            <x-input-label for="password_confirmation" value="Confirm Password" />
-            <x-text-input id="password_confirmation" type="password" name="password_confirmation"
-                class="mt-1 block w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                required />
+        {{-- Username --}}
+        <div class="mb-4">
+            <label for="username" class="block font-medium text-gray-700">Username</label>
+            <input type="text" name="username" id="username" value="{{ old('username') }}"
+                   class="mt-1 block w-full border rounded-md px-3 py-2 @error('username') border-red-500 @enderror">
+            @error('username')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
         </div>
 
-        <!-- Submit -->
+        {{-- Email --}}
+        <div class="mb-4">
+            <label for="email" class="block font-medium text-gray-700">Email</label>
+            <input type="email" name="email" id="email" value="{{ old('email') }}"
+                   class="mt-1 block w-full border rounded-md px-3 py-2 @error('email') border-red-500 @enderror">
+            @error('email')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
+        </div>
+
+        {{-- Password --}}
+        <div class="mb-4">
+            <label for="password" class="block font-medium text-gray-700">Password</label>
+            <input type="password" name="password" id="password"
+                   class="mt-1 block w-full border rounded-md px-3 py-2 @error('password') border-red-500 @enderror">
+            @error('password')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
+        </div>
+
+        {{-- Confirm Password --}}
+        <div class="mb-6">
+            <label for="password_confirmation" class="block font-medium text-gray-700">Confirm Password</label>
+            <input type="password" name="password_confirmation" id="password_confirmation"
+                   class="mt-1 block w-full border rounded-md px-3 py-2">
+        </div>
+
+        {{-- Grade Level --}}
+        <div class="mb-4">
+            <label for="grade_level_id" class="block font-medium text-gray-700">Grade Level</label>
+            <select name="grade_level_id" id="grade_level_id"
+                    class="mt-1 block w-full border rounded-md px-3 py-2 @error('grade_level_id') border-red-500 @enderror">
+                <option value="">Select Grade Level</option>
+                @foreach($gradeLevels as $level)
+                    <option value="{{ $level->id }}" {{ old('grade_level_id') == $level->id ? 'selected' : '' }}>
+                        {{ $level->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('grade_level_id')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
+        </div>
+
+        {{-- Student Type --}}
+        <div class="mb-6">
+            <label class="block font-medium text-gray-700">Student Type</label>
+            <select name="type" class="mt-1 block w-full border rounded-md px-3 py-2 @error('type') border-red-500 @enderror">
+                <option value="new" {{ old('type') == 'new' ? 'selected' : '' }}>New</option>
+                <option value="transferee" {{ old('type') == 'transferee' ? 'selected' : '' }}>Transferee</option>
+                <option value="continuing" {{ old('type') == 'continuing' ? 'selected' : '' }}>Continuing</option>
+            </select>
+            @error('type')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
+        </div>
+
         <button type="submit"
-            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700
-                   text-white font-semibold py-3 rounded-xl shadow-lg transition-all duration-300
-                   hover:scale-[1.03] hover:shadow-xl">
-            Create Account
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">
+            Register
         </button>
     </form>
-
-    <!-- Login -->
-    <p class="mt-8 text-center text-sm text-gray-500">
-        Already have an account?
-        <a href="{{ route('login') }}" class="text-indigo-600 font-semibold hover:underline">
-            Log in here
-        </a>
-    </p>
-
-    <!-- Footer -->
-    <p class="mt-6 text-center text-xs text-gray-400">
-        © {{ date('Y') }} Tugawe Elementary School
-    </p>
-
 </div>
-
-<!-- Animation -->
-<style>
-@keyframes slideUp {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
-}
-.animate-slide-up {
-    animation: slideUp 0.6s ease-out;
-}
-</style>
 
 </body>
 </html>

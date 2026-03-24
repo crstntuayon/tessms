@@ -1,12 +1,10 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('auth.login');
-});
+Route::get('/', [AuthenticatedSessionController::class, 'create']);
 
 Route::get('/dashboard', function () {
     return view('admin.dashboard');
@@ -16,6 +14,9 @@ Route::middleware('auth')->group(function () {
      Route::get('/teacher/profile/edit', [App\Http\Controllers\Teacher\ProfileController::class, 'edit'])->name('teacher.profile.edit');// donot remove
      Route::put('/teacher/profile', [App\Http\Controllers\Teacher\ProfileController::class, 'update'])->name('teacher.profile.update'); //donot remove
      Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+
+
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -23,7 +24,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/teacher/dashboard', [App\Http\Controllers\Teacher\DashboardController::class, 'index'])->name('teacher.dashboard');
     Route::get('/registrar/dashboard', [App\Http\Controllers\Registrar\DashboardController::class, 'index'])->name('registrar.dashboard');
     Route::get('/student/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('student.dashboard');
+    Route::get('/pending-approval', function () {
+    return view('auth.pending');
+})->name('auth.pending');
+
+
+
 });
+
+
+
+
+
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('sections', App\Http\Controllers\Admin\SectionController::class);
@@ -183,7 +195,18 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
          Route::resource('events', App\Http\Controllers\Admin\EventController::class);
          Route::resource('students', \App\Http\Controllers\Admin\StudentController::class);
           Route::resource('teachers', App\Http\Controllers\Admin\TeacherController::class);
-          
+
+    Route::get('/pending-registrations', [App\Http\Controllers\Admin\PendingRegistrationController::class, 'index'])
+        ->name('pending-registrations.index');
+    
+    Route::get('/pending-registrations/{student}/details', [App\Http\Controllers\Admin\PendingRegistrationController::class, 'details'])
+        ->name('pending-registrations.details');
+    
+    Route::post('/pending-registrations/{student}/approve', [App\Http\Controllers\Admin\PendingRegistrationController::class, 'approve'])
+        ->name('pending-registrations.approve');
+    
+    Route::post('/pending-registrations/{student}/reject', [App\Http\Controllers\Admin\PendingRegistrationController::class, 'reject'])
+        ->name('pending-registrations.reject');
 });
 
 

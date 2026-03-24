@@ -52,12 +52,17 @@ class Student extends Model
 
     public function section()
     {
-        return $this->belongsTo(\App\Models\Section::class);
+        return $this->belongsTo(Section::class);
     }
 
-    public function enrolledSections()
+    public function enrollments()
     {
-        return $this->belongsToMany(Section::class, 'student_section');
+        return $this->hasMany(Enrollment::class);
+    }
+
+        public function enrollment()
+    {
+        return $this->hasOne(Enrollment::class);
     }
 
     public function grades()
@@ -70,20 +75,23 @@ class Student extends Model
         return $this->hasMany(AssignmentSubmission::class);
     }
 
-    // ✅ FIXED: Changed from method to accessor
+    // Full name accessor
     public function getFullNameAttribute(): ?string
     {
-        return $this->user ? $this->user->full_name : null;
+        return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
     }
 
+    // Age accessor
     public function getAgeAttribute(): ?int
     {
         return $this->birthdate ? $this->birthdate->diffInYears() : null;
     }
 
-    // ✅ FIXED: Changed from avatar() method to getAvatarAttribute accessor
+    // Avatar accessor
     public function getAvatarAttribute(): ?string
     {
         return $this->photo ? asset('storage/' . $this->photo) : null;
     }
+
+    
 }

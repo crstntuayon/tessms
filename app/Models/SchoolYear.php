@@ -33,4 +33,9 @@ class SchoolYear extends Model
     {
         return self::active()->first();
     }
+
+    public function enrollments()
+{
+    return $this->hasMany(Enrollment::class);
+}
 }

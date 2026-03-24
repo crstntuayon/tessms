@@ -34,7 +34,7 @@
         <div class="bg-white rounded-2xl shadow p-6">
             <h2 class="text-xl font-semibold text-gray-700 mb-4">Student Information</h2>
             <p><span class="font-medium">Name:</span> {{ $student->first_name }} {{ $student->last_name }}</p>
-            <p><span class="font-medium">Section:</span> {{ $section->name }}</p>
+           <p><span class="font-medium">Section:</span> {{ $section?->name ?? 'Not Assigned' }}</p>
             <p><span class="font-medium">Teacher:</span> {{ $teacher->name ?? 'Not Assigned' }}</p>
         </div>
 

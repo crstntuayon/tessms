@@ -9,8 +9,7 @@ class GradeLevel extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
-
+     protected $fillable = ['name', 'order', 'is_final'];
     public function students()
     {
         return $this->hasMany(Student::class);

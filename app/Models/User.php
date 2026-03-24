@@ -64,6 +64,7 @@ public function student()
     return $this->hasOne(Student::class);
 }
 
+
  public function sections()
     {
         return $this->hasMany(Section::class, 'teacher_id');

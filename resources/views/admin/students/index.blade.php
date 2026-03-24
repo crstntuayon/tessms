@@ -432,7 +432,7 @@
                                     <th>Grade & Section</th>
                                     <th>Contact</th>
                                     <th>Status</th>
-                                    <th>Enrolled Date</th>
+                                    <th>Registration Date</th>
                                     <th class="text-right">Actions</th>
                                 </tr>
                             </thead>

@@ -4,44 +4,80 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Role;
+use App\Models\Student;
+use App\Models\Enrollment;
+use App\Models\SchoolYear;
+use App\Models\GradeLevel;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
-use App\Models\Role;
-
 
 class RegisteredUserController extends Controller
 {
-
-  public function store(Request $request)
+    /**
+     * Show registration form
+     */
+    public function create(): View
     {
-        // Validate the request
+        $gradeLevels = GradeLevel::orderBy('order')->get();
+        return view('auth.register', compact('gradeLevels'));
+    }
+
+    /**
+     * Handle registration
+     */
+    public function store(Request $request)
+    {
+        // Concatenate LRN prefix
+        $fullLrn = '120231' . $request->lrn_suffix;
+
+        // Validation
         $request->validate([
-            'lrn' => 'required|unique:users,lrn',
+            'lrn_suffix' => [
+                'required',
+                'digits:6',
+                function ($attribute, $value, $fail) use ($fullLrn) {
+                    if (Student::where('lrn', $fullLrn)->exists()) {
+                        $fail('The LRN is already taken.');
+                    }
+                },
+            ],
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
             'suffix' => 'nullable|string|max:10',
             'birthday' => 'required|date',
+            'birth_place' => 'required|string|max:255',
+            'gender' => 'required|string|in:Male,Female,Other',
+            'nationality' => 'required|string|max:255',
+            'religion' => 'nullable|string|max:255',
+            'father_name' => 'nullable|string|max:255',
+            'father_occupation' => 'nullable|string|max:255',
+            'mother_name' => 'nullable|string|max:255',
+            'mother_occupation' => 'nullable|string|max:255',
+            'guardian_name' => 'nullable|string|max:255',
+            'guardian_relationship' => 'nullable|string|max:255',
+            'guardian_contact' => 'nullable|string|max:50',
+            'street_address' => 'required|string|max:255',
+            'barangay' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'province' => 'required|string|max:255',
+            'zip_code' => 'required|string|max:20',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'type' => 'required|in:new,transferee,continuing',
             'username' => 'required|string|max:50|unique:users,username',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Password::min(8)],
+            'photo' => 'nullable|image|max:2048',
         ]);
 
-        // Get the student role
-        $studentRole = Role::where('name', 'student')->first();
-        if (!$studentRole) {
-            return back()->withErrors(['role' => 'Student role not found. Please create it first.']);
-        }
+        $studentRole = Role::where('name', 'student')->firstOrFail();
 
-        // Create the user
+        // Create user
         $user = User::create([
-            'lrn' => $request->lrn,
             'first_name' => $request->first_name,
             'middle_name' => $request->middle_name,
             'last_name' => $request->last_name,
@@ -53,28 +89,50 @@ class RegisteredUserController extends Controller
             'role_id' => $studentRole->id,
         ]);
 
-        // Fire registered event
+        // Handle photo upload
+        $photoPath = $request->hasFile('photo') ? $request->file('photo')->store('photos', 'public') : null;
+
+        // Create student profile with pending status
+        $student = $user->student()->create([
+            'lrn' => $fullLrn,
+            'birthdate' => $request->birthday,
+            'birth_place' => $request->birth_place,
+            'gender' => $request->gender,
+            'nationality' => $request->nationality,
+            'religion' => $request->religion,
+            'father_name' => $request->father_name,
+            'father_occupation' => $request->father_occupation,
+            'mother_name' => $request->mother_name,
+            'mother_occupation' => $request->mother_occupation,
+            'guardian_name' => $request->guardian_name,
+            'guardian_relationship' => $request->guardian_relationship,
+            'guardian_contact' => $request->guardian_contact,
+            'street_address' => $request->street_address,
+            'barangay' => $request->barangay,
+            'city' => $request->city,
+            'province' => $request->province,
+            'zip_code' => $request->zip_code,
+            'status' => 'pending', // cannot login yet
+            'grade_level_id' => $request->grade_level_id,
+            'section_id' => null,
+            'photo' => $photoPath,
+            'type' => $request->type,
+        ]);
+
+        // Create pending enrollment
+        $currentYear = SchoolYear::latest()->first();
+        Enrollment::create([
+            'student_id' => $student->id,
+            'school_year_id' => $currentYear?->id,
+            'grade_level_id' => $request->grade_level_id,
+            'section_id' => null,
+            'type' => $request->type,
+            'status' => 'pending',
+        ]);
+
         event(new Registered($user));
 
-        // Log in the user
-        Auth::guard()->login($user);
-
-        // Redirect to student dashboard
-        return redirect()->route('student.dashboard');
+        return redirect()->route('login')
+            ->with('success', 'Registration successful! Your account is pending admin approval.');
     }
-
-    /**
-     * Display the registration view.
-     */
-    public function create(): View
-    {
-        return view('auth.register');
-    }
-
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    
 }

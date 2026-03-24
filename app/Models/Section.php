@@ -16,6 +16,7 @@ class Section extends Model
             'room_number',
         'teacher_id',
         'capacity',
+        'is_active',
     ];
 
     /**
@@ -82,5 +83,8 @@ class Section extends Model
         return $this->belongsToMany(Teacher::class, 'teacher_section', 'section_id', 'teacher_id');
     }
 
-    
+    public function enrollments()
+{
+    return $this->hasMany(Enrollment::class);
+}
 }
