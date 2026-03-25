@@ -36,45 +36,59 @@
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 32px;
+            padding: 24px 32px;
             background: #f8fafc;
         }
 
-        .main-content::-webkit-scrollbar { 
-            width: 8px; 
-        }
-        .main-content::-webkit-scrollbar-track { 
-            background: transparent; 
-        }
-        .main-content::-webkit-scrollbar-thumb { 
-            background: #cbd5e1; 
-            border-radius: 4px; 
-        }
+        .main-content::-webkit-scrollbar { width: 6px; }
+        .main-content::-webkit-scrollbar-track { background: transparent; }
+        .main-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .main-content::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         @media (max-width: 1024px) {
             .main-wrapper { margin-left: 0; }
         }
 
+        /* Glass Card */
         .glass-card {
             background: white;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            border-radius: 24px;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .glass-card:hover {
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
         }
 
-        /* Enhanced Header from Teacher Profile */
+        /* Profile Header - Enhanced */
         .profile-header {
             background: white;
             border: 1px solid #e2e8f0;
             border-radius: 24px;
             padding: 32px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+        }
+
+        /* Photo Container */
+        .photo-container {
+            position: relative;
+            display: inline-block;
         }
 
         .photo-placeholder {
@@ -88,9 +102,22 @@
             font-size: 48px;
             color: white;
             border: 4px solid white;
-            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.4);
             position: relative;
             overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-placeholder:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-placeholder.ring-enrolled {
+            box-shadow: 0 0 0 4px #10b981, 0 10px 30px -5px rgba(99, 102, 241, 0.4);
+        }
+
+        .photo-placeholder.ring-pending {
+            box-shadow: 0 0 0 4px #f59e0b, 0 10px 30px -5px rgba(99, 102, 241, 0.4);
         }
 
         .photo-placeholder img {
@@ -99,71 +126,337 @@
             object-fit: cover;
         }
 
-        .status-indicator {
+        /* Status Badge on Avatar */
+        .status-badge {
             position: absolute;
-            bottom: 4px;
-            right: 4px;
-            width: 28px;
-            height: 28px;
+            bottom: 0;
+            right: 0;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            border: 3px solid white;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 14px;
+            color: white;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            animation: scaleIn 0.3s ease;
+        }
+
+        .status-badge.status-enrolled {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .status-badge.status-pending {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        /* Status Pill */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pill-enrolled {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .pill-pending {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .dot-enrolled { background: #10b981; }
+        .dot-pending { background: #ef4444; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Enrollment Info Bar */
+        .enrollment-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-top: 16px;
+        }
+
+        .enrollment-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .enrollment-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .enrollment-icon.grade {
+            background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+            color: #6366f1;
+        }
+
+        .enrollment-icon.section {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            color: #10b981;
+        }
+
+        .enrollment-icon.year {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            color: #f59e0b;
+        }
+
+        .enrollment-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .enrollment-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .enrollment-value {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .enrollment-divider {
+            width: 1px;
+            height: 40px;
+            background: #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            .enrollment-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .enrollment-divider {
+                width: 100%;
+                height: 1px;
+            }
+        }
+
+        /* Secondary Info */
+        .secondary-info {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .info-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .info-pill i {
+            color: #6366f1;
             font-size: 12px;
         }
 
-        .status-indicator.active {
-            background: #10b981;
-            color: white;
+        /* Assignment Card */
+        .assignment-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
         }
 
-        .status-indicator.inactive {
-            background: #ef4444;
-            color: white;
+        .assignment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        /* Tab Navigation from Teacher */
-        .tab-btn {
-            padding: 12px 20px;
-            font-weight: 600;
-            font-size: 14px;
+        .assignment-header i {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .assignment-header h3 {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .assignment-body {
+            padding: 24px;
+        }
+
+        .assignment-flow {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .assignment-node {
+            flex: 1;
+            min-width: 0;
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .assignment-node.active {
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+            border-color: #10b981;
+        }
+
+        .assignment-node.pending {
+            background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+            border-color: #ef4444;
+        }
+
+        .node-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 12px;
+        }
+
+        .node-icon.grade {
+            background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+            color: #6366f1;
+        }
+
+        .node-icon.section {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            color: #10b981;
+        }
+
+        .node-icon.year {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            color: #f59e0b;
+        }
+
+        .node-label {
+            font-size: 12px;
+            font-weight: 700;
             color: #64748b;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            background: none;
-            border-top: none;
-            border-left: none;
-            border-right: none;
-            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
-        .tab-btn:hover {
-            color: #6366f1;
+        .node-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
         }
 
-        .tab-btn.active {
-            color: #6366f1;
-            border-bottom-color: #6366f1;
+        .node-meta {
+            font-size: 12px;
+            color: #64748b;
         }
 
-        .tab-content {
-            display: none;
+        .assignment-arrow {
+            color: #cbd5e1;
+            font-size: 24px;
+            flex-shrink: 0;
         }
 
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
+        @media (max-width: 1024px) {
+            .assignment-flow {
+                flex-direction: column;
+            }
+            .assignment-arrow {
+                transform: rotate(90deg);
+            }
         }
 
-        /* Enhanced Stat Cards from Teacher */
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+
         .stat-card {
             background: white;
             border: 1px solid #e2e8f0;
             border-radius: 20px;
             padding: 24px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
@@ -174,7 +467,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 3px;
             background: linear-gradient(90deg, #6366f1, #8b5cf6);
             transform: scaleX(0);
             transition: transform 0.3s ease;
@@ -182,19 +475,145 @@
 
         .stat-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.12);
         }
 
         .stat-card:hover::before {
             transform: scaleX(1);
         }
 
-        /* Enhanced Info Items from Teacher */
+        .stat-card.highlight {
+            border: 2px solid #e0e7ff;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .stat-badge {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border-radius: 20px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon.indigo { background: #eef2ff; color: #6366f1; }
+        .stat-icon.emerald { background: #ecfdf5; color: #10b981; }
+        .stat-icon.amber { background: #fffbeb; color: #f59e0b; }
+        .stat-icon.purple { background: #f5f3ff; color: #8b5cf6; }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .stat-meta {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Tab Navigation */
+        .tabs-wrapper {
+            background: white;
+            border-radius: 16px;
+            padding: 6px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .tabs-container::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #64748b;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: #6366f1;
+            background: #f8fafc;
+        }
+
+        .tab-btn.active {
+            color: white;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Info Items */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 1024px) {
+            .info-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 640px) {
+            .info-grid { grid-template-columns: 1fr; }
+        }
+
         .info-item {
             display: flex;
             align-items: flex-start;
-            gap: 12px;
-            padding: 16px;
+            gap: 14px;
+            padding: 20px;
             background: #f8fafc;
             border-radius: 16px;
             border: 1px solid #e2e8f0;
@@ -202,9 +621,10 @@
         }
 
         .info-item:hover {
-            background: #f1f5f9;
-            transform: translateY(-1px);
+            background: white;
+            border-color: #cbd5e1;
             box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
         }
 
         .info-icon {
@@ -218,79 +638,73 @@
             flex-shrink: 0;
         }
 
-        /* Enhanced Badges from Teacher */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 20px;
+        .info-icon.blue { background: #dbeafe; color: #2563eb; }
+        .info-icon.indigo { background: #e0e7ff; color: #4f46e5; }
+        .info-icon.pink { background: #fce7f3; color: #db2777; }
+        .info-icon.amber { background: #fef3c7; color: #d97706; }
+        .info-icon.rose { background: #ffe4e6; color: #e11d48; }
+        .info-icon.emerald { background: #d1fae5; color: #059669; }
+        .info-icon.cyan { background: #cffafe; color: #0891b2; }
+        .info-icon.violet { background: #ede9fe; color: #7c3aed; }
+
+        .info-label {
             font-size: 12px;
             font-weight: 700;
+            color: #94a3b8;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
         }
 
-        .badge-success {
-            background: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-
-        .badge-warning {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fcd34d;
-        }
-
-        .badge-danger {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        .badge-info {
-            background: #eff6ff;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
-        }
-
-        /* Section Badge from Teacher */
-        .section-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-            border: 1px solid #c7d2fe;
-            border-radius: 12px;
+        .info-value {
+            font-size: 15px;
             font-weight: 700;
-            color: #4338ca;
-            font-size: 0.875rem;
+            color: #0f172a;
         }
 
-        /* Parent Cards Enhancement */
+        /* Parent Cards */
+        .parents-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .parents-grid { grid-template-columns: 1fr; }
+        }
+
         .parent-card {
-            background: #f8fafc;
+            background: white;
             border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 20px;
+            padding: 24px;
             transition: all 0.3s ease;
         }
 
         .parent-card:hover {
-            background: white;
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
+            border-color: #c7d2fe;
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .parent-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f1f5f9;
         }
 
         .parent-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 24px;
+            box-shadow: 0 4px 12px -2px rgba(0,0,0,0.1);
         }
 
         .parent-avatar.father {
@@ -308,12 +722,114 @@
             color: #5b21b6;
         }
 
-        /* Document Cards from Teacher */
+        .parent-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .parent-occupation {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .parent-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .parent-contact {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        /* Address Section */
+        .address-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .address-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .address-content {
+            padding: 24px;
+        }
+
+        .address-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 1024px) {
+            .address-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 640px) {
+            .address-grid { grid-template-columns: 1fr; }
+        }
+
+        .address-field {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .address-field:hover {
+            background: white;
+            border-color: #cbd5e1;
+        }
+
+        .address-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .address-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Document Cards */
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .documents-grid { grid-template-columns: 1fr; }
+        }
+
         .document-card {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px;
+            padding: 20px;
             background: #f8fafc;
             border-radius: 16px;
             border: 1px solid #e2e8f0;
@@ -321,8 +837,9 @@
         }
 
         .document-card:hover {
-            background: #f1f5f9;
-            transform: translateY(-2px);
+            background: white;
+            border-color: #c7d2fe;
+            box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.05);
         }
 
         .document-icon {
@@ -335,7 +852,340 @@
             font-size: 20px;
         }
 
-        /* Audit Trail from Teacher */
+        .document-icon.blue { background: #dbeafe; color: #2563eb; }
+        .document-icon.emerald { background: #d1fae5; color: #059669; }
+        .document-icon.amber { background: #fef3c7; color: #d97706; }
+        .document-icon.rose { background: #ffe4e6; color: #e11d48; }
+        .document-icon.purple { background: #f3e8ff; color: #7c22ce; }
+        .document-icon.cyan { background: #cffafe; color: #0e7490; }
+
+        .document-info h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .document-info p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .document-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .document-status.uploaded {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+
+        .document-status.missing {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.4);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #475569;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 13px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        /* Floating Action Buttons */
+        .fab-container {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 50;
+        }
+
+        .fab-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px -3px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            position: relative;
+        }
+
+        .fab-btn:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 30px -5px rgba(0,0,0,0.3);
+        }
+
+        .fab-btn.edit {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+
+        .fab-btn.delete {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .fab-btn.back, .fab-btn.print {
+            background: white;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .fab-btn.back:hover, .fab-btn.print:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .fab-tooltip {
+            position: absolute;
+            right: 70px;
+            background: #0f172a;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .fab-btn:hover .fab-tooltip {
+            opacity: 1;
+            visibility: visible;
+            right: 75px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: white;
+            border-left: 4px solid #10b981;
+            padding: 16px 24px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+            transform: translateX(400px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 400px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-icon {
+            width: 44px;
+            height: 44px;
+            background: #ecfdf5;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-icon i {
+            color: #10b981;
+            font-size: 20px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .section-header i {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6366f1;
+            font-size: 18px;
+        }
+
+        .section-header h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        /* Animations */
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+
+        /* Print styles */
+        @media print {
+            .fab-container, .sidebar, .toast, .tabs-wrapper { display: none !important; }
+            .main-wrapper { margin-left: 0 !important; }
+            .main-content { overflow: visible !important; padding: 20px; }
+            .tab-content { display: block !important; }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+        }
+
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            background: #f1f5f9;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .empty-state-icon i {
+            font-size: 32px;
+            color: #94a3b8;
+        }
+
+        .empty-state h4 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: #64748b;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Footer Info */
+        .footer-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 0;
+            margin-top: 32px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer-meta {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .footer-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .footer-meta-item i {
+            color: #94a3b8;
+        }
+
+        .footer-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .footer-status::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Audit Trail */
         .audit-item {
             position: relative;
             padding-left: 32px;
@@ -390,170 +1240,6 @@
             padding: 2px 8px;
             border-radius: 6px;
         }
-
-        /* Enhanced Buttons from Teacher */
-        .btn-primary {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 14px;
-            font-weight: 700;
-            font-size: 14px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.4);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.5);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #f1f5f9;
-            color: #64748b;
-            padding: 12px 24px;
-            border-radius: 14px;
-            font-weight: 600;
-            font-size: 14px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .btn-secondary:hover {
-            background: #e2e8f0;
-            color: #475569;
-            border-color: #cbd5e1;
-        }
-
-        /* Floating Action Buttons - Enhanced from Teacher */
-        .fab-container {
-            position: fixed;
-            bottom: 32px;
-            right: 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            z-index: 50;
-        }
-
-        .fab-btn {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px -3px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-            border: none;
-            position: relative;
-        }
-
-        .fab-btn:hover {
-            transform: translateY(-4px) scale(1.1);
-            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.4);
-        }
-
-        .fab-btn.edit {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-        }
-
-        .fab-btn.delete {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-        }
-
-        .fab-btn.back {
-            background: white;
-            color: #64748b;
-            border: 1px solid #e2e8f0;
-        }
-
-        .fab-btn.print {
-            background: white;
-            color: #64748b;
-            border: 1px solid #e2e8f0;
-        }
-
-        .fab-tooltip {
-            position: absolute;
-            right: 70px;
-            background: rgba(15, 23, 42, 0.9);
-            color: white;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-
-        .fab-btn:hover .fab-tooltip {
-            opacity: 1;
-            visibility: visible;
-            right: 75px;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            background: white;
-            border-left: 4px solid #10b981;
-            padding: 16px 24px;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 100;
-            transform: translateX(400px);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .toast.show {
-            transform: translateX(0);
-        }
-
-        /* Animations */
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
-            opacity: 0;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .stagger-1 { animation-delay: 0.1s; }
-        .stagger-2 { animation-delay: 0.2s; }
-        .stagger-3 { animation-delay: 0.3s; }
-        .stagger-4 { animation-delay: 0.4s; }
-
-        /* Print styles */
-        @media print {
-            .fab-container, .sidebar, .toast { display: none !important; }
-            .main-wrapper { margin-left: 0 !important; }
-            .main-content { overflow: visible !important; }
-        }
     </style>
 </head>
 <body class="antialiased text-slate-800">
@@ -561,12 +1247,12 @@
     <!-- Toast Notification -->
     @if(session('success'))
     <div id="successToast" class="toast show">
-        <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-check text-emerald-600"></i>
+        <div class="toast-icon">
+            <i class="fas fa-check"></i>
         </div>
         <div>
-            <p class="font-semibold text-slate-900">Success!</p>
-            <p class="text-sm text-slate-500">{{ session('success') }}</p>
+            <p class="font-bold text-slate-900 text-sm">Success!</p>
+            <p class="text-sm text-slate-600 mt-1">{{ session('success') }}</p>
         </div>
     </div>
     @endif
@@ -580,191 +1266,188 @@
 
                     <!-- Enhanced Header Section -->
                     <div class="profile-header animate-fade-in">
-                        <div class="flex flex-col lg:flex-row lg:items-center gap-6">
-                            <div class="photo-placeholder">
-                                @php
-                                    $name = $student->user->name ?? $student->full_name ?? 'Student';
-                                    $initials = '';
-                                    $words = explode(' ', $name);
-                                    foreach($words as $word) {
-                                        $initials .= strtoupper(substr($word, 0, 1));
-                                        if(strlen($initials) >= 2) break;
-                                    }
-                                @endphp
-                                @if($student->photo_path)
-                                    <img src="{{ asset('storage/' . $student->photo_path) }}" alt="Profile">
-                                @else
-                                    <span class="text-3xl font-bold">{{ $initials ?: 'ST' }}</span>
-                                @endif
-                                <div class="status-indicator {{ $student->status === 'active' ? 'active' : 'inactive' }}">
-                                    <i class="fas fa-check"></i>
+                        <div class="flex flex-col lg:flex-row lg:items-center gap-8">
+                            <div class="photo-container">
+                                <div class="photo-placeholder {{ $student->status === 'enrolled' ? 'ring-enrolled' : 'ring-pending' }}">
+                                    @php
+                                        $name = $student->user->name ?? $student->full_name ?? 'Student';
+                                        $initials = '';
+                                        $words = explode(' ', $name);
+                                        foreach($words as $word) {
+                                            $initials .= strtoupper(substr($word, 0, 1));
+                                            if(strlen($initials) >= 2) break;
+                                        }
+                                    @endphp
+                                    @if($student->user->photo ?? $student->photo_path)
+                                        <img src="{{ asset('storage/' . ($student->user->photo ?? $student->photo_path)) }}" alt="Profile">
+                                    @else
+                                        <span class="text-3xl font-bold">{{ $initials ?: 'ST' }}</span>
+                                    @endif
+                                </div>
+                                <div class="status-badge {{ $student->status === 'enrolled' ? 'status-enrolled' : 'status-pending' }}">
+                                    <i class="fas fa-{{ $student->status === 'enrolled' ? 'check' : 'times' }}"></i>
                                 </div>
                             </div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-2 flex-wrap">
-                                    <h1 class="text-3xl font-bold text-slate-900">{{ $name }}</h1>
-                                    <span class="badge {{ $student->status === 'active' ? 'badge-success' : 'badge-danger' }}">
-                                        <i class="fas fa-circle text-[8px]"></i>
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-3 mb-3 flex-wrap">
+                                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ $name }}</h1>
+                                    <span class="status-pill {{ $student->status === 'enrolled' ? 'pill-enrolled' : 'pill-pending' }}">
+                                        <span class="status-dot {{ $student->status === 'enrolled' ? 'dot-enrolled' : 'dot-pending' }}"></span>
                                         {{ ucfirst($student->status) }}
                                     </span>
                                 </div>
-                                <p class="text-slate-500 flex items-center gap-2 flex-wrap">
-                                    <span class="section-badge">
-                                        <i class="fas fa-graduation-cap text-xs"></i>
-                                        {{ $student->grade_level ?? 'N/A' }}
+                                
+                                <!-- Enrollment Info Bar -->
+                                <div class="enrollment-bar">
+                                    <div class="enrollment-item">
+                                        <div class="enrollment-icon grade">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </div>
+                                        <div class="enrollment-details">
+                                            <span class="enrollment-label">Grade Level</span>
+                                            <span class="enrollment-value">
+    {{ $student->enrollments->last()->gradeLevel->name ?? 'Not Assigned' }}
+</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="enrollment-divider"></div>
+                                    
+                                    <div class="enrollment-item">
+                                        <div class="enrollment-icon section">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="enrollment-details">
+                                            <span class="enrollment-label">Section</span>
+                                            <span class="enrollment-value">{{ $student->section->name ?? 'Not Assigned' }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="enrollment-divider"></div>
+                                    
+                                    <div class="enrollment-item">
+                                        <div class="enrollment-icon year">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </div>
+                                        <div class="enrollment-details">
+                                            <span class="enrollment-label">School Year</span>
+                                            <span class="enrollment-value">{{ $student->enrollments->first()->schoolYear->name ?? 'N/A' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Secondary Info -->
+                                <div class="secondary-info">
+                                    <span class="info-pill">
+                                        <i class="fas fa-id-card"></i>
+                                        LRN: {{ $student->lrn ?? 'N/A' }}
                                     </span>
-                                    <span class="text-slate-400">•</span>
-                                    <span><i class="fas fa-id-card mr-1"></i> LRN: {{ $student->lrn ?? 'N/A' }}</span>
-                                    <span class="text-slate-400">•</span>
-                                    <span><i class="fas fa-envelope mr-1"></i> {{ $student->user->email ?? 'N/A' }}</span>
-                                    <span class="text-slate-400">•</span>
-                                    <span><i class="fas fa-hashtag mr-1"></i> ID: {{ $student->id }}</span>
-                                </p>
+                                    <span class="info-pill">
+                                        <i class="fas fa-envelope"></i>
+                                        {{ $student->user->email ?? 'N/A' }}
+                                    </span>
+                                    <span class="info-pill">
+                                        <i class="fas fa-birthday-cake"></i>
+                                        {{ $student->birthdate ? \Carbon\Carbon::parse($student->birthdate)->format('M d, Y') : 'Not provided' }} ({{ $student->age ?? 'N/A' }} yrs)
+                                    </span>
+                                </div>
                             </div>
-                           
                         </div>
                     </div>
 
-                    <!-- Enhanced Stats Row -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in stagger-1">
-                        <div class="stat-card">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-graduation-cap text-indigo-600"></i>
-                                </div>
-                                <span class="text-lg font-bold text-slate-900">{{ $student->grade_level ?? 'N/A' }}</span>
-                            </div>
-                            <p class="text-sm font-semibold text-slate-600">Grade Level</p>
-                            <p class="text-xs text-slate-400 mt-1">Current enrollment</p>
-                        </div>
+                    
 
-                        <div class="stat-card">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-users text-emerald-600"></i>
-                                </div>
-                                <span class="text-lg font-bold text-slate-900">{{ $student->section ?? 'N/A' }}</span>
-                            </div>
-                            <p class="text-sm font-semibold text-slate-600">Section</p>
-                            <p class="text-xs text-slate-400 mt-1">Class assignment</p>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-calendar-alt text-amber-600"></i>
-                                </div>
-                                <span class="text-lg font-bold text-slate-900">{{ $student->school_year ?? 'N/A' }}</span>
-                            </div>
-                            <p class="text-sm font-semibold text-slate-600">School Year</p>
-                            <p class="text-xs text-slate-400 mt-1">Academic period</p>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-birthday-cake text-purple-600"></i>
-                                </div>
-                                <span class="text-lg font-bold text-slate-900">
-                                   {{ $student->age ?? 'N/A' }}
-                                </span>
-                            </div>
-                            <p class="text-sm font-semibold text-slate-600">Age</p>
-                            <p class="text-xs text-slate-400 mt-1">
-                                {{ $student->birthdate ? $student->birthdate->format('M d, Y') : 'Not provided' }}
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Tab Navigation -->
-                    <div class="glass-card mb-6 animate-fade-in stagger-2">
-                        <div class="flex border-b border-slate-100 overflow-x-auto">
-                            <button class="tab-btn active" onclick="switchTab('personal')">
-                                <i class="fas fa-user mr-2"></i>Personal
+                    <!-- Enhanced Tab Navigation -->
+                    <div class="tabs-wrapper animate-fade-in stagger-3">
+                        <div class="tabs-container">
+                            <button class="tab-btn active" onclick="switchTab('personal', this)">
+                                <i class="fas fa-user"></i>Personal
                             </button>
-                            <button class="tab-btn" onclick="switchTab('school')">
-                                <i class="fas fa-school mr-2"></i>School Info
+                            <button class="tab-btn" onclick="switchTab('school', this)">
+                                <i class="fas fa-school"></i>School Info
                             </button>
-                            <button class="tab-btn" onclick="switchTab('family')">
-                                <i class="fas fa-users mr-2"></i>Family
+                            <button class="tab-btn" onclick="switchTab('family', this)">
+                                <i class="fas fa-users"></i>Family
                             </button>
-                            <button class="tab-btn" onclick="switchTab('address')">
-                                <i class="fas fa-map-marker-alt mr-2"></i>Address
+                            <button class="tab-btn" onclick="switchTab('address', this)">
+                                <i class="fas fa-map-marker-alt"></i>Address
                             </button>
-                            <button class="tab-btn" onclick="switchTab('documents')">
-                                <i class="fas fa-folder-open mr-2"></i>Documents
+                            <button class="tab-btn" onclick="switchTab('documents', this)">
+                                <i class="fas fa-folder-open"></i>Documents
                             </button>
-                            <button class="tab-btn" onclick="switchTab('history')">
-                                <i class="fas fa-history mr-2"></i>History
+                            <button class="tab-btn" onclick="switchTab('history', this)">
+                                <i class="fas fa-history"></i>History
                             </button>
                         </div>
                     </div>
 
                     <!-- Personal Information Tab -->
                     <div id="personal" class="tab-content active">
-                        <div class="glass-card p-6 mb-6 animate-fade-in stagger-3">
-                            <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <i class="fas fa-user-circle text-indigo-500"></i>
-                                Personal Information
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="glass-card p-6 mb-6 animate-fade-in stagger-4">
+                            <div class="section-header">
+                                <i class="fas fa-user-circle"></i>
+                                <h3>Personal Information</h3>
+                            </div>
+                            
+                            <div class="info-grid">
                                 <div class="info-item">
-                                    <div class="info-icon bg-blue-100 text-blue-600">
+                                    <div class="info-icon blue">
                                         <i class="fas fa-birthday-cake"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">Birthdate</p>
-                                        <p class="font-bold text-slate-900">{{ $student->birthdate ? date('F d, Y', strtotime($student->birthdate)) : 'Not provided' }}</p>
+                                        <div class="info-label">Birthdate</div>
+                                        <div class="info-value">{{ $student->birthdate ? date('F d, Y', strtotime($student->birthdate)) : 'Not provided' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="info-item">
-                                    <div class="info-icon bg-indigo-100 text-indigo-600">
+                                    <div class="info-icon indigo">
                                         <i class="fas fa-map-marker-alt"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">Birth Place</p>
-                                        <p class="font-bold text-slate-900">{{ $student->birth_place ?? 'Not provided' }}</p>
+                                        <div class="info-label">Birth Place</div>
+                                        <div class="info-value">{{ $student->birth_place ?? 'Not provided' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="info-item">
-                                    <div class="info-icon bg-pink-100 text-pink-600">
+                                    <div class="info-icon pink">
                                         <i class="fas fa-venus-mars"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">Gender</p>
-                                        <p class="font-bold text-slate-900 capitalize">{{ $student->gender ?? 'Not provided' }}</p>
+                                        <div class="info-label">Gender</div>
+                                        <div class="info-value capitalize">{{ $student->gender ?? 'Not provided' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="info-item">
-                                    <div class="info-icon bg-amber-100 text-amber-600">
+                                    <div class="info-icon amber">
                                         <i class="fas fa-globe"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">Nationality</p>
-                                        <p class="font-bold text-slate-900">{{ $student->nationality ?? 'Not provided' }}</p>
+                                        <div class="info-label">Nationality</div>
+                                        <div class="info-value">{{ $student->nationality ?? 'Not provided' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="info-item">
-                                    <div class="info-icon bg-rose-100 text-rose-600">
+                                    <div class="info-icon rose">
                                         <i class="fas fa-pray"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">Religion</p>
-                                        <p class="font-bold text-slate-900">{{ $student->religion ?? 'Not provided' }}</p>
+                                        <div class="info-label">Religion</div>
+                                        <div class="info-value">{{ $student->religion ?? 'Not provided' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="info-item">
-                                    <div class="info-icon bg-emerald-100 text-emerald-600">
+                                    <div class="info-icon emerald">
                                         <i class="fas fa-id-card"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">LRN</p>
-                                        <p class="font-bold text-slate-900">{{ $student->lrn ?? 'Not provided' }}</p>
+                                        <div class="info-label">LRN</div>
+                                        <div class="info-value">{{ $student->lrn ?? 'Not provided' }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -774,70 +1457,72 @@
                     <!-- School Information Tab -->
                     <div id="school" class="tab-content">
                         <div class="glass-card p-6 mb-6 animate-fade-in">
-                            <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <i class="fas fa-school text-emerald-500"></i>
-                                School Information
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="section-header">
+                                <i class="fas fa-school" style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); color: #059669;"></i>
+                                <h3>School Information</h3>
+                            </div>
+                            
+                            <div class="info-grid">
                                 <div class="info-item">
-                                    <div class="info-icon bg-emerald-100 text-emerald-600">
+                                    <div class="info-icon emerald">
                                         <i class="fas fa-layer-group"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">Grade Level</p>
-                                        <p class="font-bold text-slate-900">{{ $student->grade_level ?? 'Not provided' }}</p>
+                                        <div class="info-label">Grade Level</div>
+                                        <div class="info-value">{{ $student->gradeLevel->name ?? 'Not provided' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="info-item">
-                                    <div class="info-icon bg-cyan-100 text-cyan-600">
+                                    <div class="info-icon cyan">
                                         <i class="fas fa-users"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">Section</p>
-                                        <p class="font-bold text-slate-900">{{ $student->section ?? 'Not provided' }}</p>
+                                        <div class="info-label">Section</div>
+                                        <div class="info-value">{{ $student->section->name ?? 'Not provided' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="info-item">
-                                    <div class="info-icon bg-violet-100 text-violet-600">
+                                    <div class="info-icon violet">
                                         <i class="fas fa-hashtag"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">Section ID</p>
-                                        <p class="font-bold text-slate-900">{{ $student->section_id ?? 'Not provided' }}</p>
+                                        <div class="info-label">Section ID</div>
+                                        <div class="info-value">{{ $student->section_id ?? 'Not provided' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="info-item">
-                                    <div class="info-icon bg-amber-100 text-amber-600">
+                                    <div class="info-icon amber">
                                         <i class="fas fa-calendar-check"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">School Year</p>
-                                        <p class="font-bold text-slate-900">{{ $student->school_year ?? 'Not provided' }}</p>
+                                        <div class="info-label">School Year</div>
+                                        <div class="info-value">{{ $student->enrollments->first()->schoolYear->name ?? 'Not provided' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="info-item">
-                                    <div class="info-icon bg-rose-100 text-rose-600">
+                                    <div class="info-icon rose">
                                         <i class="fas fa-info-circle"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">Status</p>
-                                        <span class="badge {{ $student->status === 'active' ? 'badge-success' : ($student->status === 'inactive' ? 'badge-danger' : 'badge-warning') }}">
+                                        <div class="info-label">Status</div>
+                                        <span class="status-pill {{ $student->status === 'enrolled' ? 'pill-enrolled' : 'pill-pending' }}">
+                                            <span class="status-dot {{ $student->status === 'enrolled' ? 'dot-enrolled' : 'dot-pending' }}"></span>
                                             {{ ucfirst($student->status) }}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div class="info-item">
-                                    <div class="info-icon bg-blue-100 text-blue-600">
+                                    <div class="info-icon blue">
                                         <i class="fas fa-clock"></i>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500 font-semibold uppercase">Enrolled Since</p>
-                                        <p class="font-bold text-slate-900">{{ $student->created_at ? $student->created_at->format('F d, Y') : 'Not provided' }}</p>
+                                        <div class="info-label">Enrolled Since</div>
+                                        <div class="info-value">{{ $student->created_at ? $student->created_at->format('F d, Y') : 'Not provided' }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -847,68 +1532,69 @@
                     <!-- Family Tab -->
                     <div id="family" class="tab-content">
                         <div class="glass-card p-6 mb-6 animate-fade-in">
-                            <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <i class="fas fa-users text-purple-500"></i>
-                                Parents / Guardian Information
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="section-header">
+                                <i class="fas fa-users" style="background: linear-gradient(135deg, #f5f3ff, #e9d5ff); color: #7c3aed;"></i>
+                                <h3>Parents / Guardian Information</h3>
+                            </div>
+                            
+                            <div class="parents-grid">
                                 <!-- Father -->
                                 <div class="parent-card">
-                                    <div class="flex items-center gap-4 mb-4">
+                                    <div class="parent-header">
                                         <div class="parent-avatar father">
                                             <i class="fas fa-male"></i>
                                         </div>
                                         <div>
-                                            <p class="font-bold text-slate-900">Father</p>
-                                            <p class="text-xs text-slate-500">{{ $student->father_occupation ?? 'Occupation not specified' }}</p>
+                                            <div class="parent-title">Father</div>
+                                            <div class="parent-occupation">{{ $student->father_occupation ?? 'Occupation not specified' }}</div>
                                         </div>
                                     </div>
-                                    <p class="font-semibold text-slate-800 mb-2">{{ $student->father_name ?? 'Not provided' }}</p>
+                                    <div class="parent-name">{{ $student->father_name ?? 'Not provided' }}</div>
                                     @if($student->father_contact)
-                                    <p class="text-sm text-slate-600 flex items-center gap-2">
+                                    <div class="parent-contact">
                                         <i class="fas fa-phone text-blue-500"></i>
                                         {{ $student->father_contact }}
-                                    </p>
+                                    </div>
                                     @endif
                                 </div>
 
                                 <!-- Mother -->
                                 <div class="parent-card">
-                                    <div class="flex items-center gap-4 mb-4">
+                                    <div class="parent-header">
                                         <div class="parent-avatar mother">
                                             <i class="fas fa-female"></i>
                                         </div>
                                         <div>
-                                            <p class="font-bold text-slate-900">Mother</p>
-                                            <p class="text-xs text-slate-500">{{ $student->mother_occupation ?? 'Occupation not specified' }}</p>
+                                            <div class="parent-title">Mother</div>
+                                            <div class="parent-occupation">{{ $student->mother_occupation ?? 'Occupation not specified' }}</div>
                                         </div>
                                     </div>
-                                    <p class="font-semibold text-slate-800 mb-2">{{ $student->mother_name ?? 'Not provided' }}</p>
+                                    <div class="parent-name">{{ $student->mother_name ?? 'Not provided' }}</div>
                                     @if($student->mother_contact)
-                                    <p class="text-sm text-slate-600 flex items-center gap-2">
+                                    <div class="parent-contact">
                                         <i class="fas fa-phone text-pink-500"></i>
                                         {{ $student->mother_contact }}
-                                    </p>
+                                    </div>
                                     @endif
                                 </div>
 
                                 <!-- Guardian -->
                                 <div class="parent-card">
-                                    <div class="flex items-center gap-4 mb-4">
+                                    <div class="parent-header">
                                         <div class="parent-avatar guardian">
                                             <i class="fas fa-shield-alt"></i>
                                         </div>
                                         <div>
-                                            <p class="font-bold text-slate-900">Guardian</p>
-                                            <p class="text-xs text-slate-500">{{ $student->guardian_relationship ?? 'Relationship not specified' }}</p>
+                                            <div class="parent-title">Guardian</div>
+                                            <div class="parent-occupation">{{ $student->guardian_relationship ?? 'Relationship not specified' }}</div>
                                         </div>
                                     </div>
-                                    <p class="font-semibold text-slate-800 mb-2">{{ $student->guardian_name ?? 'Not provided' }}</p>
+                                    <div class="parent-name">{{ $student->guardian_name ?? 'Not provided' }}</div>
                                     @if($student->guardian_contact)
-                                    <p class="text-sm text-slate-600 flex items-center gap-2 mt-2">
+                                    <div class="parent-contact">
                                         <i class="fas fa-phone text-purple-500"></i>
                                         {{ $student->guardian_contact }}
-                                    </p>
+                                    </div>
                                     @endif
                                 </div>
                             </div>
@@ -917,43 +1603,43 @@
 
                     <!-- Address Tab -->
                     <div id="address" class="tab-content">
-                        <div class="glass-card p-6 animate-fade-in">
-                            <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <i class="fas fa-map-marker-alt text-amber-500"></i>
-                                Address Information
-                            </h3>
-                            <div class="flex items-start gap-4 mb-6">
-                                <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-home text-amber-600 text-xl"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-lg font-semibold text-slate-900 mb-2">Complete Address</p>
-                                    <p class="text-slate-600 leading-relaxed">
-                                        {{ $student->street_address ?? 'Street not provided' }}, 
-                                        {{ $student->barangay ?? 'Barangay not provided' }}, 
-                                        {{ $student->city ?? 'City not provided' }}, 
-                                        {{ $student->province ?? 'Province not provided' }} 
-                                        {{ $student->zip_code ?? '' }}
-                                    </p>
+                        <div class="address-card glass-card mb-6 animate-fade-in">
+                            <div class="address-header">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-home text-amber-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-extrabold text-slate-900">Complete Address</h3>
+                                        <p class="text-slate-600 mt-1">
+                                            {{ $student->street_address ?? 'Street not provided' }}, 
+                                            {{ $student->barangay ?? 'Barangay not provided' }}, 
+                                            {{ $student->city ?? 'City not provided' }}, 
+                                            {{ $student->province ?? 'Province not provided' }} 
+                                            {{ $student->zip_code ?? '' }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                                    <p class="text-xs text-slate-500 font-semibold uppercase mb-1">Street</p>
-                                    <p class="font-semibold text-slate-900">{{ $student->street_address ?? 'N/A' }}</p>
-                                </div>
-                                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                                    <p class="text-xs text-slate-500 font-semibold uppercase mb-1">Barangay</p>
-                                    <p class="font-semibold text-slate-900">{{ $student->barangay ?? 'N/A' }}</p>
-                                </div>
-                                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                                    <p class="text-xs text-slate-500 font-semibold uppercase mb-1">City</p>
-                                    <p class="font-semibold text-slate-900">{{ $student->city ?? 'N/A' }}</p>
-                                </div>
-                                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                                    <p class="text-xs text-slate-500 font-semibold uppercase mb-1">Zip Code</p>
-                                    <p class="font-semibold text-slate-900">{{ $student->zip_code ?? 'N/A' }}</p>
+                            <div class="address-content">
+                                <div class="address-grid">
+                                    <div class="address-field">
+                                        <div class="address-label">Street Address</div>
+                                        <div class="address-value">{{ $student->street_address ?? 'N/A' }}</div>
+                                    </div>
+                                    <div class="address-field">
+                                        <div class="address-label">Barangay</div>
+                                        <div class="address-value">{{ $student->barangay ?? 'N/A' }}</div>
+                                    </div>
+                                    <div class="address-field">
+                                        <div class="address-label">City / Municipality</div>
+                                        <div class="address-value">{{ $student->city ?? 'N/A' }}</div>
+                                    </div>
+                                    <div class="address-field">
+                                        <div class="address-label">Zip Code</div>
+                                        <div class="address-value">{{ $student->zip_code ?? 'N/A' }}</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -962,10 +1648,10 @@
                     <!-- Documents Tab -->
                     <div id="documents" class="tab-content">
                         <div class="glass-card p-6 animate-fade-in">
-                            <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <i class="fas fa-folder-open text-indigo-500"></i>
-                                Documents & Attachments
-                            </h3>
+                            <div class="section-header">
+                                <i class="fas fa-folder-open" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #2563eb;"></i>
+                                <h3>Documents & Attachments</h3>
+                            </div>
                             
                             @php
                                 $documents = [
@@ -978,26 +1664,24 @@
                                 ];
                             @endphp
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="documents-grid">
                                 @foreach($documents as $doc)
                                     <div class="document-card">
                                         <div class="flex items-center gap-4">
-                                            <div class="document-icon bg-{{ $doc['color'] }}-100 text-{{ $doc['color'] }}-600">
+                                            <div class="document-icon {{ $doc['color'] }}">
                                                 <i class="fas {{ $doc['icon'] }}"></i>
                                             </div>
-                                            <div>
-                                                <p class="font-bold text-slate-900">{{ $doc['name'] }}</p>
-                                                <p class="text-xs text-slate-500">
-                                                    {{ $doc['path'] ? 'Uploaded' : 'Not uploaded' }}
-                                                </p>
+                                            <div class="document-info">
+                                                <h4>{{ $doc['name'] }}</h4>
+                                                <p>{{ $doc['path'] ? 'Document uploaded' : 'No document uploaded' }}</p>
                                             </div>
                                         </div>
                                         @if($doc['path'])
-                                            <a href="{{ asset('storage/' . $doc['path']) }}" target="_blank" class="btn-primary text-sm py-2 px-4">
+                                            <a href="{{ asset('storage/' . $doc['path']) }}" target="_blank" class="btn-primary">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
                                         @else
-                                            <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-sm font-semibold">Missing</span>
+                                            <span class="document-status missing">Missing</span>
                                         @endif
                                     </div>
                                 @endforeach
@@ -1008,10 +1692,10 @@
                     <!-- History Tab -->
                     <div id="history" class="tab-content">
                         <div class="glass-card p-6 animate-fade-in">
-                            <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <i class="fas fa-history text-indigo-500"></i>
-                                Edit History & Audit Trail
-                            </h3>
+                            <div class="section-header">
+                                <i class="fas fa-history" style="background: linear-gradient(135deg, #f5f3ff, #ede9fe); color: #7c3aed;"></i>
+                                <h3>Edit History & Audit Trail</h3>
+                            </div>
                             
                             @if(isset($auditLogs) && count($auditLogs) > 0)
                                 <div class="space-y-0">
@@ -1042,35 +1726,32 @@
                                     @endforeach
                                 </div>
                             @else
-                                <div class="text-center py-12">
-                                    <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                        <i class="fas fa-clipboard-check text-2xl text-slate-400"></i>
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">
+                                        <i class="fas fa-clipboard-check"></i>
                                     </div>
-                                    <h4 class="font-bold text-slate-900 mb-2">No Edit History</h4>
-                                    <p class="text-slate-500 text-sm max-w-md mx-auto">
-                                        No changes have been recorded yet. When the student record is edited, those changes will appear here.
-                                    </p>
+                                    <h4>No Edit History</h4>
+                                    <p>No changes have been recorded yet. When the student record is edited, those changes will appear here.</p>
                                 </div>
                             @endif
                         </div>
                     </div>
 
-                    <!-- Footer Info -->
-                    <div class="flex items-center justify-between text-sm text-slate-500 mt-8 animate-fade-in">
-                        <div class="flex items-center gap-6">
-                            <span class="flex items-center gap-2">
+                    <!-- Enhanced Footer Info -->
+                    <div class="footer-info animate-fade-in">
+                        <div class="footer-meta">
+                            <div class="footer-meta-item">
                                 <i class="fas fa-clock"></i>
-                                Created: {{ $student->created_at ? $student->created_at->format('M d, Y h:i A') : 'N/A' }}
-                            </span>
+                                <span>Created: {{ $student->created_at ? $student->created_at->format('M d, Y h:i A') : 'N/A' }}</span>
+                            </div>
                             @if($student->updated_at && $student->updated_at != $student->created_at)
-                            <span class="flex items-center gap-2">
+                            <div class="footer-meta-item">
                                 <i class="fas fa-sync"></i>
-                                Updated: {{ $student->updated_at->format('M d, Y h:i A') }}
-                            </span>
+                                <span>Updated: {{ $student->updated_at->format('M d, Y h:i A') }}</span>
+                            </div>
                             @endif
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                        <div class="footer-status">
                             <span>Active Record</span>
                         </div>
                     </div>
@@ -1116,27 +1797,22 @@
         @endif
 
         // Tab switching
-        function switchTab(tabId) {
-            // Hide all tab contents
+        function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             
-            // Remove active class from all tab buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             
-            // Show selected tab content
             document.getElementById(tabId).classList.add('active');
-            
-            // Add active class to clicked button
-            event.target.classList.add('active');
+            btnElement.classList.add('active');
         }
 
         // Confirm delete
         function confirmDelete() {
-            if(confirm('⚠️ Are you sure you want to delete this student?\\n\\nThis action cannot be undone.')) {
+            if(confirm('⚠️ Are you sure you want to delete this student?\n\nThis action cannot be undone.')) {
                 document.getElementById('deleteForm').submit();
             }
         }

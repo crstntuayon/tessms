@@ -18,7 +18,7 @@ class DashboardController extends Controller
         $student = $user->student;
 
         // Safety check (in case middleware missed it)
-        if (!$student || $student->status !== 'approved') {
+        if (!$student || $student->status !== 'enrolled') {
             Auth::logout();
             return redirect()->route('auth.pending')
                 ->withErrors([

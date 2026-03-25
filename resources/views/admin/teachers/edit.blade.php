@@ -793,84 +793,145 @@
                 @method('PUT')
 
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <!-- Left Column: Personal Information -->
-                    <div class="glass-card p-6 lg:p-8 animate-fade-in stagger-1">
-                        <div class="section-header">
-                            <div class="section-icon">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div>
-                                <h3 class="section-title">Personal Information</h3>
-                                <p class="section-subtitle">Basic details about the teacher</p>
-                            </div>
-                        </div>
+                  <!-- Left Column: Personal Information -->
+<div class="glass-card p-6 lg:p-8 animate-fade-in stagger-1">
+    <div class="section-header">
+        <div class="section-icon">
+            <i class="fas fa-user"></i>
+        </div>
+        <div>
+            <h3 class="section-title">Personal Information</h3>
+            <p class="section-subtitle">Basic details about the teacher</p>
+        </div>
+    </div>
 
-                        <div class="space-y-5">
-                            <!-- Name Row -->
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div class="input-group">
-                                    <i class="fas fa-user input-icon"></i>
-                                    <input type="text" name="first_name" required 
-                                           value="{{ old('first_name', $teacher->first_name) }}"
-                                           class="form-input" placeholder=" ">
-                                    <label class="floating-label">First Name <span class="text-red-500">*</span></label>
-                                </div>
-                                <div class="input-group">
-                                    <i class="fas fa-user input-icon"></i>
-                                    <input type="text" name="last_name" required 
-                                           value="{{ old('last_name', $teacher->last_name) }}"
-                                           class="form-input" placeholder=" ">
-                                    <label class="floating-label">Last Name <span class="text-red-500">*</span></label>
-                                </div>
-                                <div class="input-group">
-                                    <i class="fas fa-user input-icon"></i>
-                                    <input type="text" name="middle_name" 
-                                           value="{{ old('middle_name', $teacher->middle_name) }}"
-                                           class="form-input" placeholder=" ">
-                                    <label class="floating-label">Middle Name</label>
-                                </div>
-                            </div>
+    <div class="space-y-5">
+        <!-- Name Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="input-group">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" name="first_name" required 
+                       value="{{ old('first_name', $teacher->first_name) }}"
+                       class="form-input" placeholder=" ">
+                <label class="floating-label">First Name <span class="text-red-500">*</span></label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" name="last_name" required 
+                       value="{{ old('last_name', $teacher->last_name) }}"
+                       class="form-input" placeholder=" ">
+                <label class="floating-label">Last Name <span class="text-red-500">*</span></label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" name="middle_name" 
+                       value="{{ old('middle_name', $teacher->middle_name) }}"
+                       class="form-input" placeholder=" ">
+                <label class="floating-label">Middle Name</label>
+            </div>
+        </div>
 
-                            <!-- Email & Mobile Row -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div class="input-group tooltip-container">
-                                    <i class="fas fa-envelope input-icon"></i>
-                                    <input type="email" value="{{ $teacher->email }}" class="form-input" readonly placeholder=" ">
-                                    <label class="floating-label">Email Address</label>
-                                    <i class="fas fa-lock lock-icon"></i>
-                                    <div class="tooltip-message">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        Email cannot be changed
-                                    </div>
-                                    <p class="input-hint text-xs mt-1">
-                                        <i class="fas fa-shield-alt"></i>
-                                        Contact admin to change email
-                                    </p>
-                                </div>
-                                <input type="hidden" name="email" value="{{ $teacher->email }}">
+        <!-- Email & Mobile Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="input-group tooltip-container">
+                <i class="fas fa-envelope input-icon"></i>
+                <input type="email" value="{{ $teacher->email }}" class="form-input" readonly placeholder=" ">
+                <label class="floating-label">Email Address</label>
+                <i class="fas fa-lock lock-icon"></i>
+                <div class="tooltip-message">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Email cannot be changed
+                </div>
+                <p class="input-hint text-xs mt-1">
+                    <i class="fas fa-shield-alt"></i>
+                    Contact admin to change email
+                </p>
+            </div>
+            <input type="hidden" name="email" value="{{ $teacher->email }}">
 
-                                <div class="input-group">
-                                    <i class="fas fa-mobile-alt input-icon"></i>
-                                    <input type="tel" name="mobile_number" required 
-                                           value="{{ old('mobile_number', $teacher->mobile_number) }}"
-                                           class="form-input" placeholder=" " maxlength="13" id="mobileInput">
-                                    <label class="floating-label">Mobile Number <span class="text-red-500">*</span></label>
-                                </div>
-                            </div>
+            <div class="input-group">
+                <i class="fas fa-mobile-alt input-icon"></i>
+                <input type="tel" name="mobile_number" required 
+                       value="{{ old('mobile_number', $teacher->mobile_number) }}"
+                       class="form-input" placeholder=" " maxlength="13" id="mobileInput">
+                <label class="floating-label">Mobile Number <span class="text-red-500">*</span></label>
+            </div>
+        </div>
 
-                            <!-- Employee ID -->
-                            <div class="input-group tooltip-container">
-                                <i class="fas fa-id-card input-icon"></i>
-                                <input type="text" value="{{ $teacher->employee_id }}" class="form-input" readonly placeholder=" ">
-                                <label class="floating-label">Employee ID</label>
-                                <i class="fas fa-lock lock-icon"></i>
-                                <div class="tooltip-message">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    Employee ID cannot be changed
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Employee ID & Status Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Employee ID (Read-only) -->
+            <div class="input-group tooltip-container">
+                <i class="fas fa-id-card input-icon"></i>
+                <input type="text" value="{{ $teacher->employee_id }}" class="form-input" readonly placeholder=" ">
+                <label class="floating-label">Employee ID</label>
+                <i class="fas fa-lock lock-icon"></i>
+                <div class="tooltip-message">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Employee ID cannot be changed
+                </div>
+            </div>
+
+            <!-- Status Selection -->
+            <div class="input-group">
+                <i class="fas fa-toggle-on input-icon"></i>
+                <select name="status" required 
+                        class="form-input appearance-none cursor-pointer"
+                        style="padding-left: 44px;">
+                    <option value="active" {{ old('status', $teacher->status) == 'active' ? 'selected' : '' }}>
+                        🟢 Active
+                    </option>
+                    <option value="on_leave" {{ old('status', $teacher->status) == 'on_leave' ? 'selected' : '' }}>
+                        🟡 On Leave
+                    </option>
+                    <option value="inactive" {{ old('status', $teacher->status) == 'inactive' ? 'selected' : '' }}>
+                        🔴 Inactive
+                    </option>
+                </select>
+                <label class="floating-label" style="top: 0; font-size: 12px; color: #3b82f6; font-weight: 600;">Status <span class="text-red-500">*</span></label>
+                <i class="fas fa-chevron-down absolute right-4 top-[42px] text-slate-400 pointer-events-none"></i>
+                
+                <!-- Status indicator badge -->
+                <div class="mt-2 flex items-center gap-2 text-xs">
+                    <span id="statusBadge" class="px-2 py-1 rounded-full font-medium transition-colors duration-300">
+                        {{ ucfirst(str_replace('_', ' ', $teacher->status ?? 'Active')) }}
+                    </span>
+                </div>
+
+                @error('status')
+                    <p class="text-red-500 text-xs mt-2 flex items-center gap-1">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add this JavaScript for status badge color updates -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusSelect = document.querySelector('select[name="status"]');
+        const statusBadge = document.getElementById('statusBadge');
+        
+        const statusColors = {
+            'active': 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+            'on_leave': 'bg-amber-100 text-amber-700 border border-amber-200',
+            'inactive': 'bg-rose-100 text-rose-700 border border-rose-200'
+        };
+        
+        function updateStatusBadge() {
+            const value = statusSelect.value;
+            const text = statusSelect.options[statusSelect.selectedIndex].text.replace(/[\u{1F7E2}\u{1F7E1}\u{1F534}]\s*/u, '');
+            statusBadge.textContent = text;
+            statusBadge.className = `px-2 py-1 rounded-full font-medium transition-colors duration-300 ${statusColors[value] || statusColors['active']}`;
+        }
+        
+        statusSelect.addEventListener('change', updateStatusBadge);
+        updateStatusBadge(); // Initialize on load
+    });
+</script>
 
                     <!-- Right Column: Account Credentials & Activity -->
                     <div class="space-y-6">

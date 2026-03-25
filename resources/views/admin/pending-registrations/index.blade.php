@@ -23,11 +23,11 @@
         .table-row { transition: all 0.2s ease; }
         .table-row:hover { background: #f8fafc; }
         
-        .btn-approve {
+        .btn-enroll {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
         }
-        .btn-approve:hover {
+        .btn-enroll:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
         }
@@ -72,7 +72,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">Pending Registrations</h1>
-                    <p class="text-sm text-slate-500">Review and approve new student applications</p>
+                    <p class="text-sm text-slate-500">Review and enroll new student applications</p>
                 </div>
             </div>
             
@@ -85,29 +85,65 @@
             </div>
         </header>
 
-        <!-- Content -->
-        <main class="flex-1 overflow-auto p-8 custom-scroll">
-            
-            @if(session('success'))
-                <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-700 animate-fade-in">
-                    <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                        <i class="fas fa-check text-sm"></i>
+        <!-- Toast Container -->
+        <div id="toast-container" class="fixed top-4 right-4 flex flex-col gap-2 z-50"></div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const createToast = (message, type = 'success', duration = 4) => {
+                const colors = {
+                    success: { bg: 'bg-emerald-50', border: 'border-emerald-500', text: 'text-emerald-800', iconBg: 'bg-emerald-500' },
+                    error: { bg: 'bg-red-50', border: 'border-red-500', text: 'text-red-800', iconBg: 'bg-red-500' }
+                };
+
+                const toast = document.createElement('div');
+                toast.className = `flex items-center gap-3 px-4 py-2 rounded-xl shadow-lg border-l-4 ${colors[type].bg} ${colors[type].border} ${colors[type].text} relative overflow-hidden min-w-[240px] transform translate-x-20 opacity-0 transition-all duration-500 ease-out`;
+
+                toast.innerHTML = `
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full ${colors[type].iconBg} text-white flex items-center justify-center text-xs">
+                        <i class="fas fa-${type==='success'?'check':'exclamation-triangle'}"></i>
                     </div>
-                    <span class="font-medium">{{ session('success') }}</span>
-                    <button onclick="this.parentElement.remove()" class="ml-auto text-emerald-400 hover:text-emerald-600">
+                    <div class="flex-1 text-sm font-medium">${message}</div>
+                    <button class="text-current hover:opacity-70 transition-opacity text-sm ml-2">
                         <i class="fas fa-times"></i>
                     </button>
-                </div>
+                    <div class="absolute bottom-0 left-0 h-1 ${colors[type].iconBg} rounded-b-xl" style="width:100%"></div>
+                `;
+
+                const container = document.getElementById('toast-container');
+                container.appendChild(toast);
+
+                requestAnimationFrame(() => {
+                    toast.classList.remove('translate-x-20', 'opacity-0');
+                });
+
+                toast.querySelector('button').addEventListener('click', () => toast.remove());
+
+                let timeLeft = duration;
+                const progressBar = toast.querySelector('div.absolute');
+                const interval = setInterval(() => {
+                    timeLeft -= 0.05;
+                    if (timeLeft <= 0) {
+                        clearInterval(interval);
+                        toast.remove();
+                        return;
+                    }
+                    progressBar.style.width = (timeLeft / duration * 100) + '%';
+                }, 50);
+            };
+
+            @if(session('success'))
+                createToast("{{ session('success') }}", 'success', 4);
             @endif
 
             @if(session('error'))
-                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700 animate-fade-in">
-                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                        <i class="fas fa-exclamation-triangle text-sm"></i>
-                    </div>
-                    <span class="font-medium">{{ session('error') }}</span>
-                </div>
+                createToast("{{ session('error') }}", 'error', 4);
             @endif
+        });
+        </script>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-auto p-8 custom-scroll">
 
             <!-- Stats -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -117,7 +153,7 @@
                     </div>
                     <div>
                         <p class="text-3xl font-bold text-slate-900">{{ $students->total() }}</p>
-                        <p class="text-sm text-slate-500 font-medium">Pending Approval</p>
+                        <p class="text-sm text-slate-500 font-medium">Pending Enrollment</p>
                     </div>
                 </div>
                 <div class="glass-card rounded-2xl p-6 flex items-center gap-4">
@@ -134,8 +170,8 @@
                         <i class="fas fa-check-circle text-2xl"></i>
                     </div>
                     <div>
-                        <p class="text-3xl font-bold text-slate-900">{{ \App\Models\Student::where('status', 'approved')->whereDate('updated_at', today())->count() }}</p>
-                        <p class="text-sm text-slate-500 font-medium">Approved Today</p>
+                        <p class="text-3xl font-bold text-slate-900">{{ $enrolledTodayCount ?? 0 }}</p>
+                        <p class="text-sm text-slate-500 font-medium">Enrolled Today</p>
                     </div>
                 </div>
             </div>
@@ -182,7 +218,6 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <!-- FIXED: Show student_type from enrollment -->
                                         @if($student->enrollment)
                                             <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-purple-50 text-purple-700 text-sm font-semibold">
                                                 {{ $student->enrollment->type }}
@@ -204,15 +239,12 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-end gap-2">
-                                            <!-- View Details Button -->
                                             <button type="button" 
                                                     onclick="openStudentModal({{ $student->id }})"
                                                     class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 flex items-center justify-center transition-all"
                                                     title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </button>
-                                            
-                                        
                                         </div>
                                     </td>
                                 </tr>
@@ -294,7 +326,6 @@
                     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
                         <div class="flex items-start gap-4">
                             <div id="modalPhoto" class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg shrink-0">
-                                <!-- Initials or Photo -->
                             </div>
                             <div class="flex-1 min-w-0">
                                 <h4 id="modalName" class="text-2xl font-bold text-slate-900 mb-1 truncate">-</h4>
@@ -303,7 +334,7 @@
                                     <span id="modalGrade" class="px-3 py-1 rounded-lg bg-blue-100 text-blue-700 text-sm font-semibold">-</span>
                                     <span class="px-3 py-1 rounded-lg bg-amber-100 text-amber-700 text-sm font-semibold flex items-center gap-1">
                                         <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
-                                        Pending
+                                        Pending Enrollment
                                     </span>
                                     <span id="modalAge" class="px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-sm font-semibold">-</span>
                                 </div>
@@ -317,7 +348,6 @@
                             <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Full Name</p>
                             <p id="modalFullName" class="font-semibold text-slate-900 truncate">-</p>
                         </div>
-                        <!-- FIXED: birthdate not birthday -->
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Birthdate</p>
                             <p id="modalBirthdate" class="font-semibold text-slate-900">-</p>
@@ -383,7 +413,6 @@
                                 <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Grade Level</p>
                                 <p id="modalGradeLevel" class="font-semibold text-slate-900">-</p>
                             </div>
-                            <!-- FIXED: student_type from enrollment -->
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Student Type</p>
                                 <p id="modalStudentType" class="font-semibold text-slate-900 capitalize"></p>
@@ -402,21 +431,44 @@
             </div>
 
             <!-- Footer Actions -->
-            <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex items-center gap-3">
-                <form id="modalApproveForm" method="POST" class="flex-1">
-                    @csrf
-                    <button type="submit" class="w-full btn-approve py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2 transition-all">
-                        <i class="fas fa-check"></i>
-                        Approve Registration
-                    </button>
-                </form>
-                <form id="modalRejectForm" method="POST">
-                    @csrf
-                    <button type="submit" class="btn-reject px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2 transition-all" onclick="return confirm('Reject this application?')">
-                        <i class="fas fa-times"></i>
-                        Reject
-                    </button>
-                </form>
+            <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-4">
+                
+              <!-- Section Selection -->
+<div>
+    <label class="block text-sm font-semibold text-slate-700 mb-2">
+        <i class="fas fa-chalkboard-teacher mr-1"></i> Assign to Section <span class="text-red-500">*</span>
+    </label>
+    <select name="section_id" form="modalApproveForm" required
+            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm">
+        <option value="">Select a section...</option>
+        @foreach($sections as $section)
+            <option value="{{ $section->id }}">
+                {{ $section->name }} 
+                (Grade Level: {{ $section->gradeLevel->name ?? 'N/A' }}) — 
+                {{ $section->students_count }}/{{ $section->capacity }}
+            </option>
+        @endforeach
+    </select>
+    <p class="text-xs text-slate-500 mt-1">Student will be enrolled and assigned to this section</p>
+</div>
+
+                <!-- Buttons Row -->
+                <div class="flex items-center gap-3">
+                    <form id="modalApproveForm" method="POST" class="flex-1">
+                        @csrf
+                        <button type="submit" class="w-full btn-enroll py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2 transition-all">
+                            <i class="fas fa-check"></i>
+                            Enroll & Assign Section
+                        </button>
+                    </form>
+                    <form id="modalRejectForm" method="POST">
+                        @csrf
+                        <button type="submit" class="btn-reject px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2 transition-all" onclick="return confirm('Reject this application?')">
+                            <i class="fas fa-times"></i>
+                            Reject
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -444,6 +496,10 @@
             const error = document.getElementById('modalError');
             const content = document.getElementById('modalContent');
             
+            // Reset section dropdown
+            const sectionSelect = document.querySelector('select[name="section_id"]');
+            if (sectionSelect) sectionSelect.value = '';
+            
             // Show modal
             modal.classList.remove('hidden');
             document.getElementById('modalStudentId').textContent = studentId;
@@ -460,7 +516,6 @@
             content.classList.add('hidden');
             
             try {
-                // Build URL
                 const url = `{{ url('/admin/pending-registrations') }}/${studentId}/details`;
                 console.log('Fetching:', url);
                 
@@ -475,11 +530,9 @@
                 
                 console.log('Response status:', response.status);
                 
-                // Get response text
                 const responseText = await response.text();
                 console.log('Raw response:', responseText.substring(0, 500));
                 
-                // Parse JSON
                 let data;
                 try {
                     data = JSON.parse(responseText);
@@ -496,10 +549,8 @@
                     throw new Error(data.error);
                 }
                 
-                // Populate modal
                 populateStudentModal(data, studentId);
                 
-                // Show content
                 loading.classList.add('hidden');
                 content.classList.remove('hidden');
                 
@@ -515,7 +566,6 @@
             const s = data.student;
             const u = s.user || {};
             
-            // Photo
             const photoEl = document.getElementById('modalPhoto');
             if (data.photo_url) {
                 photoEl.innerHTML = `<img src="${data.photo_url}" class="w-full h-full object-cover rounded-2xl">`;
@@ -524,14 +574,12 @@
                 photoEl.textContent = initials || '?';
             }
             
-            // Basic info
             document.getElementById('modalName').textContent = data.full_name || '-';
             document.getElementById('modalEmail').textContent = u.email || '-';
             document.getElementById('modalGrade').textContent = s.grade_level?.name || '-';
             document.getElementById('modalAge').textContent = data.age ? `${data.age} years old` : '-';
             document.getElementById('modalFullName').textContent = data.full_name || '-';
             
-            // FIXED: Use birthdate not birthday
             document.getElementById('modalBirthdate').textContent = s.birthdate 
                 ? new Date(s.birthdate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
                 : '-';
@@ -539,12 +587,10 @@
             document.getElementById('modalGender').textContent = s.gender || '-';
             document.getElementById('modalNationality').textContent = s.nationality || '-';
             
-            // Address
             const addressParts = [s.street_address, s.barangay, s.city, s.province].filter(Boolean);
             document.getElementById('modalAddress').textContent = addressParts.join(', ') || '-';
             document.getElementById('modalGuardianContact').textContent = s.guardian_contact || '-';
             
-            // Family
             document.getElementById('modalFather').textContent = s.father_name || '-';
             document.getElementById('modalFatherOccupation').textContent = s.father_occupation || '';
             document.getElementById('modalMother').textContent = s.mother_name || '-';
@@ -552,18 +598,13 @@
             document.getElementById('modalGuardian').textContent = s.guardian_name || '-';
             document.getElementById('modalGuardianRelationship').textContent = s.guardian_relationship || '';
             
-            // Academic
             document.getElementById('modalGradeLevel').textContent = s.grade_level?.name || '-';
-            
-            // FIXED: Use student_type from enrollment
             document.getElementById('modalStudentType').textContent = s.type || ' ';
-            
             document.getElementById('modalLRN').textContent = s.lrn || '-';
             document.getElementById('modalDateApplied').textContent = s.created_at 
                 ? new Date(s.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
                 : '-';
             
-            // Update form actions
             const baseUrl = '{{ url("/admin/pending-registrations") }}';
             document.getElementById('modalApproveForm').action = `${baseUrl}/${studentId}/approve`;
             document.getElementById('modalRejectForm').action = `${baseUrl}/${studentId}/reject`;
@@ -582,7 +623,6 @@
             }, 300);
         }
 
-        // Close on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeStudentModal();
         });

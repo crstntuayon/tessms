@@ -164,12 +164,14 @@ class StudentController extends Controller
                 ->withInput();
         }
     }
-
-    public function show($id)
-    {
-        $student = Student::with('user')->findOrFail($id);
-        return view('admin.students.show', compact('student'));
-    }
+// In your Controller show() method
+public function show($id)
+{
+    $student = Student::with(['user', 'gradeLevel', 'section', 'enrollments.schoolYear'])
+        ->findOrFail($id);
+        
+    return view('admin.students.show', compact('student'));
+}
 
     public function edit($id)
     {

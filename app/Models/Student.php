@@ -42,6 +42,7 @@ class Student extends Model
         'enrollment_date' => 'date',
 
     ];
+    
 
     public function user()
     {
@@ -53,10 +54,18 @@ class Student extends Model
         return $this->belongsTo(GradeLevel::class);
     }
 
-    public function section()
-    {
-        return $this->belongsTo(Section::class);
-    }
+ // Get the latest enrollment's section
+public function section()
+{
+    return $this->hasOneThrough(
+        Section::class,
+        Enrollment::class,
+        'student_id', // Foreign key on enrollments table
+        'id',         // Foreign key on sections table
+        'id',         // Local key on students table
+        'section_id'  // Local key on enrollments table
+    )->latestOfMany(); // pick the latest enrollment if multiple
+}
 
     public function enrollments()
     {

@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Teacher extends Model
 {
@@ -47,9 +46,6 @@ class Teacher extends Model
         'is_class_adviser' => 'boolean',
         'covid_vaccinated' => 'boolean',
         'last_login_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime'
     ];
 
     public function user()
@@ -57,33 +53,33 @@ class Teacher extends Model
         return $this->belongsTo(User::class);
     }
 
-    // ✅ FIXED: Accessor for avatar (use as $teacher->avatar)
+    // Teacher.php
+public function section()
+{
+    return $this->hasOne(Section::class);
+}
+
     public function getAvatarAttribute(): ?string
     {
         return $this->photo_path ? asset('storage/' . $this->photo_path) : null;
     }
     
-    // Accessor for full_name
     public function getFullNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name} {$this->suffix}");
     }
 
-    public function subjects(): BelongsToMany
+    // ✅ CORRECT: One teacher can have many sections
+    public function sections()
+    {
+        return $this->hasMany(\App\Models\Section::class, 'teacher_id');
+    }
+
+    public function subjects()
     {
         return $this->belongsToMany(Subject::class, 'teacher_subject')
                     ->withPivot('grade_level', 'section_id', 'school_year', 'schedule', 'time_start', 'time_end', 'room')
                     ->withTimestamps();
-    }
-
-    public function sections()
-    {
-        return $this->belongsToMany(\App\Models\Section::class, 'teacher_sections', 'teacher_id', 'section_id');
-    }
-
-    public function section()
-    {
-        return $this->hasOne(Section::class);
     }
 
     public function assignments()

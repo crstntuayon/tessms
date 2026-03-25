@@ -22,23 +22,37 @@ class Section extends Model
     /**
      * SECTION → GRADE LEVEL
      */
-    public function gradeLevel()
-    {
-        return $this->belongsTo(GradeLevel::class);
-    }
 
     
+    // Relationship to GradeLevel
+    public function gradeLevel()
+    {
+        return $this->belongsTo(\App\Models\GradeLevel::class, 'grade_level_id');
+    }
+
+    // Relationship to Teacher (adviser)
+    public function teacher()
+    {
+        return $this->belongsTo(\App\Models\Teacher::class, 'teacher_id');
+    }
+
+    // Relationship to SchoolYear
     public function schoolYear()
     {
-        return $this->belongsTo(SchoolYear::class);
+        return $this->belongsTo(\App\Models\SchoolYear::class, 'school_year_id');
     }
+ 
+
 
     /**
      * SECTION → TEACHER (Adviser)
      */
-    public function teacher()
+
+       // Relationship to Teachers
+    public function teachers()
     {
-        return $this->belongsTo(Teacher::class);
+        return $this->belongsToMany(\App\Models\Teacher::class, 'teacher_sections', 'section_id', 'teacher_id')
+                    ->withTimestamps();
     }
 
     /**
@@ -78,10 +92,6 @@ class Section extends Model
         });
     }
 
-        public function teachers()
-    {
-        return $this->belongsToMany(Teacher::class, 'teacher_section', 'section_id', 'teacher_id');
-    }
 
     public function enrollments()
 {

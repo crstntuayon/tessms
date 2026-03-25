@@ -7,28 +7,39 @@ use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Models\Section;
 
 class PendingRegistrationController extends Controller
 {
-    public function index()
-    {
-        $students = Student::with(['user', 'gradeLevel', 'enrollments'])
-            ->where('status', 'pending')
-            ->latest()
-            ->paginate(10);
+public function index()
+{
+    $students = Student::with(['user', 'gradeLevel', 'enrollments'])
+        ->where('status', 'pending')
+        ->latest()
+        ->paginate(10);
 
-        $sidebarStudentCount = \App\Models\Student::count();
-        $sidebarTeacherCount = \App\Models\Teacher::count();
-        $sidebarSectionCount = \App\Models\Section::count();
+    // Load sections with enrolled student count
+$sections = Section::with('gradeLevel') // get the grade level of the section
+                   ->withCount('students') // get total students in section
+                   ->get();
 
-        return view('admin.pending-registrations.index', compact(
-            'students',
-            'sidebarStudentCount',
-            'sidebarTeacherCount',
-            'sidebarSectionCount'
-        ));
-    }
+    $sidebarStudentCount = \App\Models\Student::count();
+    $sidebarTeacherCount = \App\Models\Teacher::count();
+    $sidebarSectionCount = \App\Models\Section::count();
 
+    $enrolledTodayCount = \App\Models\Student::where('status', 'enrolled')
+        ->whereDate('updated_at', today())
+        ->count();
+
+    return view('admin.pending-registrations.index', compact(
+        'students',
+        'sections',
+        'sidebarStudentCount',
+        'sidebarTeacherCount',
+        'sidebarSectionCount',
+        'enrolledTodayCount'
+    ));
+}
     /**
      * AJAX: Get student details
      */
@@ -143,56 +154,87 @@ class PendingRegistrationController extends Controller
     /**
      * Approve
      */
-    public function approve(Student $student)
-    {
-        try {
-            $student->update(['status' => 'approved']);
-
-            // ✅ Update latest enrollment
-            $enrollment = $student->enrollments()->latest()->first();
-
-            if ($enrollment) {
-                $enrollment->update(['status' => 'approved']);
-            }
-
-            return redirect()->back()
-                ->with('success', "Student {$student->user->last_name} approved successfully.");
-
-        } catch (\Exception $e) {
-            Log::error('Approval failed', [
-                'student_id' => $student->id,
-                'error' => $e->getMessage()
-            ]);
-
-            return redirect()->back()->with('error', 'Failed to approve student.');
+   /**
+ * Approve
+ */
+/**
+ * Approve (Enroll)
+ */
+public function approve(Student $student, Request $request)
+{
+    try {
+        // Validate section assignment
+        $validated = $request->validate([
+            'section_id' => 'required|exists:sections,id'
+        ]);
+        
+        $section = Section::find($validated['section_id']);
+        
+        // Check section capacity
+        $currentCount = \App\Models\Student::where('section_id', $section->id)
+            ->where('status', 'enrolled')  // Changed from 'approved'
+            ->count();
+            
+        if ($currentCount >= $section->capacity) {
+            return redirect()->back()->with('error', 'Selected section is already full.');
         }
-    }
 
+        // Update student with enrolled status and section assignment
+        $student->update([
+            'status' => 'enrolled',  // Changed from 'approved'
+            'section_id' => $validated['section_id']
+        ]);
+
+        // Update latest enrollment
+        $enrollment = $student->enrollments()->latest()->first();
+
+        if ($enrollment) {
+            $enrollment->update([
+                'status' => 'enrolled',  // Changed from 'approved'
+                'section_id' => $validated['section_id']
+            ]);
+        }
+
+        return redirect()->back()
+            ->with('success', "Student {$student->user->last_name} enrolled and assigned to {$section->name}.");
+
+    } catch (\Exception $e) {
+        Log::error('Enrollment failed', [  // Changed from 'Approval failed'
+            'student_id' => $student->id,
+            'error' => $e->getMessage()
+        ]);
+
+        return redirect()->back()->with('error', 'Failed to enroll student.');  // Changed message
+    }
+}
     /**
      * Reject
      */
-    public function reject(Student $student)
-    {
-        try {
-            $student->update(['status' => 'rejected']);
+   /**
+ * Reject
+ */
+public function reject(Student $student)
+{
+    try {
+        $student->update(['status' => 'rejected']);
 
-            // ✅ Update latest enrollment
-            $enrollment = $student->enrollments()->latest()->first();
+        // Update latest enrollment
+        $enrollment = $student->enrollments()->latest()->first();
 
-            if ($enrollment) {
-                $enrollment->update(['status' => 'rejected']);
-            }
-
-            return redirect()->back()
-                ->with('success', "Student {$student->user->last_name} rejected.");
-
-        } catch (\Exception $e) {
-            Log::error('Rejection failed', [
-                'student_id' => $student->id,
-                'error' => $e->getMessage()
-            ]);
-
-            return redirect()->back()->with('error', 'Failed to reject student.');
+        if ($enrollment) {
+            $enrollment->update(['status' => 'rejected']);
         }
+
+        return redirect()->back()
+            ->with('success', "Student {$student->user->last_name} rejected.");
+
+    } catch (\Exception $e) {
+        Log::error('Rejection failed', [
+            'student_id' => $student->id,
+            'error' => $e->getMessage()
+        ]);
+
+        return redirect()->back()->with('error', 'Failed to reject student.');
     }
+}
 }

@@ -347,13 +347,26 @@
                                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Username</p>
                                 <p class="text-base font-bold text-slate-800">{{ $user->username }}</p>
                             </div>
-                            <div class="info-card bg-white rounded-2xl p-5 shadow-sm">
-                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Birthday</p>
-                                <p class="text-base font-bold text-slate-800 flex items-center gap-2">
-                                    <i class="fas fa-birthday-cake text-primary-400"></i>
-                                    {{ $user->birthday }}
-                                </p>
-                            </div>
+@php
+use Carbon\Carbon;
+
+$dob = $user->teacher->date_of_birth ?? null;
+if ($dob) {
+    $birthDate = Carbon::parse($dob)->format('d/m/Y'); // format as 10/10/1998
+    $age = Carbon::parse($dob)->age; // calculate age
+    $display = "$birthDate ({$age} years old)";
+} else {
+    $display = 'Not set';
+}
+@endphp
+
+<div class="info-card bg-white rounded-2xl p-5 shadow-sm">
+    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Birthday</p>
+    <p class="text-base font-bold text-slate-800 flex items-center gap-2">
+        <i class="fas fa-birthday-cake text-primary-400"></i>
+        {{ $display }}
+    </p>
+</div>
                             <div class="info-card bg-white rounded-2xl p-5 shadow-sm">
                                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Role</p>
                                 <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-primary-100 text-primary-700 border border-primary-200">

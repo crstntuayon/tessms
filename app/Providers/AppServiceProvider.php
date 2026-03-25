@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\Section;
 use App\Models\Teacher;
+   use App\Models\User;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,13 +31,24 @@ public function boot()
         $user = auth()->user();
 
         if ($user) {
-            $teacher = Teacher::with('sections.course')->where('user_id', $user->id)->first();
+          $teacher = Teacher::with('sections.gradeLevel')->where('user_id', $user->id)->first();
             $sections = $teacher ? $teacher->sections : collect([]);
         } else {
             $sections = collect([]);
         }
 
         $view->with('sections', $sections);
+    });
+
+    // Admin sidebar data
+    View::composer('admin.includes.sidebar', function ($view) {
+        $sidebarUserCount = User::count();       // Total users
+        $sidebarSectionCount = Section::count(); // Total sections
+
+        $view->with([
+            'sidebarUserCount' => $sidebarUserCount,
+            'sidebarSectionCount' => $sidebarSectionCount,
+        ]);
     });
 }
 }

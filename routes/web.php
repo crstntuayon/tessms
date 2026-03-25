@@ -209,6 +209,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::post('/pending-registrations/{student}/reject', [App\Http\Controllers\Admin\PendingRegistrationController::class, 'reject'])
         ->name('pending-registrations.reject');
         
+
+
+           Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 });
 
 
