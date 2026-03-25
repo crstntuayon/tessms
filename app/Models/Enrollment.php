@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Enrollment extends Model
 {
 protected $fillable = [
-    'student_id',
     'school_year_id',
     'grade_level_id',
+    'student_id',
     'section_id',
     'type',
     'status',
-
+    'previous_school',
+    'enrollment_date',
 ];
 
     protected $casts = [

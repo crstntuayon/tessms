@@ -643,6 +643,24 @@
             overlay.classList.toggle('hidden');
         }
 
+        // Search Functionality - Search by Name, Email, and LRN
+document.getElementById('searchInput')?.addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('.student-row');
+    
+    rows.forEach(row => {
+        const name = row.getAttribute('data-name') || '';
+        const lrn = row.getAttribute('data-lrn') || '';
+        const email = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
+        
+        if (name.includes(searchTerm) || email.includes(searchTerm) || lrn.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
 // Search Functionality - Search by Name, Email, and LRN (12 digits only)
 document.getElementById('searchInput')?.addEventListener('input', function(e) {
     let searchTerm = e.target.value.trim();

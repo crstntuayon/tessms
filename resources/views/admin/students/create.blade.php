@@ -868,6 +868,82 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                         </div>
                     </div>
 
+
+                    <!-- Enrollment Information Section -->
+<div class="form-section">
+    <div class="section-title">
+        <div class="section-icon bg-rose-50 text-rose-600">
+            <i class="fas fa-graduation-cap"></i>
+        </div>
+        <span>Enrollment Information</span>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Grade Level -->
+        <div>
+            <label class="form-label required">Grade Level</label>
+            <select name="grade_level_id" id="gradeLevel" class="form-select" required>
+                <option value="">Select Grade Level</option>
+                <option value="1">Kindergarten</option>
+                <option value="2">Grade 1</option>
+                <option value="3">Grade 2</option>
+                <option value="4">Grade 3</option>
+                <option value="5">Grade 4</option>
+                <option value="6">Grade 5</option>
+                <option value="7">Grade 6</option>
+            </select>
+            <p class="input-hint">Select current grade level for enrollment</p>
+        </div>
+
+        <!-- Student Type -->
+        <div>
+            <label class="form-label required">Student Type</label>
+            <select name="type" id="studentType" class="form-select" required onchange="togglePreviousSchool()">
+                <option value="">Select Type</option>
+                <option value="new">New Student</option>
+                <option value="continuing">Continuing Student</option>
+                <option value="transferee">Transferee</option>
+            </select>
+            <p class="input-hint">Select based on student's enrollment status</p>
+        </div>
+
+        <!-- Previous School (for Transferees) -->
+        <div id="previousSchoolContainer" class="hidden">
+            <label class="form-label required">Previous School</label>
+            <div class="input-group">
+                <i class="fas fa-school input-icon"></i>
+                <input 
+                    type="text" 
+                    name="previous_school" 
+                    id="previousSchoolInput"
+                    class="form-input input-with-icon" 
+                    placeholder="Name of previous school"
+                >
+            </div>
+            <p class="input-hint">Required for transferee students</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePreviousSchool() {
+        const typeSelect = document.getElementById('studentType');
+        const previousSchoolContainer = document.getElementById('previousSchoolContainer');
+        const previousSchoolInput = document.getElementById('previousSchoolInput');
+        
+        if (typeSelect.value === 'transferee') {
+            previousSchoolContainer.classList.remove('hidden');
+            previousSchoolInput.required = true;
+        } else {
+            previousSchoolContainer.classList.add('hidden');
+            previousSchoolInput.required = false;
+            previousSchoolInput.value = '';
+        }
+    }
+</script>
+
+
+
                     <!-- Family Information -->
                     <div class="form-section">
                         <div class="section-title">

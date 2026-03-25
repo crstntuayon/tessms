@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Grade;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -14,19 +15,23 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-
-        // Make sure the user has a student record
         $student = $user->student;
-        if (!$student) {
-            abort(403, 'Student record not found.');
+
+        // Safety check (in case middleware missed it)
+        if (!$student || $student->status !== 'approved') {
+            Auth::logout();
+            return redirect()->route('auth.pending')
+                ->withErrors([
+                    'login' => 'Your registration is pending admin approval.'
+                ]);
         }
 
-        // Load related section, teacher, and classmates
-        $section = $student->section; // returns null if no section assigned
-        $teacher = $section?->teacher; // null safe operator
+        // Load section, teacher, classmates
+        $section = $student->section;
+        $teacher = $section?->teacher;
         $classmates = $section
             ? $section->students()->where('id', '!=', $student->id)->get()
-            : collect(); // empty collection if no section
+            : collect();
 
         return view('student.dashboard', compact(
             'student',
@@ -48,7 +53,6 @@ class DashboardController extends Controller
             abort(403, 'Student record not found.');
         }
 
-        // Load grades grouped by quarter, eager load subjects
         $grades = Grade::where('student_id', $student->id)
             ->with('subject')
             ->get()

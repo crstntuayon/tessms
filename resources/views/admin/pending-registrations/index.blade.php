@@ -212,26 +212,7 @@
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                             
-                                            <!-- Quick Approve -->
-                                            <form action="{{ route('admin.pending-registrations.approve', $student) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button type="submit" 
-                                                        class="btn-approve px-4 py-2 rounded-xl text-white text-sm font-semibold flex items-center gap-2 transition-all"
-                                                        onclick="return confirm('Approve {{ $student->user->first_name ?? 'this student' }}?')">
-                                                    <i class="fas fa-check"></i>
-                                                    <span class="hidden sm:inline">Approve</span>
-                                                </button>
-                                            </form>
-                                            
-                                            <!-- Quick Reject -->
-                                            <form action="{{ route('admin.pending-registrations.reject', $student) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button type="submit" 
-                                                        class="btn-reject px-3 py-2 rounded-xl text-white text-sm font-semibold flex items-center gap-2 transition-all"
-                                                        onclick="return confirm('Reject {{ $student->user->first_name ?? 'this student' }}?')">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </form>
+                                        
                                         </div>
                                     </td>
                                 </tr>

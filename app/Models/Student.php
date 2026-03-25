@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Student extends Model
 {
@@ -38,6 +39,8 @@ class Student extends Model
     protected $casts = [
         'birthdate' => 'date',
         'status' => 'string',
+        'enrollment_date' => 'date',
+
     ];
 
     public function user()
@@ -81,17 +84,21 @@ class Student extends Model
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
     }
 
-    // Age accessor
-    public function getAgeAttribute(): ?int
-    {
-        return $this->birthdate ? $this->birthdate->diffInYears() : null;
-    }
+
 
     // Avatar accessor
     public function getAvatarAttribute(): ?string
     {
         return $this->photo ? asset('storage/' . $this->photo) : null;
     }
+
+
+public function getAgeAttribute()
+{
+    return $this->birthdate 
+        ? Carbon::parse($this->birthdate)->age 
+        : null;
+}
 
     
 }
