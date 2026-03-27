@@ -439,13 +439,23 @@ document.addEventListener('click', function(e) {
                             <div class="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-lg shadow-amber-500/30">
                                 <i class="fas fa-star text-white text-xl"></i>
                             </div>
-                            @php
-                                $avgGrade = \App\Models\Grade::avg('score') ?? 0;
-                                $above90 = \App\Models\Grade::where('score', '>=', 90)->count();
-                                $below75 = \App\Models\Grade::where('score', '<', 75)->count();
-                                $totalGrades = \App\Models\Grade::count();
-                                $above90Pct = $totalGrades > 0 ? round(($above90 / $totalGrades) * 100) : 0;
-                            @endphp
+                           @php
+    $avgGrade = \App\Models\Grade::where('component_type', 'final_grade')->avg('final_grade') ?? 0;
+
+    $above90 = \App\Models\Grade::where('component_type', 'final_grade')
+        ->where('final_grade', '>=', 90)
+        ->count();
+
+    $below75 = \App\Models\Grade::where('component_type', 'final_grade')
+        ->where('final_grade', '<', 75)
+        ->count();
+
+    $totalGrades = \App\Models\Grade::where('component_type', 'final_grade')->count();
+
+    $above90Pct = $totalGrades > 0 
+        ? round(($above90 / $totalGrades) * 100) 
+        : 0;
+@endphp
                             <div class="flex items-center gap-1 text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full text-xs font-bold border border-amber-200">
                                 <i class="fas fa-chart-line text-[10px]"></i>
                                 <span>{{ number_format($avgGrade, 1) }}</span>

@@ -63,6 +63,18 @@ class Section extends Model
         return $this->hasMany(Student::class);
     }
 
+        // Section has many Subjects (many-to-many)
+    public function subjects()
+    {
+        return $this->belongsToMany(Subject::class, 'section_subject', 'section_id', 'subject_id')
+                    ->withTimestamps();
+    }
+
+public function attendances()
+{
+    return $this->hasMany(Attendance::class);
+}
+
     /**
      * Check if section is full
      */

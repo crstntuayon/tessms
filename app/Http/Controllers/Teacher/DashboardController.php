@@ -12,20 +12,24 @@ use App\Models\Attendance;
 use App\Models\Grade;
 use App\Models\Subject;
 use Carbon\Carbon;
+use App\Models\SchoolYear;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-
-    
-        // Logged-in teacher user
+        // -----------------------------
+        // Logged-in user
+        // -----------------------------
         $user = auth()->user();
+
         if (!$user) {
             return redirect('/login')->with('error', 'Please login first.');
         }
 
-        // Fetch the teacher record
+        // -----------------------------
+        // Teacher record (auto create if missing)
+        // -----------------------------
         $teacher = Teacher::firstOrCreate(
             ['user_id' => $user->id],
             [
@@ -34,34 +38,72 @@ class DashboardController extends Controller
             ]
         );
 
-        // Fetch only sections assigned to this teacher and eager load gradeLevel, students, adviser
-       $sections = Section::with(['students', 'teacher.user', 'gradeLevel'])
-    ->where('is_active', true)
-    ->get();
-    
+        // -----------------------------
+        // Sections assigned to teacher ✅ FIXED
+        // -----------------------------
+        $sections = Section::with(['students.user', 'teacher.user', 'gradeLevel'])
+            ->where('teacher_id', $teacher->id) // 🔥 IMPORTANT FILTER
+            ->where('is_active', true)
+            ->get();
 
         // -----------------------------
-        // Active Section (from query or default first section)
+        // Active Section (secured)
         // -----------------------------
         $activeSection = null;
+
         if ($request->section_id) {
+            // Only allow teacher's own sections
             $activeSection = $sections->where('id', $request->section_id)->first();
         }
-        $activeSection ??= $sections->first();
 
-        $students = $activeSection ? $activeSection->students : collect();
+        // Default to first section
+        if (!$activeSection) {
+            $activeSection = $sections->first();
+        }
 
         // -----------------------------
-        // School Year & Quarter
+        // Students
         // -----------------------------
-        $schoolYear = now()->year . '-' . (now()->year + 1);
-        $currentQuarter = '1st';
-        $currentQuarterNumber = 1;
+        $students = $activeSection
+            ? $activeSection->students()->with('user')->get()
+            : collect();
+
+        // -----------------------------
+        // Student Counts
+        // -----------------------------
+        $totalStudents  = $students->count();
+        $maleStudents   = $students->where('gender', 'male')->count();
+        $femaleStudents = $students->where('gender', 'female')->count();
+
+        // -----------------------------
+        // School Year
+        // -----------------------------
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+
+        // -----------------------------
+        // Quarter Logic
+        // -----------------------------
+        $month = Carbon::now()->month;
+
+        if ($month >= 6 && $month <= 8) {
+            $currentQuarter = '1st';
+            $currentQuarterNumber = 1;
+        } elseif ($month >= 9 && $month <= 11) {
+            $currentQuarter = '2nd';
+            $currentQuarterNumber = 2;
+        } elseif ($month == 12 || $month <= 2) {
+            $currentQuarter = '3rd';
+            $currentQuarterNumber = 3;
+        } else {
+            $currentQuarter = '4th';
+            $currentQuarterNumber = 4;
+        }
 
         // -----------------------------
         // Attendance Today
         // -----------------------------
         $today = Carbon::today();
+
         $todayAttendances = Attendance::whereDate('date', $today)
             ->whereIn('student_id', $students->pluck('id'))
             ->get();
@@ -72,62 +114,69 @@ class DashboardController extends Controller
             'late'    => $todayAttendances->where('status', 'late')->count(),
         ];
 
-        $totalToday = max($students->count(), 1);
-        $todayAttendanceRate = round(($todayStats['present'] / $totalToday) * 100);
-
-        // -----------------------------
-        // Students Count
-        // -----------------------------
-        $totalStudents = $students->count();
-        $maleStudents = $students->where('gender', 'male')->count();
-        $femaleStudents = $students->where('gender', 'female')->count();
+        $todayAttendanceRate = $totalStudents 
+            ? round(($todayStats['present'] / $totalStudents) * 100)
+            : 0;
 
         // -----------------------------
         // Grades
         // -----------------------------
         $grades = Grade::whereIn('student_id', $students->pluck('id'))->get();
-        $pendingGradesCount = $students->count() - $grades->groupBy('student_id')->count();
+
+        $pendingGradesCount = $totalStudents - $grades->groupBy('student_id')->count();
         $overdueGrading = 0;
 
         // -----------------------------
-        // Subjects & Stats
+        // Subjects (optimized)
         // -----------------------------
-        $subjects = Subject::all();
+        $subjects = Subject::whereHas('grades', function ($query) use ($students) {
+            $query->whereIn('student_id', $students->pluck('id'));
+        })->get();
+
         $subjectStats = [];
 
         foreach ($subjects as $subject) {
             $subjectGrades = $grades->where('subject_id', $subject->id);
+
             $avg = $subjectGrades->avg(fn($g) => $this->calculateFinalGrade($g));
 
             $subjectStats[] = [
-                'subject_id'      => $subject->id,
-                'name'            => $subject->name,
-                'code'            => $subject->code ?? '',
-                'class_average'   => $avg ?? 0,
-                'encoded_count'   => $subjectGrades->count(),
-                'at_risk_count'   => $subjectGrades->filter(fn($g) => $this->calculateFinalGrade($g) < 75)->count(),
-                'ww_weight'       => 30,
-                'pt_weight'       => 50,
-                'color'           => 'blue',
-                'icon'            => 'fa-book'
+                'subject_id'    => $subject->id,
+                'name'          => $subject->name,
+                'code'          => $subject->code ?? '',
+                'class_average' => $avg ?? 0,
+                'encoded_count' => $subjectGrades->count(),
+                'at_risk_count' => $subjectGrades
+                    ->filter(fn($g) => $this->calculateFinalGrade($g) < 75)
+                    ->count(),
+                'ww_weight'     => 30,
+                'pt_weight'     => 50,
+                'color'         => 'blue',
+                'icon'          => 'fa-book'
             ];
         }
 
         // -----------------------------
         // At-Risk Students
         // -----------------------------
-        $atRiskStudents = $students->filter(fn($student) => 
-            $grades->where('student_id', $student->id)->filter(fn($g) => $this->calculateFinalGrade($g) < 75)->count() > 0
-        );
+        $atRiskStudents = $students->filter(function ($student) use ($grades) {
+            return $grades->where('student_id', $student->id)
+                ->filter(fn($g) => $this->calculateFinalGrade($g) < 75)
+                ->count() > 0;
+        });
 
         $atRiskCount = $atRiskStudents->count();
-        $failingGradesCount = $grades->filter(fn($g) => $this->calculateFinalGrade($g) < 75)->count();
+
+        $failingGradesCount = $grades
+            ->filter(fn($g) => $this->calculateFinalGrade($g) < 75)
+            ->count();
+
         $chronicAbsentees = 0;
 
         // -----------------------------
         // Recent Grades
         // -----------------------------
-        $recentGrades = Grade::with(['student', 'subject'])
+        $recentGrades = Grade::with(['student.user', 'subject'])
             ->whereIn('student_id', $students->pluck('id'))
             ->latest()
             ->take(5)
@@ -140,22 +189,21 @@ class DashboardController extends Controller
         $unreadNotifications = $user->unreadNotifications()->count();
 
         // -----------------------------
-        // Deadlines (avoid undefined variable error)
+        // Misc
         // -----------------------------
         $upcomingDeadlines = collect();
-
-        // -----------------------------
-        // School Days
-        // -----------------------------
         $schoolDaysTotal = 200;
         $daysCompleted = now()->dayOfYear;
 
+        // -----------------------------
+        // Return View
+        // -----------------------------
         return view('teacher.dashboard', compact(
             'teacher',
             'sections',
             'students',
             'activeSection',
-            'schoolYear',
+            'activeSchoolYear',
             'currentQuarter',
             'currentQuarterNumber',
             'todayStats',

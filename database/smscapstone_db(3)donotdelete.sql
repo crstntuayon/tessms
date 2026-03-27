@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 25, 2026 at 02:04 PM
+-- Generation Time: Mar 26, 2026 at 07:09 AM
 -- Server version: 8.0.45
 -- PHP Version: 8.2.30
 
@@ -43,6 +43,7 @@ CREATE TABLE `announcements` (
 
 CREATE TABLE `attendances` (
   `id` bigint UNSIGNED NOT NULL,
+  `section_id` bigint UNSIGNED NOT NULL,
   `student_id` bigint UNSIGNED NOT NULL,
   `date` date NOT NULL,
   `status` enum('present','absent','late') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'present',
@@ -67,7 +68,7 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('tugawees-sms-cache-app_settings', 'a:31:{s:11:\"system_name\";s:24:\"Tugawe Elementary School\";s:8:\"timezone\";s:11:\"Asia/Manila\";s:11:\"date_format\";s:6:\"F d, Y\";s:16:\"default_language\";s:2:\"en\";s:16:\"maintenance_mode\";b:0;s:17:\"user_registration\";b:1;s:18:\"email_verification\";b:1;s:11:\"school_name\";s:24:\"Tugawe Elementary School\";s:11:\"school_code\";s:8:\"TES-2024\";s:15:\"deped_school_id\";s:0:\"\";s:14:\"school_address\";s:0:\"\";s:12:\"school_email\";s:0:\"\";s:12:\"school_phone\";s:0:\"\";s:19:\"current_school_year\";s:9:\"2024-2025\";s:14:\"grading_system\";s:9:\"quarterly\";s:13:\"passing_grade\";i:75;s:18:\"notify_new_student\";b:1;s:17:\"notify_attendance\";b:1;s:13:\"notify_grades\";b:1;s:11:\"sms_enabled\";b:0;s:19:\"min_password_length\";i:8;s:15:\"password_expiry\";i:90;s:16:\"strong_passwords\";b:1;s:15:\"session_timeout\";i:30;s:18:\"max_login_attempts\";i:5;s:13:\"primary_color\";s:7:\"#6366f1\";s:15:\"secondary_color\";s:7:\"#10b981\";s:9:\"dark_mode\";b:0;s:10:\"animations\";b:1;s:11:\"auto_backup\";b:0;s:11:\"last_backup\";s:5:\"Never\";}', 1774449539);
+('tugawees-sms-cache-app_settings', 'a:31:{s:11:\"system_name\";s:24:\"Tugawe Elementary School\";s:8:\"timezone\";s:11:\"Asia/Manila\";s:11:\"date_format\";s:6:\"F d, Y\";s:16:\"default_language\";s:2:\"en\";s:16:\"maintenance_mode\";b:0;s:17:\"user_registration\";b:1;s:18:\"email_verification\";b:1;s:11:\"school_name\";s:24:\"Tugawe Elementary School\";s:11:\"school_code\";s:8:\"TES-2024\";s:15:\"deped_school_id\";s:0:\"\";s:14:\"school_address\";s:0:\"\";s:12:\"school_email\";s:0:\"\";s:12:\"school_phone\";s:0:\"\";s:19:\"current_school_year\";s:9:\"2024-2025\";s:14:\"grading_system\";s:9:\"quarterly\";s:13:\"passing_grade\";i:75;s:18:\"notify_new_student\";b:1;s:17:\"notify_attendance\";b:1;s:13:\"notify_grades\";b:1;s:11:\"sms_enabled\";b:0;s:19:\"min_password_length\";i:8;s:15:\"password_expiry\";i:90;s:16:\"strong_passwords\";b:1;s:15:\"session_timeout\";i:30;s:18:\"max_login_attempts\";i:5;s:13:\"primary_color\";s:7:\"#6366f1\";s:15:\"secondary_color\";s:7:\"#10b981\";s:9:\"dark_mode\";b:0;s:10:\"animations\";b:1;s:11:\"auto_backup\";b:0;s:11:\"last_backup\";s:5:\"Never\";}', 1774509645);
 
 -- --------------------------------------------------------
 
@@ -106,7 +107,7 @@ CREATE TABLE `enrollments` (
 --
 
 INSERT INTO `enrollments` (`id`, `school_year_id`, `grade_level_id`, `student_id`, `section_id`, `type`, `status`, `previous_school`, `enrollment_date`, `created_at`, `updated_at`) VALUES
-(27, 1, 2, 40, NULL, 'continuing', 'pending', NULL, '2026-03-25', '2026-03-25 02:45:58', '2026-03-25 02:45:58');
+(27, 1, 2, 40, 2, 'continuing', 'enrolled', NULL, '2026-03-25', '2026-03-25 02:45:58', '2026-03-25 06:26:39');
 
 -- --------------------------------------------------------
 
@@ -148,6 +149,7 @@ CREATE TABLE `failed_jobs` (
 CREATE TABLE `grades` (
   `id` bigint UNSIGNED NOT NULL,
   `student_id` bigint UNSIGNED NOT NULL,
+  `section_id` bigint UNSIGNED NOT NULL,
   `subject_id` bigint UNSIGNED NOT NULL,
   `quarter` tinyint NOT NULL,
   `teacher_id` bigint UNSIGNED DEFAULT NULL,
@@ -303,7 +305,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (48, '2026_03_23_112703_make_section_id_nullable_in_enrollments_table', 44),
 (49, '2026_03_23_112851_make_school_year_id_nullable_in_enrollments_table', 45),
 (50, '2026_03_23_130926_create_announcements_table', 46),
-(51, '2026_03_25_133643_add_status_to_users_table', 47);
+(51, '2026_03_25_133643_add_status_to_users_table', 47),
+(52, '2026_03_25_144324_create_attendances_table', 48),
+(53, '2026_03_25_145116_add_section_id_to_grades_table', 49);
 
 -- --------------------------------------------------------
 
@@ -441,7 +445,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('0V0G8ypugZsnbZ8SIKYjDtStWlJ0C8O2ma4sc9q1', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWmVkc2QwU05XZFh2TGZLU3kxY01XNjhyM0F6bURldmFlSjk4ZTBnViI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9kYXNoYm9hcmQiO3M6NToicm91dGUiO3M6MTU6ImFkbWluLmRhc2hib2FyZCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1774447221);
+('Ml3AK2KYksSMkYwNRU9EwqRLrYOf9gPIDj0o1ASR', 67, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWjF2bmhZNXFCWkpNYWN3cFFQeUpycW1DTWZTa25leDJFWTdvTzFmdyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zdHVkZW50L2Rhc2hib2FyZCI7czo1OiJyb3V0ZSI7czoxNzoic3R1ZGVudC5kYXNoYm9hcmQiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo2Nzt9', 1774508912);
 
 -- --------------------------------------------------------
 
@@ -524,7 +528,7 @@ CREATE TABLE `students` (
   `city` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `province` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `zip_code` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('pending','approved','enrolled','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `status` enum('pending','approved','enrolled','rejected','dropped','transferred') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `grade_level_id` bigint UNSIGNED DEFAULT NULL,
   `section_id` bigint UNSIGNED DEFAULT NULL,
   `photo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -537,7 +541,7 @@ CREATE TABLE `students` (
 --
 
 INSERT INTO `students` (`id`, `user_id`, `lrn`, `birthdate`, `birth_place`, `gender`, `nationality`, `religion`, `father_name`, `father_occupation`, `mother_name`, `mother_occupation`, `guardian_name`, `guardian_relationship`, `guardian_contact`, `street_address`, `barangay`, `city`, `province`, `zip_code`, `status`, `grade_level_id`, `section_id`, `photo`, `created_at`, `updated_at`) VALUES
-(40, 67, '120231260000', '2004-01-07', 'Dauin', 'Male', 'Filipino', 'Christianity', 'Nelson A. Tuayon', 'Farmer', 'Agripina B. Tuayon', 'Farmer', 'Nelson A. Tuayon', 'Parent', '09368726547', 'Purok 5', 'Tugawe', 'Dauin', 'Negros Oriental', '6217', 'pending', 2, NULL, NULL, '2026-03-25 02:45:58', '2026-03-25 02:45:58');
+(40, 67, '120231260000', '2004-01-07', 'Dauin', 'Male', 'Filipino', 'Christianity', 'Nelson A. Tuayon', 'Farmer', 'Agripina B. Tuayon', 'Farmer', 'Nelson A. Tuayon', 'Parent', '09368726547', 'Purok 5', 'Tugawe', 'Dauin', 'Negros Oriental', '6217', 'enrolled', 2, 2, NULL, '2026-03-25 02:45:58', '2026-03-25 06:26:39');
 
 -- --------------------------------------------------------
 
@@ -734,7 +738,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `role_id`, `status`, `email`, `email_verified_at`, `password`, `photo`, `is_active`, `remember_token`, `settings`, `two_factor_enabled`, `two_factor_secret`, `two_factor_recovery_codes`, `created_at`, `updated_at`, `lrn`, `first_name`, `middle_name`, `last_name`, `suffix`, `birthday`, `username`) VALUES
-(1, 1, 'active', 'admin@tugaweES.edu.ph', NULL, '$2y$12$zXtYoxdECMpT8DvDKSKFee0E.B7PXe4yQgoRJim6sPz/1zutl3Gsu', NULL, 1, 'wN6aBlxG3qmfaF6328TEAZTy1fqet67rDvwB2nXml85rIzgEDfvxVch6rJrp', NULL, 0, NULL, NULL, '2026-01-27 05:37:20', '2026-01-27 05:37:20', NULL, '', NULL, '', NULL, NULL, 'sysadmin'),
+(1, 1, 'active', 'admin@tugaweES.edu.ph', NULL, '$2y$12$zXtYoxdECMpT8DvDKSKFee0E.B7PXe4yQgoRJim6sPz/1zutl3Gsu', NULL, 1, '8wwpU6S10qMwDgIwJppG3ntCWcD4zur8nxxnzqJbzWCblMVtiy3dIIQ1AxaU', NULL, 0, NULL, NULL, '2026-01-27 05:37:20', '2026-03-25 06:21:45', NULL, 'TES', NULL, 'ADMIN', NULL, NULL, 'sysadmin'),
 (2, 3, 'active', 'registrar@tugaweES.edu.ph', NULL, '$2y$12$U.1P6YsXem2b3PGR94gFeO14UKaqX8ohqvff/ouYL7FnqE9LDE.oi', NULL, 1, 'YrC7y5PHO5Xp4frRjM1cutO36L5FcQK10AAjebcQz46PDBmtxNVsVS9CcL9G', NULL, 0, NULL, NULL, '2026-01-27 05:37:21', '2026-01-27 05:37:21', NULL, '', NULL, '', NULL, NULL, ''),
 (4, 4, 'active', 'student@tugaweES.edu.ph', NULL, '$2y$12$WIxeJEYWoAGnKxkiWIWT7uT1s6Owua0cZUsWGVVO1Zs/dImzr.8ee', NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-01-27 05:37:22', '2026-01-27 05:37:22', NULL, '', NULL, '', NULL, NULL, ''),
 (13, 2, 'active', 'teacher@tugaweES.edu.ph', NULL, '$2y$12$I703bY65xDMTGUJ/NA1hYuoccRQRYjy7INoW2feSbrdmlKoqmEbTO', NULL, 1, NULL, '{\"theme\": \"dark\", \"language\": \"ceb\", \"date_format\": \"MM/DD/YYYY\", \"time_format\": \"12h\", \"system_updates\": \"1\", \"grade_reminders\": \"1\", \"profile_visible\": \"1\", \"show_last_active\": \"1\", \"attendance_alerts\": \"1\", \"sms_notifications\": \"0\", \"email_notifications\": \"1\", \"email_visible_to_students\": \"0\", \"new_student_notifications\": \"0\"}', 0, NULL, NULL, '2026-01-28 21:57:58', '2026-03-22 16:33:32', NULL, 'Teacher', NULL, 'User', NULL, NULL, 'teacheruser1'),
@@ -757,7 +761,8 @@ ALTER TABLE `announcements`
 --
 ALTER TABLE `attendances`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `attendances_student_id_date_unique` (`student_id`,`date`);
+  ADD KEY `attendances_section_id_foreign` (`section_id`),
+  ADD KEY `attendances_student_id_foreign` (`student_id`);
 
 --
 -- Indexes for table `cache`
@@ -801,7 +806,8 @@ ALTER TABLE `failed_jobs`
 --
 ALTER TABLE `grades`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `grades_student_id_foreign` (`student_id`);
+  ADD KEY `grades_student_id_foreign` (`student_id`),
+  ADD KEY `grades_section_id_foreign` (`section_id`);
 
 --
 -- Indexes for table `grade_levels`
@@ -999,7 +1005,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -1069,6 +1075,7 @@ ALTER TABLE `users`
 -- Constraints for table `attendances`
 --
 ALTER TABLE `attendances`
+  ADD CONSTRAINT `attendances_section_id_foreign` FOREIGN KEY (`section_id`) REFERENCES `sections` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `attendances_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE;
 
 --
@@ -1084,6 +1091,7 @@ ALTER TABLE `enrollments`
 -- Constraints for table `grades`
 --
 ALTER TABLE `grades`
+  ADD CONSTRAINT `grades_section_id_foreign` FOREIGN KEY (`section_id`) REFERENCES `sections` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `grades_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE;
 
 --

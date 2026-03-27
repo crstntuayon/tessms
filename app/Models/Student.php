@@ -44,6 +44,11 @@ class Student extends Model
     ];
     
 
+    
+public function attendances()
+{
+    return $this->hasMany(Attendance::class);
+}
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -82,11 +87,10 @@ public function section()
         return $this->hasMany(Grade::class);
     }
 
-    public function submissions()
-    {
-        return $this->hasMany(AssignmentSubmission::class);
-    }
-
+   public function achievements()
+{
+    return $this->hasMany(Achievement::class);
+}
     // Full name accessor
     public function getFullNameAttribute(): ?string
     {

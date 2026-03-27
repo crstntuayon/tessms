@@ -53,7 +53,13 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
              Route::resource('grades', App\Http\Controllers\Teacher\GradeController::class);
                Route::get('reports', [App\Http\Controllers\Teacher\ReportsController::class, 'index'])
             ->name('reports.index');
+
+
              Route::get('exports/sf1', [App\Http\Controllers\Teacher\ExportController::class, 'sf1'])->name('exports.sf1');
+             Route::get('/teacher/exports/sf1', [App\Http\Controllers\Teacher\ExportController::class, 'sf1'])
+    ->name('teacher.exports.sf1');
+
+    
               Route::resource('attendance', App\Http\Controllers\Teacher\AttendanceController::class);
               Route::post('/attendance/bulk-store', [App\Http\Controllers\Teacher\AttendanceController::class, 'bulkStore'])
         ->name('attendance.bulk-store');
@@ -87,6 +93,44 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
       Route::get('sections/{section}/students', [App\Http\Controllers\Teacher\SectionsController::class, 'students'])->name('sections.students');
     Route::get('sections/{section}/attendance', [App\Http\Controllers\Teacher\SectionsController::class, 'attendance'])->name('sections.attendance');
     Route::get('sections/{section}/grades', [App\Http\Controllers\Teacher\SectionsController::class, 'grades'])->name('sections.grades');
+
+
+        Route::get('/sections/{section}/students', [App\Http\Controllers\Teacher\StudentController::class, 'index'])
+               ->name('sections.students');
+        Route::get('/sections/{section}/students/create', [App\Http\Controllers\Teacher\StudentController::class, 'create'])
+               ->name('students.create');
+        Route::post('/sections/{section}/students', [App\Http\Controllers\Teacher\StudentController::class, 'store'])
+               ->name('students.store');
+
+          // 👉 ADD THESE (YOU ARE MISSING THIS PART)
+        Route::get('/students/{student}', [App\Http\Controllers\Teacher\StudentController::class, 'show'])->name('students.show');
+        Route::get('/students/{student}/edit', [App\Http\Controllers\Teacher\StudentController::class, 'edit'])->name('students.edit');
+        Route::put('/students/{student}', [App\Http\Controllers\Teacher\StudentController::class, 'update'])->name('students.update');
+        Route::delete('/students/{student}', [App\Http\Controllers\Teacher\StudentController::class, 'destroy'])->name('students.destroy');
+
+       Route::get('/communications', [App\Http\Controllers\Teacher\CommunicationController::class, 'index'])
+            ->name('communications.index');
+        Route::post('/communications/{section}', [App\Http\Controllers\Teacher\CommunicationController::class, 'store'])
+        ->name('teacher.communications.store');
+
+        
+
+    Route::get('/sections/{section}/attendance',
+        [App\Http\Controllers\Teacher\AttendanceController::class, 'index'])
+        ->name('sections.attendance');
+        
+
+    Route::post('/sections/{section}/attendance',
+        [App\Http\Controllers\Teacher\AttendanceController::class, 'store'])
+        ->name('sections.attendance.store');
+
+            Route::get('/sections/{section}/grades',
+        [App\Http\Controllers\Teacher\GradeController::class, 'index'])
+        ->name('sections.grades');
+
+    Route::post('/sections/{section}/grades',
+        [App\Http\Controllers\Teacher\GradeController::class, 'store'])
+        ->name('sections.grades.store');
 });
 
 Route::middleware(['auth', 'role:Teacher'])->prefix('teacher')->group(function () {
@@ -108,15 +152,31 @@ Route::middleware(['auth', 'role:Student'])
 
    
    
+// OFFICIAL STUDENT ROUTE
+Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+ Route::get('/subjects', [App\Http\Controllers\Student\SubjectController::class, 'index'])->name('subjects');
+ Route::get('/attendance', [App\Http\Controllers\Student\AttendanceController::class, 'index'])->name('attendance');
+ Route::get('/grades', [App\Http\Controllers\Student\GradesController::class, 'index'])->name('grades');
+ Route::get('/classmates', [App\Http\Controllers\Student\ClassmatesController::class, 'index'])->name('classmates');
+ Route::get('/assignments', [App\Http\Controllers\Student\AssignmentsController::class, 'index'])->name('assignments');
+ Route::get('/achievements', [App\Http\Controllers\Student\AchievementController::class, 'index'])->name('achievements'); 
+ Route::get('/messages', [App\Http\Controllers\Student\MessageController::class, 'index'])->name('messages');
+ Route::get('/announcements', [App\Http\Controllers\Student\AnnouncementController::class, 'index'])->name('announcements');
 
-Route::middleware(['auth', 'role:Student'])
-    ->prefix('student')
-    ->name('student.')
-    ->group(function () {
-        Route::get('/report-card', 
-            [App\Http\Controllers\Student\ReportCardController::class, 'index']
-        )->name('report.card');
+
+ Route::get('/profile', [App\Http\Controllers\Student\ProfileController::class, 'index'])->name('profile');
+ Route::post('/profile/photo', [App\Http\Controllers\Student\ProfileController::class, 'updatePhoto'])->name('profile.photo');
+ Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+
+ 
+
+ Route::get('/help', [App\Http\Controllers\Student\HelpController::class, 'index'])->name('help');
     });
+
+
+
+
+
 
 
 Route::prefix('registrar')->name('registrar.')->middleware(['auth'])->group(function () {
@@ -187,7 +247,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
          Route::get('/settings/export/{type}', [\App\Http\Controllers\Admin\SettingsController::class, 'export'])->name('settings.export');
          Route::post('/settings/regenerate-api-key', [\App\Http\Controllers\Admin\SettingsController::class, 'regenerateApiKey'])->name('settings.regenerate-api-key');
     
-          Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile');
+   
           Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
           Route::get('/users/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])->name('users.create');
           Route::post('/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
@@ -210,8 +270,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         ->name('pending-registrations.reject');
         
 
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 
-           Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    
 });
 
 

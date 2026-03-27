@@ -6,13 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Grade extends Model
 {
-    protected $fillable = [
-        'student_id',
-        'subject_id',
-        'teacher_id',
-        'quarter',
-        'grade'
-    ];
+protected $fillable = [
+    'section_id',
+    'student_id',
+    'subject_id',
+    'quarter',
+    'component_type',
+    'scores',
+    'total_score',
+    'percentage_score',
+    'ww_weighted',
+    'pt_weighted',
+    'qe_weighted',
+    'initial_grade',
+    'final_grade',
+    'remarks',
+];
 
     public function student()
     {

@@ -384,7 +384,7 @@ $sidebarTeacherCount = \App\Models\Teacher::count();
         </div>
     </div>
     <div class="p-1 space-y-0.5">
-        <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl transition-all group">
+        <a href="{{ route('admin.users.edit', auth()->user()) }}" class="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl transition-all group">
             <div class="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
                 <i class="fas fa-user text-blue-500 text-sm"></i>
             </div>

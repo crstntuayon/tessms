@@ -72,10 +72,11 @@ $sections = \App\Models\Section::with('gradeLevel')
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center border border-emerald-100">
                             <span class="text-emerald-600 font-bold text-xs">{{ strtoupper(substr($section->name, 0, 2)) }}</span>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="truncate">{{ $section->name }}</p>
-                            <p class="text-[10px] text-slate-400 truncate">{{ $section->course->name ?? 'No Course' }}</p>
-                        </div>
+                      <div class="flex-1 min-w-0">
+    <p class="truncate">
+        {{ $section->name }} ({{ $section->gradeLevel->name ?? 'N/A' }})
+    </p>
+</div>
                         <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform group-open:rotate-180"></i>
                     </summary>
                     
