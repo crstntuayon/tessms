@@ -208,12 +208,32 @@
         .animate-fade-in-up { 
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
         }
+        
+        .school-year-badge {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased">
 
     <!-- Mobile Overlay -->
     <div id="mobileOverlay" class="mobile-overlay fixed inset-0 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+    @php
+        // Get active school year once at the top
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        $activeSchoolYearId = $activeSchoolYear ? $activeSchoolYear->id : null;
+        $activeSchoolYearName = $activeSchoolYear ? $activeSchoolYear->name : 'No Active School Year';
+    @endphp
 
     <div class="dashboard-container">
         <!-- Fixed Sidebar -->
@@ -259,10 +279,18 @@ document.addEventListener('click', function(e) {
                         </button>
                         <div>
                             <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Dashboard Overview</h2>
-                            <p class="text-sm text-slate-500 font-medium flex items-center gap-2 mt-0.5">
-                                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                                {{ now()->format('l, F j, Y') }}
-                            </p>
+                            <div class="flex items-center gap-3 mt-1">
+                                <p class="text-sm text-slate-500 font-medium flex items-center gap-2">
+                                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                                    {{ now()->format('l, F j, Y') }}
+                                </p>
+                                @if($activeSchoolYear)
+                                    <span class="school-year-badge">
+                                        <i class="fas fa-graduation-cap text-xs"></i>
+                                        {{ $activeSchoolYearName }}
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                     
@@ -289,6 +317,21 @@ document.addEventListener('click', function(e) {
             <!-- Scrollable Main Content -->
             <main class="main-content">
                 
+                @if(!$activeSchoolYear)
+                    <div class="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3 animate-fade-in-up">
+                        <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-amber-800">No Active School Year</p>
+                            <p class="text-sm text-amber-600">Please set an active school year in settings to see accurate data.</p>
+                        </div>
+                        <a href="{{ route('admin.school-years.index') }}" class="ml-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-sm transition-colors">
+                            Manage School Years
+                        </a>
+                    </div>
+                @endif
+
                 <!-- Welcome Banner -->
                 <div class="mb-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-8 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden animate-fade-in-up">
                     <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
@@ -297,6 +340,12 @@ document.addEventListener('click', function(e) {
                         <div>
                             <h1 class="text-3xl font-bold mb-2">Welcome back, {{ auth()->user()->first_name ?? auth()->user()->name ?? 'Admin' }}! 👋</h1>
                             <p class="text-blue-100 text-lg">Here's what's happening at Tugawe Elementary today.</p>
+                            @if($activeSchoolYear)
+                                <p class="text-blue-200 text-sm mt-2">
+                                    <i class="fas fa-calendar-alt mr-1"></i>
+                                    Active School Year: <span class="font-semibold text-white">{{ $activeSchoolYearName }}</span>
+                                </p>
+                            @endif
                         </div>
                         <div class="hidden md:block text-right">
                             <p class="text-4xl font-bold" id="liveClock">09:32 AM</p>
@@ -305,68 +354,96 @@ document.addEventListener('click', function(e) {
                     </div>
                 </div>
 
-                <!-- Stats Grid - REAL DATABASE DATA -->
+                <!-- Stats Grid - FILTERED BY ACTIVE SCHOOL YEAR -->
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
                     
-                    <!-- Total Students - From Database -->
+                    <!-- Total Students - Filtered by Active School Year -->
                     <div class="stat-card glass-card rounded-2xl p-6 shadow-sm animate-fade-in-up" style="animation-delay: 0.1s;">
+                        @php
+                            $studentQuery = \App\Models\Student::when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                return $q->where('school_year_id', $activeSchoolYearId);
+                            });
+                            $totalStudents = $studentQuery->count();
+                            
+                            // Growth calculation - compare to previous month within same school year
+                            $lastMonthStudents = \App\Models\Student::when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                return $q->where('school_year_id', $activeSchoolYearId);
+                            })->whereMonth('created_at', now()->subMonth()->month)->count();
+                            
+                            $thisMonthStudents = \App\Models\Student::when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                return $q->where('school_year_id', $activeSchoolYearId);
+                            })->whereMonth('created_at', now()->month)->count();
+                            
+                            $growth = $lastMonthStudents > 0 ? round((($thisMonthStudents - $lastMonthStudents) / $lastMonthStudents) * 100, 1) : 0;
+                        @endphp
                         <div class="flex items-start justify-between mb-4">
                             <div class="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg shadow-blue-500/30">
                                 <i class="fas fa-users text-white text-xl"></i>
                             </div>
-                            <!-- Calculate growth from last month -->
-                            @php
-                                $lastMonthStudents = \App\Models\Student::whereMonth('created_at', now()->subMonth()->month)->count();
-                                $thisMonthStudents = \App\Models\Student::whereMonth('created_at', now()->month)->count();
-                                $growth = $lastMonthStudents > 0 ? round((($thisMonthStudents - $lastMonthStudents) / $lastMonthStudents) * 100, 1) : 0;
-                            @endphp
                             <div class="flex items-center gap-1 {{ $growth >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50' }} px-2.5 py-1 rounded-full text-xs font-bold border {{ $growth >= 0 ? 'border-emerald-200' : 'border-red-200' }}">
                                 <i class="fas fa-arrow-{{ $growth >= 0 ? 'up' : 'down' }} text-[10px]"></i>
                                 <span>{{ abs($growth) }}%</span>
                             </div>
                         </div>
-                        <!-- REAL COUNT FROM DATABASE -->
                         <h3 class="text-3xl font-bold text-slate-900 mb-1">
-                            {{ number_format(\App\Models\Student::count()) }}
+                            {{ number_format($totalStudents) }}
                         </h3>
                         <p class="text-sm text-slate-500 font-medium mb-4">Total Students</p>
-                        <!-- Gender breakdown from DB -->
+                        @php
+                            $maleStudents = \App\Models\Student::when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                return $q->where('school_year_id', $activeSchoolYearId);
+                            })->where('gender', 'Male')->count();
+                            
+                            $femaleStudents = \App\Models\Student::when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                return $q->where('school_year_id', $activeSchoolYearId);
+                            })->where('gender', 'Female')->count();
+                        @endphp
                         <div class="flex items-center gap-4 text-xs">
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2 h-2 rounded-full bg-blue-500"></div>
                                 <span class="text-slate-600 font-medium">
-                                    Male: {{ \App\Models\Student::where('gender', 'Male')->count() }}
+                                    Male: {{ $maleStudents }}
                                 </span>
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2 h-2 rounded-full bg-pink-500"></div>
                                 <span class="text-slate-600 font-medium">
-                                    Female: {{ \App\Models\Student::where('gender', 'Female')->count() }}
+                                    Female: {{ $femaleStudents }}
                                 </span>
                             </div>
                         </div>
-                        <!-- Progress bar based on capacity -->
                         @php
-                            $totalStudents = \App\Models\Student::count();
-                            $schoolCapacity = 2000; // Set your school capacity
-                            $percentage = min(($totalStudents / $schoolCapacity) * 100, 100);
+                            $schoolCapacity = 2000;
+                            $percentage = $schoolCapacity > 0 ? min(($totalStudents / $schoolCapacity) * 100, 100) : 0;
                         @endphp
                         <div class="mt-4 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                             <div class="h-full bg-blue-500 rounded-full progress-bar" style="width: {{ $percentage }}%"></div>
                         </div>
                     </div>
 
-                    <!-- Total Teachers - From Database -->
+                    <!-- Total Teachers - Filtered by Active School Year -->
                     <div class="stat-card glass-card rounded-2xl p-6 shadow-sm animate-fade-in-up" style="animation-delay: 0.2s;">
+                        @php
+                            // Teachers assigned to sections in active school year
+                            $totalTeachers = \App\Models\User::whereHas('role', function($q) {
+                                $q->where('name', 'teacher');
+                            })->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                return $q->whereHas('sections', function($sq) use ($activeSchoolYearId) {
+                                    $sq->where('school_year_id', $activeSchoolYearId);
+                                });
+                            })->count();
+                            
+                            // Alternative: If you track teacher status directly
+                            $activeTeachers = \App\Models\Teacher::when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                return $q->where('school_year_id', $activeSchoolYearId);
+                            })->where('status', 'active')->count();
+                            
+                            $activePercentage = $totalTeachers > 0 ? round(($activeTeachers / max($totalTeachers, 1)) * 100) : 0;
+                        @endphp
                         <div class="flex items-start justify-between mb-4">
                             <div class="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg shadow-purple-500/30">
                                 <i class="fas fa-chalkboard-teacher text-white text-xl"></i>
                             </div>
-                            @php
-                                $activeTeachers = \App\Models\Teacher::where('status', 'active')->count();
-                                $totalTeachers = \App\Models\Teacher::count();
-                                $activePercentage = $totalTeachers > 0 ? round(($activeTeachers / $totalTeachers) * 100) : 0;
-                            @endphp
                             <div class="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full text-xs font-bold border border-emerald-200">
                                 <i class="fas fa-check text-[10px]"></i>
                                 <span>{{ $activePercentage }}% Active</span>
@@ -376,6 +453,11 @@ document.addEventListener('click', function(e) {
                             {{ number_format($totalTeachers) }}
                         </h3>
                         <p class="text-sm text-slate-500 font-medium mb-4">Total Teachers</p>
+                        @php
+                            $onLeaveTeachers = \App\Models\Teacher::when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                return $q->where('school_year_id', $activeSchoolYearId);
+                            })->where('status', 'on_leave')->count();
+                        @endphp
                         <div class="flex items-center gap-4 text-xs">
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -386,7 +468,7 @@ document.addEventListener('click', function(e) {
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2 h-2 rounded-full bg-amber-500"></div>
                                 <span class="text-slate-600 font-medium">
-                                    On Leave: {{ \App\Models\Teacher::where('status', 'on_leave')->count() }}
+                                    On Leave: {{ $onLeaveTeachers }}
                                 </span>
                             </div>
                         </div>
@@ -395,18 +477,44 @@ document.addEventListener('click', function(e) {
                         </div>
                     </div>
 
-                    <!-- Today's Attendance - From Database -->
+                    <!-- Today's Attendance - Filtered by Active School Year -->
                     <div class="stat-card glass-card rounded-2xl p-6 shadow-sm animate-fade-in-up" style="animation-delay: 0.3s;">
+                        @php
+                            $today = now()->format('Y-m-d');
+                            
+                            // Get attendance for students in active school year only
+                            $presentToday = \App\Models\Attendance::whereDate('date', $today)
+                                ->where('status', 'present')
+                                ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                    return $q->whereHas('student', function($sq) use ($activeSchoolYearId) {
+                                        $sq->where('school_year_id', $activeSchoolYearId);
+                                    });
+                                })->count();
+                            
+                            $absentToday = \App\Models\Attendance::whereDate('date', $today)
+                                ->where('status', 'absent')
+                                ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                    return $q->whereHas('student', function($sq) use ($activeSchoolYearId) {
+                                        $sq->where('school_year_id', $activeSchoolYearId);
+                                    });
+                                })->count();
+                            
+                            $lateToday = \App\Models\Attendance::whereDate('date', $today)
+                                ->where('status', 'late')
+                                ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                    return $q->whereHas('student', function($sq) use ($activeSchoolYearId) {
+                                        $sq->where('school_year_id', $activeSchoolYearId);
+                                    });
+                                })->count();
+                            
+                            // Total students in active school year for rate calculation
+                            $totalActiveStudents = max($totalStudents, 1);
+                            $attendanceRate = $totalStudents > 0 ? round(($presentToday / $totalActiveStudents) * 100, 1) : 0;
+                        @endphp
                         <div class="flex items-start justify-between mb-4">
                             <div class="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg shadow-emerald-500/30">
                                 <i class="fas fa-calendar-check text-white text-xl"></i>
                             </div>
-                            @php
-                                $today = now()->format('Y-m-d');
-                                $totalStudents = \App\Models\Student::count();
-                                $presentToday = \App\Models\Attendance::whereDate('date', $today)->where('status', 'present')->count();
-                                $attendanceRate = $totalStudents > 0 ? round(($presentToday / $totalStudents) * 100, 1) : 0;
-                            @endphp
                             <div class="flex items-center gap-1 {{ $attendanceRate >= 90 ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50' }} px-2.5 py-1 rounded-full text-xs font-bold border {{ $attendanceRate >= 90 ? 'border-emerald-200' : 'border-amber-200' }}">
                                 <i class="fas fa-check text-[10px]"></i>
                                 <span>{{ $attendanceRate }}%</span>
@@ -414,10 +522,6 @@ document.addEventListener('click', function(e) {
                         </div>
                         <h3 class="text-3xl font-bold text-slate-900 mb-1">{{ $attendanceRate }}%</h3>
                         <p class="text-sm text-slate-500 font-medium mb-4">Today's Attendance</p>
-                        @php
-                            $absentToday = \App\Models\Attendance::whereDate('date', $today)->where('status', 'absent')->count();
-                            $lateToday = \App\Models\Attendance::whereDate('date', $today)->where('status', 'late')->count();
-                        @endphp
                         <div class="flex items-center gap-4 text-xs">
                             <div class="flex items-center gap-1.5">
                                 <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -433,29 +537,45 @@ document.addEventListener('click', function(e) {
                         </div>
                     </div>
 
-                    <!-- Average Grade - From Database -->
+                    <!-- Average Grade - Filtered by Active School Year -->
                     <div class="stat-card glass-card rounded-2xl p-6 shadow-sm animate-fade-in-up" style="animation-delay: 0.4s;">
+                        @php
+                            $avgGrade = \App\Models\Grade::where('component_type', 'final_grade')
+                                ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                    return $q->whereHas('student', function($sq) use ($activeSchoolYearId) {
+                                        $sq->where('school_year_id', $activeSchoolYearId);
+                                    });
+                                })->avg('final_grade') ?? 0;
+
+                            $above90 = \App\Models\Grade::where('component_type', 'final_grade')
+                                ->where('final_grade', '>=', 90)
+                                ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                    return $q->whereHas('student', function($sq) use ($activeSchoolYearId) {
+                                        $sq->where('school_year_id', $activeSchoolYearId);
+                                    });
+                                })->count();
+
+                            $below75 = \App\Models\Grade::where('component_type', 'final_grade')
+                                ->where('final_grade', '<', 75)
+                                ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                    return $q->whereHas('student', function($sq) use ($activeSchoolYearId) {
+                                        $sq->where('school_year_id', $activeSchoolYearId);
+                                    });
+                                })->count();
+
+                            $totalGrades = \App\Models\Grade::where('component_type', 'final_grade')
+                                ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                    return $q->whereHas('student', function($sq) use ($activeSchoolYearId) {
+                                        $sq->where('school_year_id', $activeSchoolYearId);
+                                    });
+                                })->count();
+
+                            $above90Pct = $totalGrades > 0 ? round(($above90 / $totalGrades) * 100) : 0;
+                        @endphp
                         <div class="flex items-start justify-between mb-4">
                             <div class="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-lg shadow-amber-500/30">
                                 <i class="fas fa-star text-white text-xl"></i>
                             </div>
-                           @php
-    $avgGrade = \App\Models\Grade::where('component_type', 'final_grade')->avg('final_grade') ?? 0;
-
-    $above90 = \App\Models\Grade::where('component_type', 'final_grade')
-        ->where('final_grade', '>=', 90)
-        ->count();
-
-    $below75 = \App\Models\Grade::where('component_type', 'final_grade')
-        ->where('final_grade', '<', 75)
-        ->count();
-
-    $totalGrades = \App\Models\Grade::where('component_type', 'final_grade')->count();
-
-    $above90Pct = $totalGrades > 0 
-        ? round(($above90 / $totalGrades) * 100) 
-        : 0;
-@endphp
                             <div class="flex items-center gap-1 text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full text-xs font-bold border border-amber-200">
                                 <i class="fas fa-chart-line text-[10px]"></i>
                                 <span>{{ number_format($avgGrade, 1) }}</span>
@@ -479,14 +599,14 @@ document.addEventListener('click', function(e) {
                     </div>
                 </div>
 
-                <!-- Charts & Analytics - REAL DATA -->
+                <!-- Charts & Analytics - FILTERED BY ACTIVE SCHOOL YEAR -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <!-- Attendance Chart - Last 7 Days from DB -->
+                    <!-- Attendance Chart - Last 7 Days filtered by Active School Year -->
                     <div class="lg:col-span-2 glass-card rounded-2xl p-6 shadow-sm animate-fade-in-up" style="animation-delay: 0.5s;">
                         <div class="flex items-center justify-between mb-6">
                             <div>
                                 <h3 class="text-lg font-bold text-slate-900">Attendance Trends</h3>
-                                <p class="text-sm text-slate-500">Last 7 days overview</p>
+                                <p class="text-sm text-slate-500">Last 7 days overview • {{ $activeSchoolYearName }}</p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <button class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
@@ -499,22 +619,25 @@ document.addEventListener('click', function(e) {
                         </div>
                     </div>
 
-                    <!-- Grade Distribution - From DB -->
+                    <!-- Grade Distribution - Filtered by Active School Year -->
                     <div class="space-y-6 animate-fade-in-up" style="animation-delay: 0.6s;">
                         <div class="glass-card rounded-2xl p-6 shadow-sm">
                             <h3 class="text-lg font-bold text-slate-900 mb-4">Grade Distribution</h3>
+                            <p class="text-xs text-slate-500 mb-4">{{ $activeSchoolYearName }}</p>
                             <div class="space-y-3">
-                            @php
-$gradeDistribution = \App\Models\Student::join('grade_levels', 'students.grade_level_id', '=', 'grade_levels.id')
-    ->selectRaw('grade_levels.name as grade, count(*) as count')
-    ->groupBy('grade_levels.name')
-    ->orderBy('grade_levels.name')
-    ->pluck('count', 'grade')
-    ->toArray();
+                                @php
+                                    $gradeDistribution = \App\Models\Student::when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                        return $q->where('school_year_id', $activeSchoolYearId);
+                                    })->join('grade_levels', 'students.grade_level_id', '=', 'grade_levels.id')
+                                        ->selectRaw('grade_levels.name as grade, count(*) as count')
+                                        ->groupBy('grade_levels.name')
+                                        ->orderBy('grade_levels.name')
+                                        ->pluck('count', 'grade')
+                                        ->toArray();
 
-$maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
-@endphp
-                                @foreach($gradeDistribution as $grade => $count)
+                                    $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
+                                @endphp
+                                @forelse($gradeDistribution as $grade => $count)
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
                                             {{ $grade }}
@@ -529,11 +652,13 @@ $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
                                             </div>
                                         </div>
                                     </div>
-                                @endforeach
+                                @empty
+                                    <p class="text-slate-400 text-sm text-center py-4">No grade distribution data</p>
+                                @endforelse
                             </div>
                         </div>
 
-                        <!-- Upcoming Events - From DB -->
+                        <!-- Upcoming Events - Filtered by Active School Year -->
                         <div class="glass-card rounded-2xl p-6 shadow-sm">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-bold text-slate-900">Upcoming Events</h3>
@@ -542,6 +667,9 @@ $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
                             <div class="space-y-4">
                                 @php
                                     $upcomingEvents = \App\Models\Event::where('date', '>=', now())
+                                        ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                            return $q->where('school_year_id', $activeSchoolYearId);
+                                        })
                                         ->orderBy('date')
                                         ->limit(3)
                                         ->get();
@@ -566,12 +694,12 @@ $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
                     </div>
                 </div>
 
-                <!-- Recent Students Table - REAL DATA -->
+                <!-- Recent Students Table - FILTERED BY ACTIVE SCHOOL YEAR -->
                 <div class="glass-card rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden animate-fade-in-up" style="animation-delay: 0.7s;">
                     <div class="p-6 border-b border-slate-200/80 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
                         <div>
                             <h3 class="text-lg font-bold text-slate-900">Recent Enrollments</h3>
-                            <p class="text-sm text-slate-500">Latest student registrations</p>
+                            <p class="text-sm text-slate-500">{{ $activeSchoolYearName }} • Latest student registrations</p>
                         </div>
                         <div class="flex items-center gap-3">
                             <button class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
@@ -603,9 +731,16 @@ $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
                             <tbody class="divide-y divide-slate-100">
                                 @php
                                     $recentStudents = \App\Models\Student::with('section')
+                                        ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                            return $q->where('school_year_id', $activeSchoolYearId);
+                                        })
                                         ->latest()
                                         ->limit(5)
                                         ->get();
+                                    
+                                    $totalStudentsCount = \App\Models\Student::when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                                        return $q->where('school_year_id', $activeSchoolYearId);
+                                    })->count();
                                 @endphp
                                 @forelse($recentStudents as $student)
                                     <tr class="group hover:bg-slate-50 transition-colors">
@@ -659,7 +794,7 @@ $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
                                                 <i class="fas fa-inbox text-2xl text-slate-400"></i>
                                             </div>
                                             <p class="text-slate-500 font-medium">No students found</p>
-                                            <p class="text-slate-400 text-sm mt-1">No recent enrollments</p>
+                                            <p class="text-slate-400 text-sm mt-1">No recent enrollments for {{ $activeSchoolYearName }}</p>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -670,7 +805,7 @@ $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
                     <!-- Pagination -->
                     @if($recentStudents->count() > 0)
                         <div class="px-6 py-4 border-t border-slate-200/80 bg-slate-50/50 flex items-center justify-between">
-                            <p class="text-sm text-slate-500">Showing <span class="font-semibold text-slate-900">1-{{ $recentStudents->count() }}</span> of <span class="font-semibold text-slate-900">{{ \App\Models\Student::count() }}</span> students</p>
+                            <p class="text-sm text-slate-500">Showing <span class="font-semibold text-slate-900">1-{{ $recentStudents->count() }}</span> of <span class="font-semibold text-slate-900">{{ $totalStudentsCount }}</span> students</p>
                             <div class="flex items-center gap-2">
                                 <button class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white border border-slate-200 rounded-lg transition-all disabled:opacity-50" disabled>
                                     Previous
@@ -716,15 +851,15 @@ $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
                     <i class="fas fa-chevron-right text-slate-300 ml-auto text-xs group-hover:text-purple-500 group-hover:translate-x-1 transition-all"></i>
                 </a>
                 <a href="{{ route('admin.sections.index') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all group">
-    <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
-        <i class="fas fa-th-large text-sm"></i>
-    </div>
-    <div>
-        <p class="font-bold text-slate-900 text-sm">Sections</p>
-        <p class="text-xs text-slate-500">Manage class sections</p>
-    </div>
-    <i class="fas fa-chevron-right text-slate-300 ml-auto text-xs group-hover:text-emerald-500 group-hover:translate-x-1 transition-all"></i>
-</a>
+                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-th-large text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-slate-900 text-sm">Sections</p>
+                        <p class="text-xs text-slate-500">Manage class sections</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-slate-300 ml-auto text-xs group-hover:text-emerald-500 group-hover:translate-x-1 transition-all"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -776,7 +911,6 @@ $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
             menu.classList.toggle('hidden');
         }
 
-
         // Live Clock
         function updateClock() {
             const now = new Date();
@@ -793,7 +927,7 @@ $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Attendance Chart - Real Data from Database
+        // Attendance Chart - Filtered by Active School Year
         @php
             $last7Days = collect(range(0, 6))->map(function($i) {
                 return now()->subDays($i)->format('Y-m-d');
@@ -803,12 +937,24 @@ $maxCount = !empty($gradeDistribution) ? max($gradeDistribution) : 1;
                 return \Carbon\Carbon::parse($date)->format('D');
             });
 
-            $presentData = $last7Days->map(function($date) {
-                return \App\Models\Attendance::whereDate('date', $date)->where('status', 'present')->count();
+            $presentData = $last7Days->map(function($date) use ($activeSchoolYearId) {
+                return \App\Models\Attendance::whereDate('date', $date)
+                    ->where('status', 'present')
+                    ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                        return $q->whereHas('student', function($sq) use ($activeSchoolYearId) {
+                            $sq->where('school_year_id', $activeSchoolYearId);
+                        });
+                    })->count();
             });
 
-            $absentData = $last7Days->map(function($date) {
-                return \App\Models\Attendance::whereDate('date', $date)->where('status', 'absent')->count();
+            $absentData = $last7Days->map(function($date) use ($activeSchoolYearId) {
+                return \App\Models\Attendance::whereDate('date', $date)
+                    ->where('status', 'absent')
+                    ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                        return $q->whereHas('student', function($sq) use ($activeSchoolYearId) {
+                            $sq->where('school_year_id', $activeSchoolYearId);
+                        });
+                    })->count();
             });
         @endphp
 

@@ -29,7 +29,7 @@ class Teacher extends Model
         'medical_conditions', 'medications', 'covid_vaccinated', 'covid_vaccine_type',
         'covid_vaccine_date', 'photo_path', 'resume_path', 'prc_id_path', 'transcript_path',
         'clearance_path', 'medical_cert_path', 'nbi_clearance_path', 'service_record_path',
-        'user_id', 'last_login_at', 'ip_address', 'remarks', 'status'
+        'user_id', 'last_login_at', 'ip_address', 'remarks', 'status',  'school_year_id', 
     ];
 
     protected $casts = [
@@ -86,4 +86,6 @@ public function section()
     {
         return $this->hasMany(\App\Models\Assignment::class, 'teacher_id');
     }
+
+    
 }

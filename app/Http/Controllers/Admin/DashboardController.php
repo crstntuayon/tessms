@@ -5,19 +5,177 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Section;
+use App\Models\SchoolYear;
 
 class DashboardController extends Controller
 {
-    // Load the dashboard view with initial counts
- public function index()
-{
-    $totalStudents = \App\Models\Student::count();
-    $totalTeachers = \App\Models\User::whereHas('role', fn($q) => $q->where('name', 'teacher'))->count();
-    $totalSections = \App\Models\Section::count();
+    /**
+     * Load the dashboard view with counts filtered by active school year
+     */
+    public function index()
+    {
+        // Get the active school year - EXACTLY like your report page
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
 
-    // Add this for the sidebar
-    $sidebarSectionCount = $totalSections;
+        // If no active school year, handle gracefully
+        if (!$activeSchoolYear) {
+            return redirect()->back()->with('error', 'No active school year set. Please configure an active school year first.');
+        }
 
-    return view('admin.dashboard', compact('totalStudents', 'totalTeachers', 'totalSections', 'sidebarSectionCount'));
-}
+        // Filter ALL counts by active school year
+        $totalStudents = \App\Models\Student::where('school_year_id', $activeSchoolYear->id)->count();
+        
+        $totalTeachers = \App\Models\User::whereHas('role', function($q) {
+                $q->where('name', 'teacher');
+            })
+            ->whereHas('teacher.sections', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })
+            ->count();
+
+        $totalSections = \App\Models\Section::where('school_year_id', $activeSchoolYear->id)->count();
+        $sidebarSectionCount = $totalSections;
+
+        // Additional filtered data for the dashboard
+        $maleStudents = \App\Models\Student::where('school_year_id', $activeSchoolYear->id)
+            ->where('gender', 'Male')
+            ->count();
+            
+        $femaleStudents = \App\Models\Student::where('school_year_id', $activeSchoolYear->id)
+            ->where('gender', 'Female')
+            ->count();
+
+        $activeTeachers = \App\Models\Teacher::where('status', 'active')
+            ->whereHas('sections', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })
+            ->count();
+
+        $teachersOnLeave = \App\Models\Teacher::where('status', 'on_leave')
+            ->whereHas('sections', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })
+            ->count();
+
+        // Today's attendance filtered by active school year
+        $today = now()->format('Y-m-d');
+        $presentToday = \App\Models\Attendance::whereDate('date', $today)
+            ->whereHas('student', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })
+            ->where('status', 'present')
+            ->count();
+
+        $absentToday = \App\Models\Attendance::whereDate('date', $today)
+            ->whereHas('student', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })
+            ->where('status', 'absent')
+            ->count();
+
+        $lateToday = \App\Models\Attendance::whereDate('date', $today)
+            ->whereHas('student', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })
+            ->where('status', 'late')
+            ->count();
+
+        // Grades filtered by active school year
+        $avgGrade = \App\Models\Grade::whereHas('student', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })
+            ->where('component_type', 'final_grade')
+            ->avg('final_grade') ?? 0;
+
+        $above90 = \App\Models\Grade::whereHas('student', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })
+            ->where('component_type', 'final_grade')
+            ->where('final_grade', '>=', 90)
+            ->count();
+
+        $below75 = \App\Models\Grade::whereHas('student', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })
+            ->where('component_type', 'final_grade')
+            ->where('final_grade', '<', 75)
+            ->count();
+
+        // Grade distribution by grade level for active school year
+        $gradeDistribution = \App\Models\Student::where('school_year_id', $activeSchoolYear->id)
+            ->join('grade_levels', 'students.grade_level_id', '=', 'grade_levels.id')
+            ->selectRaw('grade_levels.name as grade, count(*) as count')
+            ->groupBy('grade_levels.name')
+            ->orderBy('grade_levels.name')
+            ->pluck('count', 'grade')
+            ->toArray();
+
+        // Recent enrollments for active school year
+        $recentStudents = \App\Models\Student::with('section')
+            ->where('school_year_id', $activeSchoolYear->id)
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        // Upcoming events (optional: filter by school year if events table has school_year_id)
+        $upcomingEvents = \App\Models\Event::where('date', '>=', now())
+            ->where(function($q) use ($activeSchoolYear) {
+                $q->whereNull('school_year_id')
+                  ->orWhere('school_year_id', $activeSchoolYear->id);
+            })
+            ->orderBy('date')
+            ->limit(3)
+            ->get();
+
+        // Attendance chart data (last 7 days) filtered by active school year
+        $last7Days = collect(range(0, 6))->map(function($i) {
+            return now()->subDays($i)->format('Y-m-d');
+        })->reverse()->values();
+
+        $attendanceLabels = $last7Days->map(function($date) {
+            return \Carbon\Carbon::parse($date)->format('D');
+        });
+
+        $presentData = $last7Days->map(function($date) use ($activeSchoolYear) {
+            return \App\Models\Attendance::whereDate('date', $date)
+                ->whereHas('student', function($q) use ($activeSchoolYear) {
+                    $q->where('school_year_id', $activeSchoolYear->id);
+                })
+                ->where('status', 'present')
+                ->count();
+        });
+
+        $absentData = $last7Days->map(function($date) use ($activeSchoolYear) {
+            return \App\Models\Attendance::whereDate('date', $date)
+                ->whereHas('student', function($q) use ($activeSchoolYear) {
+                    $q->where('school_year_id', $activeSchoolYear->id);
+                })
+                ->where('status', 'absent')
+                ->count();
+        });
+
+        return view('admin.dashboard', compact(
+            'activeSchoolYear',
+            'totalStudents',
+            'totalTeachers',
+            'totalSections',
+            'sidebarSectionCount',
+            'maleStudents',
+            'femaleStudents',
+            'activeTeachers',
+            'teachersOnLeave',
+            'presentToday',
+            'absentToday',
+            'lateToday',
+            'avgGrade',
+            'above90',
+            'below75',
+            'gradeDistribution',
+            'recentStudents',
+            'upcomingEvents',
+            'attendanceLabels',
+            'presentData',
+            'absentData'
+        ));
+    }
 }

@@ -34,6 +34,7 @@ class Student extends Model
         'grade_level_id',
         'section_id',
         'photo',
+         'school_year_id', 
     ];
 
     protected $casts = [
@@ -42,6 +43,8 @@ class Student extends Model
         'enrollment_date' => 'date',
 
     ];
+    
+
     
 
     

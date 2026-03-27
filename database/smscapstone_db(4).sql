@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 27, 2026 at 11:26 AM
+-- Generation Time: Mar 27, 2026 at 02:50 PM
 -- Server version: 8.0.45
 -- PHP Version: 8.2.30
 
@@ -131,7 +131,16 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('tugawees-sms-cache-app_settings', 'a:31:{s:11:\"system_name\";s:24:\"Tugawe Elementary School\";s:8:\"timezone\";s:11:\"Asia/Manila\";s:11:\"date_format\";s:6:\"F d, Y\";s:16:\"default_language\";s:2:\"en\";s:16:\"maintenance_mode\";b:0;s:17:\"user_registration\";b:1;s:18:\"email_verification\";b:1;s:11:\"school_name\";s:24:\"Tugawe Elementary School\";s:11:\"school_code\";s:8:\"TES-2024\";s:15:\"deped_school_id\";s:0:\"\";s:14:\"school_address\";s:0:\"\";s:12:\"school_email\";s:0:\"\";s:12:\"school_phone\";s:0:\"\";s:19:\"current_school_year\";s:9:\"2024-2025\";s:14:\"grading_system\";s:9:\"quarterly\";s:13:\"passing_grade\";i:75;s:18:\"notify_new_student\";b:1;s:17:\"notify_attendance\";b:1;s:13:\"notify_grades\";b:1;s:11:\"sms_enabled\";b:0;s:19:\"min_password_length\";i:8;s:15:\"password_expiry\";i:90;s:16:\"strong_passwords\";b:1;s:15:\"session_timeout\";i:30;s:18:\"max_login_attempts\";i:5;s:13:\"primary_color\";s:7:\"#6366f1\";s:15:\"secondary_color\";s:7:\"#10b981\";s:9:\"dark_mode\";b:0;s:10:\"animations\";b:1;s:11:\"auto_backup\";b:0;s:11:\"last_backup\";s:5:\"Never\";}', 1774612998);
+('tugawees-sms-cache-app_settings', 'a:31:{s:11:\"system_name\";s:24:\"Tugawe Elementary School\";s:8:\"timezone\";s:11:\"Asia/Manila\";s:11:\"date_format\";s:6:\"F d, Y\";s:16:\"default_language\";s:2:\"en\";s:16:\"maintenance_mode\";b:0;s:17:\"user_registration\";b:1;s:18:\"email_verification\";b:1;s:11:\"school_name\";s:24:\"Tugawe Elementary School\";s:11:\"school_code\";s:8:\"TES-2024\";s:15:\"deped_school_id\";s:0:\"\";s:14:\"school_address\";s:0:\"\";s:12:\"school_email\";s:0:\"\";s:12:\"school_phone\";s:0:\"\";s:19:\"current_school_year\";s:9:\"2024-2025\";s:14:\"grading_system\";s:9:\"quarterly\";s:13:\"passing_grade\";i:75;s:18:\"notify_new_student\";b:1;s:17:\"notify_attendance\";b:1;s:13:\"notify_grades\";b:1;s:11:\"sms_enabled\";b:0;s:19:\"min_password_length\";i:8;s:15:\"password_expiry\";i:90;s:16:\"strong_passwords\";b:1;s:15:\"session_timeout\";i:30;s:18:\"max_login_attempts\";i:5;s:13:\"primary_color\";s:7:\"#6366f1\";s:15:\"secondary_color\";s:7:\"#10b981\";s:9:\"dark_mode\";b:0;s:10:\"animations\";b:1;s:11:\"auto_backup\";b:0;s:11:\"last_backup\";s:5:\"Never\";}', 1774624145),
+('tugawees-sms-cache-reports_month', 'a:25:{s:13:\"totalStudents\";i:2;s:13:\"totalTeachers\";i:2;s:13:\"totalSections\";i:3;s:10:\"totalUsers\";i:9;s:13:\"totalSubjects\";i:40;s:20:\"pendingRegistrations\";i:0;s:13:\"studentGrowth\";i:100;s:13:\"teacherGrowth\";i:100;s:25:\"averageStudentsPerSection\";d:0.7;s:16:\"averageClassSize\";d:0.7;s:9:\"maleCount\";i:1;s:11:\"femaleCount\";i:1;s:14:\"malePercentage\";d:50;s:16:\"femalePercentage\";d:50;s:16:\"activeSchoolYear\";s:9:\"2027-2028\";s:16:\"enrollmentLabels\";a:6:{i:0;s:3:\"Oct\";i:1;s:3:\"Nov\";i:2;s:3:\"Dec\";i:3;s:3:\"Jan\";i:4;s:3:\"Feb\";i:5;s:3:\"Mar\";}s:14:\"enrollmentData\";a:6:{i:0;i:0;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:2;}s:11:\"gradeLevels\";a:2:{i:0;s:7:\"Grade 1\";i:1;s:7:\"Grade 2\";}s:17:\"gradeDistribution\";a:2:{i:0;i:1;i:1;i:1;}s:12:\"sectionNames\";a:3:{i:0;s:5:\"SALAS\";i:1;s:4:\"ROSE\";i:2;s:6:\"MENDES\";}s:15:\"sectionAverages\";a:3:{i:0;d:0;i:1;d:0;i:2;d:0;}s:11:\"topSections\";a:3:{i:0;a:4:{s:4:\"name\";s:5:\"SALAS\";s:7:\"teacher\";s:3:\"N/A\";s:8:\"students\";i:0;s:7:\"average\";d:0;}i:1;a:4:{s:4:\"name\";s:4:\"ROSE\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}i:2;a:4:{s:4:\"name\";s:6:\"MENDES\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}}s:16:\"recentActivities\";a:4:{i:0;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:1;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}i:2;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:3;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}}s:11:\"passingRate\";i:0;s:14:\"attendanceRate\";i:95;}', 1774620241),
+('tugawees-sms-cache-reports_month_1', 'a:25:{s:13:\"totalStudents\";i:2;s:13:\"totalTeachers\";i:2;s:13:\"totalSections\";i:3;s:10:\"totalUsers\";i:9;s:13:\"totalSubjects\";i:40;s:20:\"pendingRegistrations\";i:0;s:13:\"studentGrowth\";i:100;s:13:\"teacherGrowth\";i:100;s:25:\"averageStudentsPerSection\";d:0.7;s:16:\"averageClassSize\";d:0.7;s:9:\"maleCount\";i:1;s:11:\"femaleCount\";i:1;s:14:\"malePercentage\";d:50;s:16:\"femalePercentage\";d:50;s:16:\"activeSchoolYear\";s:9:\"2026-2027\";s:16:\"enrollmentLabels\";a:6:{i:0;s:3:\"Oct\";i:1;s:3:\"Nov\";i:2;s:3:\"Dec\";i:3;s:3:\"Jan\";i:4;s:3:\"Feb\";i:5;s:3:\"Mar\";}s:14:\"enrollmentData\";a:6:{i:0;i:0;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:2;}s:11:\"gradeLevels\";a:2:{i:0;s:7:\"Grade 1\";i:1;s:7:\"Grade 2\";}s:17:\"gradeDistribution\";a:2:{i:0;i:1;i:1;i:1;}s:12:\"sectionNames\";a:3:{i:0;s:5:\"SALAS\";i:1;s:4:\"ROSE\";i:2;s:6:\"MENDES\";}s:15:\"sectionAverages\";a:3:{i:0;d:0;i:1;d:0;i:2;d:0;}s:11:\"topSections\";a:3:{i:0;a:4:{s:4:\"name\";s:5:\"SALAS\";s:7:\"teacher\";s:3:\"N/A\";s:8:\"students\";i:0;s:7:\"average\";d:0;}i:1;a:4:{s:4:\"name\";s:4:\"ROSE\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}i:2;a:4:{s:4:\"name\";s:6:\"MENDES\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}}s:16:\"recentActivities\";a:4:{i:0;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:1;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}i:2;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:3;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}}s:11:\"passingRate\";i:0;s:14:\"attendanceRate\";i:95;}', 1774621150),
+('tugawees-sms-cache-reports_month_2', 'a:25:{s:13:\"totalStudents\";i:0;s:13:\"totalTeachers\";i:0;s:13:\"totalSections\";i:0;s:10:\"totalUsers\";i:9;s:13:\"totalSubjects\";i:40;s:20:\"pendingRegistrations\";i:0;s:13:\"studentGrowth\";i:0;s:13:\"teacherGrowth\";i:0;s:25:\"averageStudentsPerSection\";i:0;s:16:\"averageClassSize\";i:0;s:9:\"maleCount\";i:0;s:11:\"femaleCount\";i:0;s:14:\"malePercentage\";i:0;s:16:\"femalePercentage\";i:0;s:16:\"activeSchoolYear\";s:9:\"2027-2028\";s:16:\"enrollmentLabels\";a:6:{i:0;s:3:\"Oct\";i:1;s:3:\"Nov\";i:2;s:3:\"Dec\";i:3;s:3:\"Jan\";i:4;s:3:\"Feb\";i:5;s:3:\"Mar\";}s:14:\"enrollmentData\";a:6:{i:0;i:0;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:0;}s:11:\"gradeLevels\";a:0:{}s:17:\"gradeDistribution\";a:0:{}s:12:\"sectionNames\";a:0:{}s:15:\"sectionAverages\";a:0:{}s:11:\"topSections\";a:0:{}s:16:\"recentActivities\";a:0:{}s:11:\"passingRate\";i:0;s:14:\"attendanceRate\";i:95;}', 1774621178),
+('tugawees-sms-cache-reports_month_8', 'a:25:{s:13:\"totalStudents\";i:0;s:13:\"totalTeachers\";i:0;s:13:\"totalSections\";i:0;s:10:\"totalUsers\";i:9;s:13:\"totalSubjects\";i:40;s:20:\"pendingRegistrations\";i:0;s:13:\"studentGrowth\";i:0;s:13:\"teacherGrowth\";i:0;s:25:\"averageStudentsPerSection\";i:0;s:16:\"averageClassSize\";i:0;s:9:\"maleCount\";i:0;s:11:\"femaleCount\";i:0;s:14:\"malePercentage\";i:0;s:16:\"femalePercentage\";i:0;s:16:\"activeSchoolYear\";s:9:\"2033-2034\";s:16:\"enrollmentLabels\";a:6:{i:0;s:3:\"Oct\";i:1;s:3:\"Nov\";i:2;s:3:\"Dec\";i:3;s:3:\"Jan\";i:4;s:3:\"Feb\";i:5;s:3:\"Mar\";}s:14:\"enrollmentData\";a:6:{i:0;i:0;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:0;}s:11:\"gradeLevels\";a:0:{}s:17:\"gradeDistribution\";a:0:{}s:12:\"sectionNames\";a:0:{}s:15:\"sectionAverages\";a:0:{}s:11:\"topSections\";a:0:{}s:16:\"recentActivities\";a:0:{}s:11:\"passingRate\";i:0;s:14:\"attendanceRate\";i:95;}', 1774621209),
+('tugawees-sms-cache-reports_quarter', 'a:25:{s:13:\"totalStudents\";i:2;s:13:\"totalTeachers\";i:2;s:13:\"totalSections\";i:3;s:10:\"totalUsers\";i:9;s:13:\"totalSubjects\";i:40;s:20:\"pendingRegistrations\";i:0;s:13:\"studentGrowth\";i:100;s:13:\"teacherGrowth\";i:100;s:25:\"averageStudentsPerSection\";d:0.7;s:16:\"averageClassSize\";d:0.7;s:9:\"maleCount\";i:1;s:11:\"femaleCount\";i:1;s:14:\"malePercentage\";d:50;s:16:\"femalePercentage\";d:50;s:16:\"activeSchoolYear\";s:9:\"2027-2028\";s:16:\"enrollmentLabels\";a:6:{i:0;s:3:\"Oct\";i:1;s:3:\"Nov\";i:2;s:3:\"Dec\";i:3;s:3:\"Jan\";i:4;s:3:\"Feb\";i:5;s:3:\"Mar\";}s:14:\"enrollmentData\";a:6:{i:0;i:0;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:2;}s:11:\"gradeLevels\";a:2:{i:0;s:7:\"Grade 1\";i:1;s:7:\"Grade 2\";}s:17:\"gradeDistribution\";a:2:{i:0;i:1;i:1;i:1;}s:12:\"sectionNames\";a:3:{i:0;s:5:\"SALAS\";i:1;s:4:\"ROSE\";i:2;s:6:\"MENDES\";}s:15:\"sectionAverages\";a:3:{i:0;d:0;i:1;d:0;i:2;d:0;}s:11:\"topSections\";a:3:{i:0;a:4:{s:4:\"name\";s:5:\"SALAS\";s:7:\"teacher\";s:3:\"N/A\";s:8:\"students\";i:0;s:7:\"average\";d:0;}i:1;a:4:{s:4:\"name\";s:4:\"ROSE\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}i:2;a:4:{s:4:\"name\";s:6:\"MENDES\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}}s:16:\"recentActivities\";a:4:{i:0;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:1;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}i:2;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:3;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}}s:11:\"passingRate\";i:0;s:14:\"attendanceRate\";i:95;}', 1774620272),
+('tugawees-sms-cache-reports_today', 'a:25:{s:13:\"totalStudents\";i:2;s:13:\"totalTeachers\";i:2;s:13:\"totalSections\";i:3;s:10:\"totalUsers\";i:9;s:13:\"totalSubjects\";i:40;s:20:\"pendingRegistrations\";i:0;s:13:\"studentGrowth\";i:100;s:13:\"teacherGrowth\";i:100;s:25:\"averageStudentsPerSection\";d:0.7;s:16:\"averageClassSize\";d:0.7;s:9:\"maleCount\";i:1;s:11:\"femaleCount\";i:1;s:14:\"malePercentage\";d:50;s:16:\"femalePercentage\";d:50;s:16:\"activeSchoolYear\";s:9:\"2026-2027\";s:16:\"enrollmentLabels\";a:6:{i:0;s:5:\"00:00\";i:1;s:5:\"04:00\";i:2;s:5:\"08:00\";i:3;s:5:\"12:00\";i:4;s:5:\"16:00\";i:5;s:5:\"20:00\";}s:14:\"enrollmentData\";a:6:{i:0;i:0;i:1;i:0;i:2;i:1;i:3;i:0;i:4;i:0;i:5;i:0;}s:11:\"gradeLevels\";a:2:{i:0;s:7:\"Grade 1\";i:1;s:7:\"Grade 2\";}s:17:\"gradeDistribution\";a:2:{i:0;i:1;i:1;i:1;}s:12:\"sectionNames\";a:3:{i:0;s:5:\"SALAS\";i:1;s:4:\"ROSE\";i:2;s:6:\"MENDES\";}s:15:\"sectionAverages\";a:3:{i:0;d:0;i:1;d:0;i:2;d:0;}s:11:\"topSections\";a:3:{i:0;a:4:{s:4:\"name\";s:5:\"SALAS\";s:7:\"teacher\";s:3:\"N/A\";s:8:\"students\";i:0;s:7:\"average\";d:0;}i:1;a:4:{s:4:\"name\";s:4:\"ROSE\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}i:2;a:4:{s:4:\"name\";s:6:\"MENDES\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}}s:16:\"recentActivities\";a:4:{i:0;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:1;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}i:2;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:3;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}}s:11:\"passingRate\";i:0;s:14:\"attendanceRate\";i:95;}', 1774619970),
+('tugawees-sms-cache-reports_today_1', 'a:25:{s:13:\"totalStudents\";i:2;s:13:\"totalTeachers\";i:2;s:13:\"totalSections\";i:3;s:10:\"totalUsers\";i:9;s:13:\"totalSubjects\";i:40;s:20:\"pendingRegistrations\";i:0;s:13:\"studentGrowth\";i:100;s:13:\"teacherGrowth\";i:100;s:25:\"averageStudentsPerSection\";d:0.7;s:16:\"averageClassSize\";d:0.7;s:9:\"maleCount\";i:1;s:11:\"femaleCount\";i:1;s:14:\"malePercentage\";d:50;s:16:\"femalePercentage\";d:50;s:16:\"activeSchoolYear\";s:9:\"2026-2027\";s:16:\"enrollmentLabels\";a:6:{i:0;s:5:\"00:00\";i:1;s:5:\"04:00\";i:2;s:5:\"08:00\";i:3;s:5:\"12:00\";i:4;s:5:\"16:00\";i:5;s:5:\"20:00\";}s:14:\"enrollmentData\";a:6:{i:0;i:0;i:1;i:0;i:2;i:1;i:3;i:0;i:4;i:0;i:5;i:0;}s:11:\"gradeLevels\";a:2:{i:0;s:7:\"Grade 1\";i:1;s:7:\"Grade 2\";}s:17:\"gradeDistribution\";a:2:{i:0;i:1;i:1;i:1;}s:12:\"sectionNames\";a:3:{i:0;s:5:\"SALAS\";i:1;s:4:\"ROSE\";i:2;s:6:\"MENDES\";}s:15:\"sectionAverages\";a:3:{i:0;d:0;i:1;d:0;i:2;d:0;}s:11:\"topSections\";a:3:{i:0;a:4:{s:4:\"name\";s:5:\"SALAS\";s:7:\"teacher\";s:3:\"N/A\";s:8:\"students\";i:0;s:7:\"average\";d:0;}i:1;a:4:{s:4:\"name\";s:4:\"ROSE\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}i:2;a:4:{s:4:\"name\";s:6:\"MENDES\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}}s:16:\"recentActivities\";a:4:{i:0;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:1;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}i:2;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:3;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}}s:11:\"passingRate\";i:0;s:14:\"attendanceRate\";i:95;}', 1774621221),
+('tugawees-sms-cache-reports_week', 'a:25:{s:13:\"totalStudents\";i:2;s:13:\"totalTeachers\";i:2;s:13:\"totalSections\";i:3;s:10:\"totalUsers\";i:9;s:13:\"totalSubjects\";i:40;s:20:\"pendingRegistrations\";i:0;s:13:\"studentGrowth\";i:100;s:13:\"teacherGrowth\";i:100;s:25:\"averageStudentsPerSection\";d:0.7;s:16:\"averageClassSize\";d:0.7;s:9:\"maleCount\";i:1;s:11:\"femaleCount\";i:1;s:14:\"malePercentage\";d:50;s:16:\"femalePercentage\";d:50;s:16:\"activeSchoolYear\";s:9:\"2026-2027\";s:16:\"enrollmentLabels\";a:7:{i:0;s:3:\"Mon\";i:1;s:3:\"Tue\";i:2;s:3:\"Wed\";i:3;s:3:\"Thu\";i:4;s:3:\"Fri\";i:5;s:3:\"Sat\";i:6;s:3:\"Sun\";}s:14:\"enrollmentData\";a:7:{i:0;i:0;i:1;i:0;i:2;i:1;i:3;i:0;i:4;i:1;i:5;i:0;i:6;i:0;}s:11:\"gradeLevels\";a:2:{i:0;s:7:\"Grade 1\";i:1;s:7:\"Grade 2\";}s:17:\"gradeDistribution\";a:2:{i:0;i:1;i:1;i:1;}s:12:\"sectionNames\";a:3:{i:0;s:5:\"SALAS\";i:1;s:4:\"ROSE\";i:2;s:6:\"MENDES\";}s:15:\"sectionAverages\";a:3:{i:0;d:0;i:1;d:0;i:2;d:0;}s:11:\"topSections\";a:3:{i:0;a:4:{s:4:\"name\";s:5:\"SALAS\";s:7:\"teacher\";s:3:\"N/A\";s:8:\"students\";i:0;s:7:\"average\";d:0;}i:1;a:4:{s:4:\"name\";s:4:\"ROSE\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}i:2;a:4:{s:4:\"name\";s:6:\"MENDES\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}}s:16:\"recentActivities\";a:4:{i:0;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:10:\"1 hour ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:1;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:10:\"1 hour ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}i:2;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:3;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}}s:11:\"passingRate\";i:0;s:14:\"attendanceRate\";i:95;}', 1774616368),
+('tugawees-sms-cache-reports_year', 'a:25:{s:13:\"totalStudents\";i:2;s:13:\"totalTeachers\";i:2;s:13:\"totalSections\";i:3;s:10:\"totalUsers\";i:9;s:13:\"totalSubjects\";i:40;s:20:\"pendingRegistrations\";i:0;s:13:\"studentGrowth\";i:100;s:13:\"teacherGrowth\";i:100;s:25:\"averageStudentsPerSection\";d:0.7;s:16:\"averageClassSize\";d:0.7;s:9:\"maleCount\";i:1;s:11:\"femaleCount\";i:1;s:14:\"malePercentage\";d:50;s:16:\"femalePercentage\";d:50;s:16:\"activeSchoolYear\";s:9:\"2026-2027\";s:16:\"enrollmentLabels\";a:6:{i:0;s:3:\"Oct\";i:1;s:3:\"Nov\";i:2;s:3:\"Dec\";i:3;s:3:\"Jan\";i:4;s:3:\"Feb\";i:5;s:3:\"Mar\";}s:14:\"enrollmentData\";a:6:{i:0;i:0;i:1;i:0;i:2;i:0;i:3;i:0;i:4;i:0;i:5;i:2;}s:11:\"gradeLevels\";a:2:{i:0;s:7:\"Grade 1\";i:1;s:7:\"Grade 2\";}s:17:\"gradeDistribution\";a:2:{i:0;i:1;i:1;i:1;}s:12:\"sectionNames\";a:3:{i:0;s:5:\"SALAS\";i:1;s:4:\"ROSE\";i:2;s:6:\"MENDES\";}s:15:\"sectionAverages\";a:3:{i:0;d:0;i:1;d:0;i:2;d:0;}s:11:\"topSections\";a:3:{i:0;a:4:{s:4:\"name\";s:5:\"SALAS\";s:7:\"teacher\";s:3:\"N/A\";s:8:\"students\";i:0;s:7:\"average\";d:0;}i:1;a:4:{s:4:\"name\";s:4:\"ROSE\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}i:2;a:4:{s:4:\"name\";s:6:\"MENDES\";s:7:\"teacher\";N;s:8:\"students\";i:1;s:7:\"average\";d:0;}}s:16:\"recentActivities\";a:4:{i:0;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:1;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:11:\"2 hours ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}i:2;a:6:{s:5:\"title\";s:22:\"New Student Registered\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:12:\"fa-user-plus\";s:7:\"icon_bg\";s:11:\"bg-blue-100\";s:10:\"icon_color\";s:13:\"text-blue-600\";}i:3;a:6:{s:5:\"title\";s:17:\"New Teacher Added\";s:11:\"description\";N;s:4:\"time\";s:10:\"2 days ago\";s:4:\"icon\";s:21:\"fa-chalkboard-teacher\";s:7:\"icon_bg\";s:13:\"bg-purple-100\";s:10:\"icon_color\";s:15:\"text-purple-600\";}}s:11:\"passingRate\";i:0;s:14:\"attendanceRate\";i:95;}', 1774620065);
 
 -- --------------------------------------------------------
 
@@ -185,7 +194,8 @@ CREATE TABLE `events` (
   `description` text COLLATE utf8mb4_unicode_ci,
   `date` date NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `school_year_id` bigint UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -413,7 +423,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (67, '2026_03_26_131646_add_grade_level_id_to_subjects_table', 63),
 (68, '2026_03_27_101054_add_component_type_to_grades_table', 64),
 (69, '2026_03_27_101933_add_scores_to_grades_table', 65),
-(70, '2026_03_27_102151_create_grades_table', 66);
+(70, '2026_03_27_102151_create_grades_table', 66),
+(71, '2026_03_27_143342_add_school_year_id_to_events_table', 67);
 
 -- --------------------------------------------------------
 
@@ -507,20 +518,20 @@ CREATE TABLE `school_years` (
 --
 
 INSERT INTO `school_years` (`id`, `name`, `start_date`, `end_date`, `is_active`, `description`, `created_at`, `updated_at`) VALUES
-(1, '2026-2027', '2026-06-01', '2027-03-31', 1, 'School year 2026-2027 (current)', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(2, '2027-2028', '2027-06-01', '2028-03-31', 0, 'School year 2027-2028', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(3, '2028-2029', '2028-06-01', '2029-03-31', 0, 'School year 2028-2029', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(4, '2029-2030', '2029-06-01', '2030-03-31', 0, 'School year 2029-2030', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(5, '2030-2031', '2030-06-01', '2031-03-31', 0, 'School year 2030-2031', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(6, '2031-2032', '2031-06-01', '2032-03-31', 0, 'School year 2031-2032', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(7, '2032-2033', '2032-06-01', '2033-03-31', 0, 'School year 2032-2033', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(8, '2033-2034', '2033-06-01', '2034-03-31', 0, 'School year 2033-2034', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(9, '2034-2035', '2034-06-01', '2035-03-31', 0, 'School year 2034-2035', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(10, '2035-2036', '2035-06-01', '2036-03-31', 0, 'School year 2035-2036', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(11, '2036-2037', '2036-06-01', '2037-03-31', 0, 'School year 2036-2037', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(12, '2037-2038', '2037-06-01', '2038-03-31', 0, 'School year 2037-2038', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(13, '2038-2039', '2038-06-01', '2039-03-31', 0, 'School year 2038-2039', '2026-03-22 01:56:23', '2026-03-24 20:14:21'),
-(14, '2039-2040', '2039-06-01', '2040-03-31', 0, 'School year 2039-2040', '2026-03-22 01:56:23', '2026-03-24 20:14:21');
+(1, '2026-2027', '2026-06-01', '2027-03-31', 1, 'School year 2026-2027 (current)', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(2, '2027-2028', '2027-06-01', '2028-03-31', 0, 'School year 2027-2028', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(3, '2028-2029', '2028-06-01', '2029-03-31', 0, 'School year 2028-2029', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(4, '2029-2030', '2029-06-01', '2030-03-31', 0, 'School year 2029-2030', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(5, '2030-2031', '2030-06-01', '2031-03-31', 0, 'School year 2030-2031', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(6, '2031-2032', '2031-06-01', '2032-03-31', 0, 'School year 2031-2032', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(7, '2032-2033', '2032-06-01', '2033-03-31', 0, 'School year 2032-2033', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(8, '2033-2034', '2033-06-01', '2034-03-31', 0, 'School year 2033-2034', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(9, '2034-2035', '2034-06-01', '2035-03-31', 0, 'School year 2034-2035', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(10, '2035-2036', '2035-06-01', '2036-03-31', 0, 'School year 2035-2036', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(11, '2036-2037', '2036-06-01', '2037-03-31', 0, 'School year 2036-2037', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(12, '2037-2038', '2037-06-01', '2038-03-31', 0, 'School year 2037-2038', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(13, '2038-2039', '2038-06-01', '2039-03-31', 0, 'School year 2038-2039', '2026-03-22 01:56:23', '2026-03-27 06:48:48'),
+(14, '2039-2040', '2039-06-01', '2040-03-31', 0, 'School year 2039-2040', '2026-03-22 01:56:23', '2026-03-27 06:48:48');
 
 -- --------------------------------------------------------
 
@@ -584,8 +595,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('3eJMWQ5sK3KBWCBKefyLQmuDWULvEEC5tQiSvw8p', 66, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWFd5Y2hxUlRaQkRIaW5SZFNjbVlRdGVrRktSd0tCWk8yMHFIaWtzeCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6ODI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90ZWFjaGVyL3NlY3Rpb25zLzIvZ3JhZGVzP2dyYWRlX2xldmVsPTcmcXVhcnRlcj0xJnN1YmplY3Q9MzMiO3M6NToicm91dGUiO3M6MjM6InRlYWNoZXIuc2VjdGlvbnMuZ3JhZGVzIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6NjY7fQ==', 1774533432),
-('nSzqrYVrRpU72LBaa2kjCLdrzVz2emoyl3DYGEfN', 70, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiV3pmOHFpNE1oOXZKUEkxbHNrQmFuU1gxSVFkU3c2WjJDVHg1ZVdFSSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90ZWFjaGVyL2Rhc2hib2FyZCI7czo1OiJyb3V0ZSI7czoxNzoidGVhY2hlci5kYXNoYm9hcmQiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo3MDt9', 1774610734);
+('eUwTO61X56i81dcnyevb6ctDztSe7riVF58TGPVt', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoia1l4SHhnYWtBaG1XTGxqNko3QUJPMXpkN1ZXT0dQb0R6d2lQeWY4OSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9kYXNoYm9hcmQiO3M6NToicm91dGUiO3M6MTU6ImFkbWluLmRhc2hib2FyZCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1774622929);
 
 -- --------------------------------------------------------
 
@@ -673,16 +683,17 @@ CREATE TABLE `students` (
   `section_id` bigint UNSIGNED DEFAULT NULL,
   `photo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `school_year_id` bigint UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `students`
 --
 
-INSERT INTO `students` (`id`, `user_id`, `lrn`, `birthdate`, `birth_place`, `gender`, `nationality`, `religion`, `father_name`, `father_occupation`, `mother_name`, `mother_occupation`, `guardian_name`, `guardian_relationship`, `guardian_contact`, `street_address`, `barangay`, `city`, `province`, `zip_code`, `status`, `grade_level_id`, `section_id`, `photo`, `created_at`, `updated_at`) VALUES
-(40, 67, '120231260000', '2004-01-07', 'Dauin', 'Male', 'Filipino', 'Christianity', 'Nelson A. Tuayon', 'Farmer', 'Agripina B. Tuayon', 'Farmer', 'Nelson A. Tuayon', 'Parent', '09368726547', 'Purok 5', 'Tugawe', 'Dauin', 'Negros Oriental', '6217', 'enrolled', 2, 2, NULL, '2026-03-25 02:45:58', '2026-03-25 06:26:39'),
-(41, 69, '120231260001', '2003-11-06', NULL, 'Female', 'Filipino', 'Roman Catholic', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Purok Twin Hearts', 'Cantil-e', 'Dumaguete City', 'Negros Oriental', '6200', 'enrolled', 3, 3, NULL, '2026-03-27 03:10:30', '2026-03-27 03:14:28');
+INSERT INTO `students` (`id`, `user_id`, `lrn`, `birthdate`, `birth_place`, `gender`, `nationality`, `religion`, `father_name`, `father_occupation`, `mother_name`, `mother_occupation`, `guardian_name`, `guardian_relationship`, `guardian_contact`, `street_address`, `barangay`, `city`, `province`, `zip_code`, `status`, `grade_level_id`, `section_id`, `photo`, `created_at`, `updated_at`, `school_year_id`) VALUES
+(40, 67, '120231260000', '2004-01-07', 'Dauin', 'Male', 'Filipino', 'Christianity', 'Nelson A. Tuayon', 'Farmer', 'Agripina B. Tuayon', 'Farmer', 'Nelson A. Tuayon', 'Parent', '09368726547', 'Purok 5', 'Tugawe', 'Dauin', 'Negros Oriental', '6217', 'enrolled', 2, 2, NULL, '2026-03-25 02:45:58', '2026-03-25 06:26:39', 1),
+(41, 69, '120231260001', '2003-11-06', NULL, 'Female', 'Filipino', 'Roman Catholic', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Purok Twin Hearts', 'Cantil-e', 'Dumaguete City', 'Negros Oriental', '6200', 'enrolled', 3, 3, NULL, '2026-03-27 03:10:30', '2026-03-27 03:14:28', 1);
 
 -- --------------------------------------------------------
 
@@ -863,16 +874,17 @@ CREATE TABLE `teachers` (
   `status` enum('active','on_leave','inactive') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `school_year_id` bigint UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `teachers`
 --
 
-INSERT INTO `teachers` (`id`, `teacher_id`, `deped_id`, `first_name`, `middle_name`, `last_name`, `suffix`, `date_of_birth`, `place_of_birth`, `gender`, `civil_status`, `nationality`, `religion`, `blood_type`, `email`, `mobile_number`, `telephone_number`, `street_address`, `barangay`, `city_municipality`, `province`, `zip_code`, `region`, `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_number`, `emergency_contact_address`, `employment_status`, `date_hired`, `date_regularized`, `current_status`, `teaching_level`, `position`, `designation`, `is_class_adviser`, `advisory_class`, `department`, `highest_education`, `degree_program`, `major`, `minor`, `school_graduated`, `year_graduated`, `honors_received`, `prc_license_number`, `prc_license_validity`, `let_passer`, `board_rating`, `tesda_nc`, `tesda_sector`, `years_of_experience`, `previous_school`, `previous_position`, `gsis_id`, `pagibig_id`, `philhealth_id`, `sss_id`, `tin_id`, `pagibig_rtn`, `salary_grade`, `step_increment`, `basic_salary`, `bank_account_number`, `bank_name`, `spouse_name`, `spouse_occupation`, `spouse_contact`, `number_of_children`, `father_name`, `father_occupation`, `mother_name`, `mother_occupation`, `medical_conditions`, `medications`, `covid_vaccinated`, `covid_vaccine_type`, `covid_vaccine_date`, `photo_path`, `resume_path`, `prc_id_path`, `transcript_path`, `clearance_path`, `medical_cert_path`, `nbi_clearance_path`, `service_record_path`, `user_id`, `last_login_at`, `ip_address`, `remarks`, `status`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(8, NULL, NULL, 'Maria', 'Carreon', 'Santos', NULL, '1998-10-10', 'Dauin', 'female', 'single', 'Filipino', 'Roman Catholic', 'AB-', 'mariasan@gmail.com', '0936 872 6547', NULL, 'Elithon', 'Tugawe', 'Dauin', 'Negros Oriental', '6217', 'NIR', NULL, NULL, NULL, NULL, 'substitute', NULL, NULL, 'Active', 'I', 'Teacher 1', NULL, 0, NULL, NULL, 'bachelor', 'BEED', NULL, NULL, 'NORSU', 2016, NULL, NULL, NULL, 0, NULL, NULL, NULL, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 66, NULL, NULL, NULL, 'active', NULL, '2026-03-25 02:22:47', '2026-03-27 03:13:25'),
-(9, NULL, NULL, 'Shane', NULL, 'Mendes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'msmendes@gmail.com', '0936 872 6547', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 70, NULL, NULL, NULL, 'active', NULL, '2026-03-27 03:13:09', '2026-03-27 03:13:09');
+INSERT INTO `teachers` (`id`, `teacher_id`, `deped_id`, `first_name`, `middle_name`, `last_name`, `suffix`, `date_of_birth`, `place_of_birth`, `gender`, `civil_status`, `nationality`, `religion`, `blood_type`, `email`, `mobile_number`, `telephone_number`, `street_address`, `barangay`, `city_municipality`, `province`, `zip_code`, `region`, `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_number`, `emergency_contact_address`, `employment_status`, `date_hired`, `date_regularized`, `current_status`, `teaching_level`, `position`, `designation`, `is_class_adviser`, `advisory_class`, `department`, `highest_education`, `degree_program`, `major`, `minor`, `school_graduated`, `year_graduated`, `honors_received`, `prc_license_number`, `prc_license_validity`, `let_passer`, `board_rating`, `tesda_nc`, `tesda_sector`, `years_of_experience`, `previous_school`, `previous_position`, `gsis_id`, `pagibig_id`, `philhealth_id`, `sss_id`, `tin_id`, `pagibig_rtn`, `salary_grade`, `step_increment`, `basic_salary`, `bank_account_number`, `bank_name`, `spouse_name`, `spouse_occupation`, `spouse_contact`, `number_of_children`, `father_name`, `father_occupation`, `mother_name`, `mother_occupation`, `medical_conditions`, `medications`, `covid_vaccinated`, `covid_vaccine_type`, `covid_vaccine_date`, `photo_path`, `resume_path`, `prc_id_path`, `transcript_path`, `clearance_path`, `medical_cert_path`, `nbi_clearance_path`, `service_record_path`, `user_id`, `last_login_at`, `ip_address`, `remarks`, `status`, `deleted_at`, `created_at`, `updated_at`, `school_year_id`) VALUES
+(8, NULL, NULL, 'Maria', 'Carreon', 'Santos', NULL, '1998-10-10', 'Dauin', 'female', 'single', 'Filipino', 'Roman Catholic', 'AB-', 'mariasan@gmail.com', '0936 872 6547', NULL, 'Elithon', 'Tugawe', 'Dauin', 'Negros Oriental', '6217', 'NIR', NULL, NULL, NULL, NULL, 'substitute', NULL, NULL, 'Active', 'I', 'Teacher 1', NULL, 0, NULL, NULL, 'bachelor', 'BEED', NULL, NULL, 'NORSU', 2016, NULL, NULL, NULL, 0, NULL, NULL, NULL, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 66, NULL, NULL, NULL, 'active', NULL, '2026-03-25 02:22:47', '2026-03-27 03:13:25', 1),
+(9, NULL, NULL, 'Shane', NULL, 'Mendes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'msmendes@gmail.com', '0936 872 6547', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 70, NULL, NULL, NULL, 'active', NULL, '2026-03-27 03:13:09', '2026-03-27 03:13:09', 1);
 
 -- --------------------------------------------------------
 
@@ -1024,7 +1036,8 @@ ALTER TABLE `enrollments`
 -- Indexes for table `events`
 --
 ALTER TABLE `events`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `events_school_year_id_foreign` (`school_year_id`);
 
 --
 -- Indexes for table `failed_jobs`
@@ -1161,7 +1174,8 @@ ALTER TABLE `students`
   ADD UNIQUE KEY `students_lrn_unique` (`lrn`),
   ADD KEY `students_user_id_foreign` (`user_id`),
   ADD KEY `students_grade_level_id_foreign` (`grade_level_id`),
-  ADD KEY `students_section_id_foreign` (`section_id`);
+  ADD KEY `students_section_id_foreign` (`section_id`),
+  ADD KEY `students_school_year_id_foreign` (`school_year_id`);
 
 --
 -- Indexes for table `subjects`
@@ -1184,7 +1198,8 @@ ALTER TABLE `submissions`
 --
 ALTER TABLE `teachers`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `teachers_user_id_foreign` (`user_id`);
+  ADD KEY `teachers_user_id_foreign` (`user_id`),
+  ADD KEY `teachers_school_year_id_foreign` (`school_year_id`);
 
 --
 -- Indexes for table `teacher_sections`
@@ -1296,7 +1311,7 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -1422,6 +1437,12 @@ ALTER TABLE `enrollments`
   ADD CONSTRAINT `enrollments_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `events`
+--
+ALTER TABLE `events`
+  ADD CONSTRAINT `events_school_year_id_foreign` FOREIGN KEY (`school_year_id`) REFERENCES `school_years` (`id`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `grades`
 --
 ALTER TABLE `grades`
@@ -1472,6 +1493,7 @@ ALTER TABLE `section_subject`
 --
 ALTER TABLE `students`
   ADD CONSTRAINT `students_grade_level_id_foreign` FOREIGN KEY (`grade_level_id`) REFERENCES `grade_levels` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `students_school_year_id_foreign` FOREIGN KEY (`school_year_id`) REFERENCES `school_years` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `students_section_id_foreign` FOREIGN KEY (`section_id`) REFERENCES `sections` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `students_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
@@ -1492,6 +1514,7 @@ ALTER TABLE `submissions`
 -- Constraints for table `teachers`
 --
 ALTER TABLE `teachers`
+  ADD CONSTRAINT `teachers_school_year_id_foreign` FOREIGN KEY (`school_year_id`) REFERENCES `school_years` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `teachers_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --

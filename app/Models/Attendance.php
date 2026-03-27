@@ -16,6 +16,11 @@ class Attendance extends Model
         return $this->belongsTo(Section::class);
     }
 
+       public function student()
+    {
+        return $this->belongsTo(Student::class, 'student_id');
+    }
+
     public function records()
     {
         return $this->hasMany(AttendanceRecord::class);

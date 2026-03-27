@@ -233,7 +233,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
       Route::resource('attendance', \App\Http\Controllers\Admin\AttendanceController::class);
         Route::resource('grades', \App\Http\Controllers\Admin\GradeController::class);
-         Route::resource('reports', \App\Http\Controllers\Admin\ReportController::class);
+
+
+    Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/export/{format}', [\App\Http\Controllers\Admin\ReportController::class, 'export'])
+        ->name('reports.export')
+        ->where('format', 'pdf|excel|csv|xlsx');
+
          Route::post('school-year/set-active', [\App\Http\Controllers\Admin\SchoolYearController::class, 'setActive'])
         ->name('school-year.set-active');
 

@@ -1,10 +1,42 @@
 {{-- resources/views/admin/includes/sidebar.blade.php --}}
 @php
-// Get counts directly in sidebar so they're always available
-$sidebarStudentCount = \App\Models\Student::count();
-$sidebarTeacherCount = \App\Models\Teacher::count();
+// Get the active school year
+$activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
 
+// Students count filtered by active school year
+$sidebarStudentCount = $activeSchoolYear 
+    ? \App\Models\Student::where('school_year_id', $activeSchoolYear->id)->count() 
+    : \App\Models\Student::count();
+
+// Teachers count filtered by active school year
+$sidebarTeacherCount = $activeSchoolYear 
+    ? \App\Models\Teacher::where('school_year_id', $activeSchoolYear->id)->count() 
+    : \App\Models\Teacher::count();
+
+// Sections count filtered by active school year
+$sidebarSectionCount = $activeSchoolYear 
+    ? \App\Models\Section::where('school_year_id', $activeSchoolYear->id)->count() 
+    : \App\Models\Section::count();
+
+// Users count filtered by related students and teachers (Option 2)
+$sidebarUserCount = $activeSchoolYear 
+    ? \App\Models\User::whereHas('student', function ($q) use ($activeSchoolYear) {
+        $q->where('school_year_id', $activeSchoolYear->id);
+      })
+      ->orWhereHas('teacher', function ($q) use ($activeSchoolYear) {
+        $q->where('school_year_id', $activeSchoolYear->id);
+      })
+      ->count()
+    : \App\Models\User::count();
+
+// Pending registrations count (students with status pending, filtered by active school year)
+$sidebarPendingCount = $activeSchoolYear 
+    ? \App\Models\Student::where('status', 'pending')
+        ->where('school_year_id', $activeSchoolYear->id)
+        ->count() 
+    : \App\Models\Student::where('status', 'pending')->count();
 @endphp
+
 
 <style>
     * { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -252,45 +284,42 @@ $sidebarTeacherCount = \App\Models\Teacher::count();
         </a>
         
         <a href="{{ route('admin.sections.index') }}" class="nav-item {{ request()->routeIs('admin.sections.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.sections.*') ? 'text-emerald-600 bg-emerald-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
-    <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.sections.*') ? 'bg-emerald-100' : 'bg-slate-100 group-hover:bg-emerald-50' }} flex items-center justify-center transition-colors">
-        <i class="fas fa-th-large text-sm {{ request()->routeIs('admin.sections.*') ? 'text-emerald-600' : 'group-hover:text-emerald-600' }}"></i>
-    </div>
-    <span>Sections</span>
-    <span class="ml-auto bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold">{{ $sidebarSectionCount }}</span>
-</a>
+            <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.sections.*') ? 'bg-emerald-100' : 'bg-slate-100 group-hover:bg-emerald-50' }} flex items-center justify-center transition-colors">
+                <i class="fas fa-th-large text-sm {{ request()->routeIs('admin.sections.*') ? 'text-emerald-600' : 'group-hover:text-emerald-600' }}"></i>
+            </div>
+            <span>Sections</span>
+            <span class="ml-auto bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold">{{ $sidebarSectionCount }}</span>
+        </a>
 
-<a href="{{ route('admin.users.index') }}" 
-   class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }} 
-          flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group 
-          {{ request()->routeIs('admin.users.*') ? 'text-blue-600 bg-blue-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
-    
-    <div class="w-8 h-8 rounded-lg 
-                {{ request()->routeIs('admin.users.*') ? 'bg-blue-100' : 'bg-slate-100 group-hover:bg-blue-50' }} 
-                flex items-center justify-center transition-colors">
-        <i class="fas fa-users text-sm 
-                  {{ request()->routeIs('admin.users.*') ? 'text-blue-600' : 'group-hover:text-blue-600' }}"></i>
-    </div>
-    
-    <span>Users</span>
-    
-    <span class="ml-auto bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">
-        {{ $sidebarUserCount ?? 0 }}
-    </span>
-</a>
+        <a href="{{ route('admin.users.index') }}" 
+           class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }} 
+                  flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group 
+                  {{ request()->routeIs('admin.users.*') ? 'text-blue-600 bg-blue-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+            
+            <div class="w-8 h-8 rounded-lg 
+                        {{ request()->routeIs('admin.users.*') ? 'bg-blue-100' : 'bg-slate-100 group-hover:bg-blue-50' }} 
+                        flex items-center justify-center transition-colors">
+                <i class="fas fa-users text-sm 
+                          {{ request()->routeIs('admin.users.*') ? 'text-blue-600' : 'group-hover:text-blue-600' }}"></i>
+            </div>
+            
+            <span>Users</span>
+            
+            <span class="ml-auto bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">
+                {{ $sidebarUserCount }}
+            </span>
+        </a>
 
-
-
-<a href="{{ route('admin.pending-registrations.index') }}" 
-   class="nav-item {{ request()->routeIs('admin.pending-registrations.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.pending-registrations.*') ? 'text-amber-600 bg-amber-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
-    <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.pending-registrations.*') ? 'bg-amber-100' : 'bg-slate-100 group-hover:bg-amber-50' }} flex items-center justify-center transition-colors">
-        <i class="fas fa-user-clock text-sm {{ request()->routeIs('admin.pending-registrations.*') ? 'text-amber-600' : 'group-hover:text-amber-600' }}"></i>
-    </div>
-    <span>Pending Registrations</span>
-    <span class="ml-auto bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">
-        {{ \App\Models\Student::where('status', 'pending')->count() }}
-    </span>
-</a>
-
+        <a href="{{ route('admin.pending-registrations.index') }}" 
+           class="nav-item {{ request()->routeIs('admin.pending-registrations.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.pending-registrations.*') ? 'text-amber-600 bg-amber-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+            <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.pending-registrations.*') ? 'bg-amber-100' : 'bg-slate-100 group-hover:bg-amber-50' }} flex items-center justify-center transition-colors">
+                <i class="fas fa-user-clock text-sm {{ request()->routeIs('admin.pending-registrations.*') ? 'text-amber-600' : 'group-hover:text-amber-600' }}"></i>
+            </div>
+            <span>Pending Registrations</span>
+            <span class="ml-auto bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">
+                {{ $sidebarPendingCount }}
+            </span>
+        </a>
         
         <a href="{{ route('admin.reports.index') }}" class="nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl font-medium transition-all group">
             <div class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-rose-50 flex items-center justify-center transition-colors">
@@ -299,9 +328,7 @@ $sidebarTeacherCount = \App\Models\Teacher::count();
             <span>Reports</span>
         </a>
         
-
-
-                <div class="pt-4 mt-4 border-t border-slate-100">
+        <div class="pt-4 mt-4 border-t border-slate-100">
             <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">School Year</p>
             <form action="{{ route('admin.school-year.set-active') }}" method="POST" class="px-4">
                 @csrf
@@ -319,18 +346,18 @@ $sidebarTeacherCount = \App\Models\Teacher::count();
                     </div>
                 </div>
             </form>
-            @php
-                $activeYear = \App\Models\SchoolYear::where('is_active', true)->first();
-            @endphp
-            @if($activeYear)
+            @if($activeSchoolYear)
                 <p class="px-4 mt-2 text-xs text-emerald-600 font-medium flex items-center gap-1">
                     <i class="fas fa-check-circle"></i>
-                    Active: {{ $activeYear->name }}
+                    Active: {{ $activeSchoolYear->name }}
+                </p>
+            @else
+                <p class="px-4 mt-2 text-xs text-amber-600 font-medium flex items-center gap-1">
+                    <i class="fas fa-exclamation-circle"></i>
+                    No active school year
                 </p>
             @endif
         </div>
-
-
     </nav>
 
     <!-- Bottom Section: Logout & User Profile -->
@@ -366,38 +393,37 @@ $sidebarTeacherCount = \App\Models\Teacher::count();
                 </button>
             </div>
             
-         <!-- User Dropdown Menu -->
-<div id="userMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 w-56">
-    <div class="p-3 border-b border-slate-100">
-        <div class="flex items-center gap-3 mb-2">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
-            </div>
-            <div class="flex-1 min-w-0">
-                <p class="font-bold text-slate-900 text-sm truncate">{{ auth()->user()->name ?? 'Administrator' }}</p>
-                <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email ?? 'admin@tugaweelem.edu' }}</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-2 mt-2">
-            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase tracking-wide">Admin</span>
-            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-        </div>
-    </div>
-    <div class="p-1 space-y-0.5">
-        <a href="{{ route('admin.users.edit', auth()->user()) }}" class="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl transition-all group">
-            <div class="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                <i class="fas fa-user text-blue-500 text-sm"></i>
-            </div>
-            <span class="font-medium">Profile</span>
-        </a>
-        <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl transition-all group">
-            <div class="w-8 h-8 rounded-lg bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center transition-colors">
-                <i class="fas fa-cog text-amber-500 text-sm"></i>
-            </div>
-            <span class="font-medium">Settings</span>
-        </a>
-       
-</div>
+            <!-- User Dropdown Menu -->
+            <div id="userMenu" class="hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 w-56">
+                <div class="p-3 border-b border-slate-100">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                            {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-slate-900 text-sm truncate">{{ auth()->user()->name ?? 'Administrator' }}</p>
+                            <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email ?? 'admin@tugaweelem.edu' }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase tracking-wide">Admin</span>
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    </div>
+                </div>
+                <div class="p-1 space-y-0.5">
+                    <a href="{{ route('admin.users.edit', auth()->user()) }}" class="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl transition-all group">
+                        <div class="w-8 h-8 rounded-lg bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
+                            <i class="fas fa-user text-blue-500 text-sm"></i>
+                        </div>
+                        <span class="font-medium">Profile</span>
+                    </a>
+                    <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl transition-all group">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center transition-colors">
+                            <i class="fas fa-cog text-amber-500 text-sm"></i>
+                        </div>
+                        <span class="font-medium">Settings</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
