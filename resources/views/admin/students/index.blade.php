@@ -290,6 +290,21 @@
     box-shadow: 0 20px 50px -10px rgba(37, 99, 235, 0.6);
 }
 
+/* Enhanced Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.status-badge.border {
+    border-width: 1px;
+}
+
 /* Mobile */
 @media (max-width: 1024px) {
     .fab-student {
@@ -424,110 +439,136 @@
                     <div class="overflow-x-auto">
                         <table class="modern-table" id="studentsTable">
                             <thead>
-                                <tr>
-                                    <th class="w-12">
-                                        <input type="checkbox" class="custom-checkbox" id="selectAll" onclick="toggleSelectAll()">
-                                    </th>
-                                    <th>Student Information</th>
-                                    <th>Grade & Section</th>
-                                    <th>Contact</th>
-                                    <th>Status</th>
-                                    <th>Registration Date</th>
-                                    <th class="text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($students as $student)
-                              <tr class="student-row" data-grade="{{ $student->grade_level }}" data-name="{{ strtolower($student->full_name) }}" data-lrn="{{ strtolower($student->lrn ?? '') }}">
-                                    <td>
-                                        <input type="checkbox" class="custom-checkbox student-checkbox" value="{{ $student->id }}">
-                                    </td>
-                                    <td>
-                                        <div class="flex items-center gap-3">
-                                            <img src="{{ $student->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($student->full_name) . '&background=random&color=fff&size=128' }}"
-                                                 class="w-12 h-12 rounded-full border-2 border-white shadow-sm object-cover">
-                                            <div>
-                                                <p class="font-bold text-slate-900 text-sm">{{ $student->full_name }}</p>
-                                                <p class="text-xs text-slate-500">ID: {{ $student->id }} • LRN: {{ $student->lrn ?? 'N/A' }}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="flex flex-col gap-1">
-                                            <span class="inline-flex items-center px-3 py-1 rounded-lg bg-blue-50 text-blue-700 font-semibold text-xs w-fit">
-                                                Grade {{ $student->grade_level ?? 'N/A' }}
-                                            </span>
-                                            <span class="text-xs text-slate-500 font-medium">
-                                                <i class="fas fa-door-open mr-1 text-slate-400"></i>
-                                                {{ $student->section->name ?? 'No Section Assigned' }}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td>
-<div class="flex flex-col gap-1">
-    <span class="text-sm text-slate-700 font-medium flex items-center gap-2">
-        <i class="fas fa-envelope text-slate-400 text-xs"></i>
-        {{ $student->user->email ?? 'No email' }}
-    </span>
-    @if($student->guardian_contact)  <!-- This is from students table -->
-    <span class="text-xs text-slate-500 flex items-center gap-2">
-        <i class="fas fa-phone text-slate-400"></i>
-        {{ $student->guardian_contact }}
-    </span>
-    @endif
-</div>
-                                    </td>
-                                    <td>
-                                        @php
-                                            $status = $student->status ?? 'active';
-                                            $statusClass = $status === 'active' ? 'status-active' : ($status === 'inactive' ? 'status-inactive' : 'status-pending');
-                                            $statusIcon = $status === 'active' ? 'fa-check-circle' : ($status === 'inactive' ? 'fa-ban' : 'fa-clock');
-                                        @endphp
-                                        <span class="status-badge {{ $statusClass }} capitalize">
-                                            <i class="fas {{ $statusIcon }} mr-1.5 text-[10px]"></i>
-                                            {{ $status }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="flex flex-col gap-1">
-                                            <span class="text-sm font-medium text-slate-700">
-                                                {{ $student->created_at->format('M d, Y') }}
-                                            </span>
-                                            <span class="text-xs text-slate-500">
-                                                {{ $student->created_at->diffForHumans() }}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td class="text-right">
-                                        <div class="flex items-center justify-end gap-1">
-                                            <a href="{{ route('admin.students.show', $student) }}" class="action-btn text-blue-600 hover:bg-blue-50" title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('admin.students.edit', $student) }}" class="action-btn text-amber-600 hover:bg-amber-50" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button onclick="deleteStudent({{ $student->id }})" class="action-btn text-red-600 hover:bg-red-50" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-16">
-                                        <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <i class="fas fa-user-slash text-3xl text-slate-400"></i>
-                                        </div>
-                                        <h3 class="text-lg font-semibold text-slate-700 mb-2">No students found</h3>
-                                        <p class="text-slate-500 mb-6">Get started by adding your first student</p>
-                                        <a href="{{ route('admin.students.create') }}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30">
-                                            <i class="fas fa-plus"></i>
-                                            Add New Student
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
+    <tr>
+        <th class="w-12">
+            <input type="checkbox" class="custom-checkbox" id="selectAll" onclick="toggleSelectAll()">
+        </th>
+        <th>Student Information</th>
+        <th>Grade & Section</th>
+        <th>Status</th>
+        <th>Contact</th>
+        <th>Registration Date</th>
+        <th class="text-right">Actions</th>
+    </tr>
+</thead>
+                           <tbody>
+    @forelse($students as $student)
+    <tr class="student-row" data-grade="{{ $student->grade_level }}" data-name="{{ strtolower($student->full_name) }}" data-lrn="{{ strtolower($student->lrn ?? '') }}">
+        <td>
+            <input type="checkbox" class="custom-checkbox student-checkbox" value="{{ $student->id }}">
+        </td>
+        
+        <!-- Student Information -->
+        <td>
+            <div class="flex items-center gap-3">
+                <img src="{{ $student->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($student->full_name) . '&background=random&color=fff&size=128' }}"
+                     class="w-12 h-12 rounded-full border-2 border-white shadow-sm object-cover">
+                <div>
+                    <p class="font-bold text-slate-900 text-sm">{{ $student->full_name }}</p>
+                    <p class="text-xs text-slate-500">ID: {{ $student->id }} • LRN: {{ $student->lrn ?? 'N/A' }}</p>
+                </div>
+            </div>
+        </td>
+        
+        <!-- Grade & Section -->
+        <td>
+            <div class="flex flex-col gap-1">
+                @php
+                    $enrollment = $student->enrollments->first();
+                @endphp
+                <span class="inline-flex items-center px-3 py-1 rounded-lg bg-blue-50 text-blue-700 font-semibold text-xs w-fit">
+                    Grade {{ $enrollment?->grade_level_id ?? $student->grade_level ?? 'N/A' }}
+                </span>
+                <span class="text-xs text-slate-500 font-medium">
+                    <i class="fas fa-door-open mr-1 text-slate-400"></i>
+                    {{ $enrollment?->section?->name ?? $student->section?->name ?? 'No Section Assigned' }}
+                </span>
+            </div>
+        </td>
+        
+        <!-- Status (from enrollment) -->
+        <td>
+            @php
+                $enrollment = $student->enrollments->first();
+                $status = $enrollment?->status ?? 'pending';
+                $statusClass = match($status) {
+                    'enrolled' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                    'pending' => 'bg-amber-50 text-amber-700 border-amber-200',
+                    'dropped', 'inactive' => 'bg-red-50 text-red-700 border-red-200',
+                    default => 'bg-slate-50 text-slate-600 border-slate-200'
+                };
+                $statusIcon = match($status) {
+                    'enrolled' => 'fa-check-circle',
+                    'pending' => 'fa-clock',
+                    'dropped', 'inactive' => 'fa-ban',
+                    default => 'fa-circle'
+                };
+            @endphp
+            <span class="status-badge {{ $statusClass }} border capitalize">
+                <i class="fas {{ $statusIcon }} mr-1.5 text-[10px]"></i>
+                {{ $status }}
+            </span>
+        </td>
+        
+        <!-- Contact -->
+        <td>
+            <div class="flex flex-col gap-1">
+                <span class="text-sm text-slate-700 font-medium flex items-center gap-2">
+                    <i class="fas fa-envelope text-slate-400 text-xs"></i>
+                    {{ $student->user->email ?? 'No email' }}
+                </span>
+                @if($student->guardian_contact)
+                <span class="text-xs text-slate-500 flex items-center gap-2">
+                    <i class="fas fa-phone text-slate-400"></i>
+                    {{ $student->guardian_contact }}
+                </span>
+                @endif
+            </div>
+        </td>
+        
+        <!-- Registration Date -->
+        <td>
+            <div class="flex flex-col gap-1">
+                <span class="text-sm font-medium text-slate-700">
+                    {{ $student->created_at->format('M d, Y') }}
+                </span>
+                <span class="text-xs text-slate-500">
+                    {{ $student->created_at->diffForHumans() }}
+                </span>
+            </div>
+        </td>
+        
+        <!-- Actions -->
+        <td class="text-right">
+            <div class="flex items-center justify-end gap-1">
+                <a href="{{ route('admin.students.show', $student) }}" class="action-btn text-blue-600 hover:bg-blue-50" title="View Details">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a href="{{ route('admin.students.edit', $student) }}" class="action-btn text-amber-600 hover:bg-amber-50" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <button onclick="deleteStudent({{ $student->id }})" class="action-btn text-red-600 hover:bg-red-50" title="Delete">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </td>
+    </tr>
+    @empty
+    <tr>
+        <td colspan="7" class="text-center py-16">
+            <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-user-slash text-3xl text-slate-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-700 mb-2">No students found</h3>
+            <p class="text-slate-500 mb-6">Get started by adding your first student</p>
+            <a href="{{ route('admin.students.create') }}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30">
+                <i class="fas fa-plus"></i>
+                Add New Student
+            </a>
+        </td>
+    </tr>
+    @endforelse
+</tbody>
                         </table>
                     </div>
                     

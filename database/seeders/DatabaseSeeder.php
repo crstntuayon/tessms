@@ -17,11 +17,11 @@ class DatabaseSeeder extends Seeder
     {
 
      $this->call([
-       // RoleSeeder::class,
-      // SchoolYearSeeder::class,
+      RoleSeeder::class,
+      SchoolYearSeeder::class,
       ElementarySubjectsSeeder::class,
-      //SettingsSeeder::class,
-       //TestUserSeeder::class,  // 👈 students here
+      SettingsSeeder::class,
+       TestUserSeeder::class,  // 👈 students here
     ]);
         // User::factory(10)->create();
 

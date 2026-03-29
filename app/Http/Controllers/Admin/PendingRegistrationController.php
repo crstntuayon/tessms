@@ -80,6 +80,12 @@ $sections = Section::with('gradeLevel') // get the grade level of the section
 
                     'birth_place' => $student->birth_place,
                     'nationality' => $student->nationality,
+
+                            // ✅ ADD THESE NEW FIELDS
+        'ethnicity' => $student->ethnicity,
+        'mother_tongue' => $student->mother_tongue,
+        'remarks' => $student->remarks,
+
                     'religion' => $student->religion,
                     'street_address' => $student->street_address,
                     'barangay' => $student->barangay,
@@ -160,29 +166,34 @@ $sections = Section::with('gradeLevel') // get the grade level of the section
 /**
  * Approve (Enroll)
  */
+/**
+ * Approve (Enroll)
+ */
 public function approve(Student $student, Request $request)
 {
     try {
-        // Validate section assignment
+        // Validate section and remarks
         $validated = $request->validate([
-            'section_id' => 'required|exists:sections,id'
+            'section_id' => 'required|exists:sections,id',
+            'remarks' => 'nullable|in:' . implode(',', array_keys(Student::$remarksLegend)), // ✅ Validate remarks
         ]);
         
         $section = Section::find($validated['section_id']);
         
         // Check section capacity
         $currentCount = \App\Models\Student::where('section_id', $section->id)
-            ->where('status', 'enrolled')  // Changed from 'approved'
+            ->where('status', 'enrolled')
             ->count();
             
         if ($currentCount >= $section->capacity) {
             return redirect()->back()->with('error', 'Selected section is already full.');
         }
 
-        // Update student with enrolled status and section assignment
+        // Update student with enrolled status, section, and remarks
         $student->update([
-            'status' => 'enrolled',  // Changed from 'approved'
-            'section_id' => $validated['section_id']
+            'status' => 'enrolled',
+            'section_id' => $validated['section_id'],
+            'remarks' => $validated['remarks'] ?? null, // ✅ Save remarks
         ]);
 
         // Update latest enrollment
@@ -190,21 +201,28 @@ public function approve(Student $student, Request $request)
 
         if ($enrollment) {
             $enrollment->update([
-                'status' => 'enrolled',  // Changed from 'approved'
-                'section_id' => $validated['section_id']
+                'status' => 'enrolled',
+                'section_id' => $validated['section_id'],
+                'remarks' => $validated['remarks'] ?? null, // ✅ Also save to enrollment if you have this column
             ]);
         }
 
-        return redirect()->back()
-            ->with('success', "Student {$student->user->last_name} enrolled and assigned to {$section->name}.");
+        // Build success message with remarks if provided
+        $successMsg = "Student {$student->user->last_name} enrolled and assigned to {$section->name}.";
+        if (!empty($validated['remarks'])) {
+            $remarkLabel = Student::$remarksLegend[$validated['remarks']] ?? $validated['remarks'];
+            $successMsg .= " Remark: {$remarkLabel}.";
+        }
+
+        return redirect()->back()->with('success', $successMsg);
 
     } catch (\Exception $e) {
-        Log::error('Enrollment failed', [  // Changed from 'Approval failed'
+        Log::error('Enrollment failed', [
             'student_id' => $student->id,
             'error' => $e->getMessage()
         ]);
 
-        return redirect()->back()->with('error', 'Failed to enroll student.');  // Changed message
+        return redirect()->back()->with('error', 'Failed to enroll student.');
     }
 }
     /**

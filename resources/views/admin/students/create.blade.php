@@ -783,6 +783,15 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                                 </div>
                             </div>
 
+                             <!-- Middle Name -->
+                            <div>
+                                <label class="form-label">Middle Name</label>
+                                <div class="input-group">
+                                    <i class="fas fa-user input-icon"></i>
+                                    <input type="text" name="middle_name" class="form-input input-with-icon" placeholder="Middle name">
+                                </div>
+                            </div>
+
                             <!-- Last Name -->
                             <div>
                                 <label class="form-label required">Last Name</label>
@@ -865,6 +874,23 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                                     <input type="text" name="religion" class="form-input input-with-icon" placeholder="e.g., Roman Catholic">
                                 </div>
                             </div>
+
+                            <!-- ADD THESE TWO FIELDS HERE -->
+<div>
+    <label class="form-label">Ethnicity</label>
+    <div class="input-group">
+        <i class="fas fa-users input-icon"></i>
+        <input type="text" name="ethnicity" class="form-input input-with-icon" placeholder="e.g., Cebuano, Tagalog">
+    </div>
+</div>
+
+<div>
+    <label class="form-label">Mother Tongue</label>
+    <div class="input-group">
+        <i class="fas fa-language input-icon"></i>
+        <input type="text" name="mother_tongue" class="form-input input-with-icon" placeholder="e.g., Cebuano, Filipino">
+    </div>
+</div>
                         </div>
                     </div>
 
@@ -1071,6 +1097,27 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Remarks Section -->
+<div class="form-section">
+    <div class="section-title">
+        <div class="section-icon bg-gray-50 text-gray-600">
+            <i class="fas fa-sticky-note"></i>
+        </div>
+        <span>Remarks</span>
+    </div>
+    
+    <div>
+        <label class="form-label">Student Remark</label>
+        <select name="remarks" class="form-select">
+            <option value="">Select Remark (Optional)</option>
+            @foreach(\App\Models\Student::$remarksLegend as $code => $description)
+                <option value="{{ $code }}">{{ $code }} - {{ $description }}</option>
+            @endforeach
+        </select>
+        <p class="input-hint">Select a remark code for this student's status</p>
+    </div>
+</div>
 
                     <!-- Submit Buttons -->
                     <div class="flex items-center justify-between pt-4">

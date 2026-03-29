@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Attendance extends Model
 {
-     protected $fillable = ['section_id', 'student_id', 'date', 'teacher_id', 'status', 'remarks'];
+     protected $fillable = ['section_id', 'student_id', 'date', 'teacher_id', 'school_year_id', 'status', 'remarks'];
 
 
     public function section()

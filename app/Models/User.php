@@ -17,7 +17,9 @@ class User extends Authenticatable
     protected $fillable = [
         'role_id',
         'first_name',
+        'middle_name',
         'last_name',
+        'suffix',
         'username',
         'email',
         'password',
@@ -77,5 +79,8 @@ public function student()
     }
 
     
-
+public function getFullNameAttribute()
+{
+    return "{$this->first_name} {$this->middle_name} {$this->last_name}";
+}
 }

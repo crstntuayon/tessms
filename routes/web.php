@@ -131,6 +131,15 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
     Route::post('/sections/{section}/grades',
         [App\Http\Controllers\Teacher\GradeController::class, 'store'])
         ->name('sections.grades.store');
+
+
+        //SCHOOL FORMS ROUTES
+    Route::get('/sf1', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf1'])->name('sf1');
+    Route::get('/sf2', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf2'])->name('sf2');
+    Route::get('/sf5', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf5'])->name('sf5');
+    Route::get('/sf3', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf3'])->name('sf3');
+    Route::get('/sf9', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf9'])->name('sf9');
+    Route::get('/sf10', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf10'])->name('sf10');
 });
 
 Route::middleware(['auth', 'role:Teacher'])->prefix('teacher')->group(function () {
@@ -242,6 +251,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
          Route::post('school-year/set-active', [\App\Http\Controllers\Admin\SchoolYearController::class, 'setActive'])
         ->name('school-year.set-active');
+         Route::resource('school-years', \App\Http\Controllers\Admin\SchoolYearController::class);
+        Route::post('/school-year/end', [\App\Http\Controllers\Admin\SchoolYearController::class, 'endSchoolYear'])
+    ->name('school-year.end');
 
           Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])
         ->name('settings.index');

@@ -1284,6 +1284,16 @@ function imageSlider() {
                     <input type="text" name="religion" placeholder="Roman Catholic" 
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
+                <div class="group">
+    <label class="block text-sm font-medium text-slate-700 mb-2">Ethnicity</label>
+    <input type="text" name="ethnicity" placeholder="e.g., Cebuano, Tagalog" 
+           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
+</div>
+<div class="group">
+    <label class="block text-sm font-medium text-slate-700 mb-2">Mother Tongue</label>
+    <input type="text" name="mother_tongue" placeholder="e.g., Cebuano, Filipino" 
+           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
+</div>
             </div>
         </div>
 
@@ -1400,34 +1410,57 @@ function imageSlider() {
         </div>
 
         <!-- Academic Information -->
-        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
-            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">5</span>
-                Academic Information
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Grade Level <span class="text-red-500">*</span></label>
-                    <select name="grade_level_id" required 
-                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
-                        <option value="">Select Grade Level</option>
-                        @foreach($gradeLevels as $level)
-                            <option value="{{ $level->id }}">{{ $level->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Student Type <span class="text-red-500">*</span></label>
-                    <select name="type" required 
-                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
-                        <option value="new">New Student</option>
-                        <option value="transferee">Transferee</option>
-                        <option value="continuing">Continuing</option>
-                    </select>
-                </div>
-            </div>
+<div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">5</span>
+        Academic Information
+    </h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Grade Level <span class="text-red-500">*</span></label>
+            <select name="grade_level_id" required 
+                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
+                <option value="">Select Grade Level</option>
+                @foreach($gradeLevels as $level)
+                    <option value="{{ $level->id }}">{{ $level->name }}</option>
+                @endforeach
+            </select>
         </div>
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Student Type <span class="text-red-500">*</span></label>
+            <select name="type" id="studentType" required onchange="togglePreviousSchool()"
+                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
+                <option value="new">New Student</option>
+                <option value="transferee">Transferee</option>
+                <option value="continuing">Continuing</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Previous School Field - Hidden by default, shown for transferees -->
+    <div id="previousSchoolField" class="mt-4 hidden">
+        <label class="block text-sm font-medium text-slate-700 mb-2">
+            Previous School <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+            </span>
+            <input type="text" name="previous_school" id="previousSchoolInput" 
+                   placeholder="Name of previous school" 
+                   class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
+        </div>
+        <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Required for transferee students
+        </p>
+    </div>
+</div>
 
         <!-- Account & Photo -->
         <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
@@ -1681,6 +1714,26 @@ function imageSlider() {
     <!-- Scripts -->
     <script>
 
+
+function togglePreviousSchool() {
+    const typeSelect = document.getElementById('studentType');
+    const previousSchoolField = document.getElementById('previousSchoolField');
+    const previousSchoolInput = document.getElementById('previousSchoolInput');
+    
+    if (typeSelect.value === 'transferee') {
+        previousSchoolField.classList.remove('hidden');
+        previousSchoolInput.setAttribute('required', 'required');
+    } else {
+        previousSchoolField.classList.add('hidden');
+        previousSchoolInput.removeAttribute('required');
+        previousSchoolInput.value = '';
+    }
+}
+
+// Run on page load to handle old input
+document.addEventListener('DOMContentLoaded', function() {
+    togglePreviousSchool();
+});
 
 
 

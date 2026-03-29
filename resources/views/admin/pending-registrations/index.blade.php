@@ -360,6 +360,26 @@
                             <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Nationality</p>
                             <p id="modalNationality" class="font-semibold text-slate-900">-</p>
                         </div>
+
+                        <!-- ✅ ADD THESE NEW FIELDS -->
+    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+        <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Ethnicity</p>
+        <p id="modalEthnicity" class="font-semibold text-slate-900">-</p>
+    </div>
+    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+        <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Mother Tongue</p>
+        <p id="modalMotherTongue" class="font-semibold text-slate-900">-</p>
+    </div>
+</div>
+
+<!-- ✅ DISPLAY REMARKS BADGE (if exists) -->
+<div id="modalRemarksContainer" class="mt-4 hidden">
+    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200">
+        <i class="fas fa-sticky-note text-amber-600"></i>
+        <span class="text-xs text-amber-700 font-semibold uppercase tracking-wide">Remark:</span>
+        <span id="modalRemarksBadge" class="text-sm font-bold text-amber-800">-</span>
+    </div>
+
                     </div>
 
                     <!-- Contact Info -->
@@ -451,6 +471,24 @@
     </select>
     <p class="text-xs text-slate-500 mt-1">Student will be enrolled and assigned to this section</p>
 </div>
+
+
+    <!-- ✅ REMARKS SELECTION (NEW) -->
+    <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+            <i class="fas fa-sticky-note mr-1"></i> Remarks <span class="text-slate-400 font-normal">(Optional)</span>
+        </label>
+        <select name="remarks" form="modalApproveForm"
+                class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm">
+            <option value="">-- Select Remark --</option>
+            @foreach(\App\Models\Student::$remarksLegend as $code => $label)
+                <option value="{{ $code }}">
+                    {{ $code }} - {{ $label }}
+                </option>
+            @endforeach
+        </select>
+        <p class="text-xs text-slate-500 mt-1">Select a remark code for this student's enrollment record</p>
+    </div>
 
                 <!-- Buttons Row -->
                 <div class="flex items-center gap-3">
@@ -574,6 +612,27 @@
                 photoEl.textContent = initials || '?';
             }
             
+
+                // ✅ SHOW REMARKS IF EXISTS
+    const remarksContainer = document.getElementById('modalRemarksContainer');
+    const remarksBadge = document.getElementById('modalRemarksBadge');
+    
+    if (s.remarks && s.remarks !== 'No remarks') {
+        const legend = {
+            'TI': 'Transferred In',
+            'TO': 'Transferred Out',
+            'DO': 'Dropped Out',
+            'LE': 'Late Enrollee',
+            'CCT': 'CCT Recipient',
+            'BA': 'Balik Aral',
+            'LWD': 'Learner With Disability'
+        };
+        remarksBadge.textContent = `${s.remarks} - ${legend[s.remarks] || ''}`;
+        remarksContainer.classList.remove('hidden');
+    } else {
+        remarksContainer.classList.add('hidden');
+    }
+    
             document.getElementById('modalName').textContent = data.full_name || '-';
             document.getElementById('modalEmail').textContent = u.email || '-';
             document.getElementById('modalGrade').textContent = s.grade_level?.name || '-';
@@ -586,6 +645,11 @@
             
             document.getElementById('modalGender').textContent = s.gender || '-';
             document.getElementById('modalNationality').textContent = s.nationality || '-';
+
+              // ✅ ADD THESE NEW LINES
+    document.getElementById('modalEthnicity').textContent = s.ethnicity || '-';
+    document.getElementById('modalMotherTongue').textContent = s.mother_tongue || '-';
+  
             
             const addressParts = [s.street_address, s.barangay, s.city, s.province].filter(Boolean);
             document.getElementById('modalAddress').textContent = addressParts.join(', ') || '-';

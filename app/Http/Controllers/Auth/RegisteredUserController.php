@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
+use App\Models\Setting;
 
 class RegisteredUserController extends Controller
 {
@@ -83,6 +84,9 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
 
             'photo' => 'nullable|image|max:2048',
+
+            'ethnicity' => 'nullable|string|max:100',           // ADD THIS
+            'mother_tongue' => 'nullable|string|max:100',       // ADD THIS
         ]);
 
         DB::beginTransaction();
@@ -138,6 +142,9 @@ class RegisteredUserController extends Controller
                 'status' => 'pending',
                 'grade_level_id' => $request->grade_level_id,
                 'section_id' => null,
+
+                'ethnicity' => $request->ethnicity,         // ADD THIS
+                'mother_tongue' => $request->mother_tongue, // ADD THIS
             ]);
 
             // ✅ Get ACTIVE school year
@@ -167,6 +174,14 @@ class RegisteredUserController extends Controller
                         : null,
 
                     'enrollment_date' => now(),
+
+
+                     // Store current school info at time of enrollment
+    'school_name' => Setting::get('school_name'),
+    'school_id' => Setting::get('deped_school_id'),
+    'school_district' => Setting::get('school_district'),
+    'school_division' => Setting::get('school_division'),
+    'school_region' => Setting::get('school_region'),
                 ]);
             }
 

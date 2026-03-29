@@ -35,6 +35,20 @@ class Student extends Model
         'section_id',
         'photo',
          'school_year_id', 
+          'mother_tongue',  // new
+         'ethnicity', 
+         'remarks',  
+    ];
+
+        // ✅ Add your remarks legend here
+    public static $remarksLegend = [
+        'TI' => 'Transferred In',
+        'TO' => 'Transferred Out',
+        'DO' => 'Dropped Out',
+        'LE' => 'Late Enrollee',
+        'CCT' => 'CCT Recipient',
+        'BA' => 'Balik Aral',
+        'LWD' => 'Learner With Disability',
     ];
 
     protected $casts = [

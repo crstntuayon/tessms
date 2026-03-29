@@ -806,7 +806,8 @@
                                         <div class="mt-2 flex items-center gap-3 text-xs">
                                             <span class="bg-white px-2 py-1 rounded border border-slate-200">WW: {{ $grade->written_works_avg }}%</span>
                                             <span class="bg-white px-2 py-1 rounded border border-slate-200">PT: {{ $grade->performance_tasks_avg }}%</span>
-                                            <span class="font-bold text-slate-700 bg-indigo-50 px-2 py-1 rounded border border-indigo-100">Final: {{ calculateFinalGrade($grade) }}</span>
+                                            <span class="font-bold text-slate-700 bg-indigo-50 px-2 py-1 rounded border border-indigo-100">Final: {{ $grade->calculateFinalGrade() }}
+</span>
                                         </div>
                                     </div>
                                 </div>

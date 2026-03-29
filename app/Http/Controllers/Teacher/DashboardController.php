@@ -239,4 +239,6 @@ class DashboardController extends Controller
 
         return round(($ww * 0.3) + ($pt * 0.5) + ($qa * 0.2));
     }
+
+    
 }

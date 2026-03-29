@@ -513,6 +513,24 @@
                                 @enderror
                             </div>
 
+                            <!-- Middle Name (from users table) -->
+<div>
+    <label class="form-label">Middle Name</label>
+    <div class="input-group">
+        <i class="fas fa-user input-icon"></i>
+        <input type="text" 
+               name="middle_name" 
+               class="form-input input-with-icon" 
+               placeholder="Middle name (optional)" 
+               value="{{ old('middle_name', $student->user->middle_name) }}">
+    </div>
+    @error('middle_name')
+        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+    @enderror
+</div>
+
+                            
+
                             <!-- Last Name (from users table) -->
                             <div>
                                 <label class="form-label required">Last Name</label>
@@ -698,8 +716,65 @@
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
+
+                                <!-- ✅ ETHNICITY (NEW) -->
+                            <div>
+                                <label class="form-label">Ethnicity</label>
+                                <div class="input-group">
+                                    <i class="fas fa-users input-icon"></i>
+                                    <input type="text" name="ethnicity" class="form-input input-with-icon" placeholder="e.g., Tagalog, Cebuano, Ilocano" value="{{ old('ethnicity', $student->ethnicity) }}">
+                                </div>
+                                @error('ethnicity')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- ✅ MOTHER TONGUE (NEW) -->
+                            <div>
+                                <label class="form-label">Mother Tongue</label>
+                                <div class="input-group">
+                                    <i class="fas fa-language input-icon"></i>
+                                    <input type="text" name="mother_tongue" class="form-input input-with-icon" placeholder="e.g., Tagalog, Cebuano, English" value="{{ old('mother_tongue', $student->mother_tongue) }}">
+                                </div>
+                                @error('mother_tongue')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div> 
+
+
+                          <!-- ✅ REMARKS SECTION (NEW) -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <div class="section-icon bg-amber-50 text-amber-600">
+                                <i class="fas fa-sticky-note"></i>
+                            </div>
+                            <span>Enrollment Remarks</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="form-label">Remarks Code</label>
+                                <select name="remarks" class="form-select">
+                                    <option value="">-- Select Remark --</option>
+                                    @foreach(\App\Models\Student::$remarksLegend as $code => $label)
+                                        <option value="{{ $code }}" {{ old('remarks', $student->remarks) == $code ? 'selected' : '' }}>
+                                            {{ $code }} - {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <p class="input-hint">Select if applicable (e.g., Transferred In, Late Enrollee)</p>
+                                @error('remarks')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                     </div>
+
+
+
+
+                    
 
                     <!-- Photo Upload Section -->
 <div class="form-section">

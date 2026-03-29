@@ -9,6 +9,7 @@ class Grade extends Model
 protected $fillable = [
     'section_id',
     'student_id',
+    'school_year_id',
     'subject_id',
     'quarter',
     'component_type',
@@ -32,4 +33,19 @@ protected $fillable = [
     {
         return $this->belongsTo(Subject::class);
     }
+
+    public function calculateFinalGrade()
+{
+    $ww = $this->written_works_avg ?? 0;
+    $pt = $this->performance_tasks_avg ?? 0;
+
+    // Example formula (adjust if needed)
+    return round(($ww * 0.4) + ($pt * 0.6), 2);
+}
+
+public function section()
+{
+    return $this->belongsTo(Section::class);
+}
+
 }

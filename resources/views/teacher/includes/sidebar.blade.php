@@ -59,6 +59,84 @@ $sections = \App\Models\Section::with('gradeLevel')
                 </a>
             </li>
 
+            <!-- School Forms -->
+<li x-data="{ open: {{ request()->routeIs('teacher.sf*') ? 'true' : 'false' }} }">
+    
+    <button @click="open = !open"
+        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group
+        text-slate-600 hover:bg-slate-50 hover:text-indigo-600">
+
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-indigo-50 group-hover:bg-indigo-100">
+                <i class="fas fa-folder text-indigo-500"></i>
+            </div>
+            <span>School Forms</span>
+        </div>
+
+        <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
+    </button>
+
+    <!-- Dropdown -->
+    <ul x-show="open" x-transition class="mt-2 ml-10 space-y-2">
+
+        <!-- SF1 -->
+        <li>
+            <a href="{{ route('teacher.sf1') }}" 
+               class="block px-3 py-2 rounded-lg text-sm transition
+               {{ request()->routeIs('teacher.sf1') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
+                SF1 - School Register
+            </a>
+        </li>
+
+        <!-- SF2 -->
+        <li>
+            <a href="{{ route('teacher.sf2') }}" 
+               class="block px-3 py-2 rounded-lg text-sm transition
+               {{ request()->routeIs('teacher.sf2') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
+                SF2 - Daily Attendance
+            </a>
+        </li>
+
+         <!-- SF3 -->
+        <li>
+            <a href="{{ route('teacher.sf3') }}" 
+               class="block px-3 py-2 rounded-lg text-sm transition
+               {{ request()->routeIs('teacher.sf3') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
+                SF3 - Books
+            </a>
+        </li>
+
+        <!-- SF5 -->
+        <li>
+            <a href="{{ route('teacher.sf5') }}" 
+               class="block px-3 py-2 rounded-lg text-sm transition
+               {{ request()->routeIs('teacher.sf5') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
+                SF5 - Learning Progress
+            </a>
+        </li>
+
+        <!-- SF9 -->
+        <li>
+            <a href="{{ route('teacher.sf9') }}" 
+               class="block px-3 py-2 rounded-lg text-sm transition
+               {{ request()->routeIs('teacher.sf9') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
+                SF9 - Report Card
+            </a>
+        </li>
+
+        <!-- SF10 -->
+        <li>
+            <a href="{{ route('teacher.sf10') }}" 
+               class="block px-3 py-2 rounded-lg text-sm transition
+               {{ request()->routeIs('teacher.sf10') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
+                SF10 - Permanent Record
+            </a>
+        </li>
+
+
+    </ul>
+</li>
+
             <!-- Sections Header -->
             <li class="mt-4">
                 <p class="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">My Sections</p>

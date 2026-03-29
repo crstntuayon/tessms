@@ -15,6 +15,13 @@ protected $fillable = [
     'status',
     'previous_school',
     'enrollment_date',
+
+     // Store current school info at time of enrollment
+    'school_name',
+    'school_id',
+    'school_district',
+    'school_division',
+    'school_region',
 ];
 
     protected $casts = [
