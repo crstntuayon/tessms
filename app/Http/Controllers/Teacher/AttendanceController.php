@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Section;
 use App\Models\Attendance;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -15,7 +16,7 @@ class AttendanceController extends Controller
      */
     public function index(Section $section)
     {
-        // सुरक्षा: teacher only sees own section
+        // Security: teacher only sees own section
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403);
         }
@@ -37,9 +38,10 @@ class AttendanceController extends Controller
         ));
     }
 
-
-        // Show form to create attendance
-  public function create(Section $section)
+    /**
+     * Show form to create attendance
+     */
+    public function create(Section $section)
     {
         $students = $section->students()->get();
 
@@ -47,7 +49,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Store attendance
+     * Store attendance - FIXED VERSION
      */
     public function store(Request $request, Section $section)
     {
@@ -57,9 +59,12 @@ class AttendanceController extends Controller
 
         $request->validate([
             'date' => 'required|date',
-             'attendance' => 'required|array',
-             'attendance.*.status' => 'required|in:present,absent,late',
+            'attendance' => 'required|array',
+            'attendance.*' => 'required|in:present,absent,late',
         ]);
+
+        // Get active school year
+        $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
 
         foreach ($request->attendance as $student_id => $status) {
             Attendance::updateOrCreate(
@@ -69,7 +74,9 @@ class AttendanceController extends Controller
                     'date' => $request->date,
                 ],
                 [
+                    'school_year_id' => $activeSchoolYearId, // ADD THIS
                     'status' => $status,
+                    'teacher_id' => auth()->user()->teacher->id, // Optional: track who recorded
                 ]
             );
         }
@@ -77,28 +84,43 @@ class AttendanceController extends Controller
         return back()->with('success', 'Attendance saved successfully.');
     }
 
-public function bulkStore(Request $request)
-{
-    $attendances = $request->input('attendance', []); // array of [student_id => ['status' => ..., 'remarks' => ...]]
-    $sectionId = $request->input('section_id');
-    $date = $request->input('date', now()->toDateString());
+    /**
+     * Bulk store attendance (AJAX) - For dashboard page
+     */
+    public function bulkStore(Request $request)
+    {
+        $attendances = $request->input('attendance', []);
+        $sectionId = $request->input('section_id');
+        $date = $request->input('date', now()->toDateString());
 
-    foreach ($attendances as $studentId => $data) {
-        Attendance::updateOrCreate(
-            [
-                'student_id' => $studentId,
-                'date' => $date
-            ],
-            [
-                'section_id' => $sectionId,
-               'status' => $data['status'],
-                'remarks' => $data['remarks'] ?? null
-            ]
-        );
+        // Get active school year
+        $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
+
+        foreach ($attendances as $studentId => $data) {
+            // Handle both formats: string status or array with status key
+            $status = is_array($data) ? ($data['status'] ?? null) : $data;
+            $remarks = is_array($data) ? ($data['remarks'] ?? null) : null;
+            
+            if (!$status) continue;
+
+            Attendance::updateOrCreate(
+                [
+                    'student_id' => $studentId,
+                    'date' => $date,
+                ],
+                [
+                    'section_id' => $sectionId,
+                    'school_year_id' => $activeSchoolYearId,
+                    'status' => $status,
+                    'remarks' => $remarks,
+                    'teacher_id' => auth()->user()->teacher->id,
+                ]
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Attendance saved successfully'
+        ]);
     }
-
-    return response()->json([
-        'message' => 'Attendance saved successfully'
-    ]);
-}
 }

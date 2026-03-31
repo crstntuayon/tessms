@@ -488,7 +488,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('teacher.communications.index', $section->id) }}" 
+                <!--<a href="{{ route('teacher.communications.index', $section->id) }}" 
                     class="bg-white rounded-2xl p-6 border border-slate-200 relative overflow-hidden group cursor-pointer hover:shadow-xl transition-all hover:border-purple-200 block">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-purple-100 rounded-full -mr-10 -mt-10 blur-2xl opacity-50 group-hover:scale-110 transition-transform"></div>
                     <div class="relative z-10">
@@ -501,7 +501,7 @@
                             Message Parents <i class="fas fa-paper-plane group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
                         </span>
                     </div>
-                </a>
+                </a> -->
             </div>
         </main>
     </div>

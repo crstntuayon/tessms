@@ -38,4 +38,14 @@ class SchoolYear extends Model
 {
     return $this->hasMany(Enrollment::class);
 }
+
+    public function qrCode()
+    {
+        return $this->hasOne(SchoolYearQrCode::class)->latest();
+    }
+
+    public function qrCodes()
+    {
+        return $this->hasMany(SchoolYearQrCode::class);
+    }
 }

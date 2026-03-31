@@ -447,13 +447,13 @@
                                     <button onclick="markAllPresent()" class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl hover:bg-emerald-200 transition-all text-sm font-medium flex items-center gap-2">
                                         <i class="fas fa-check"></i> All Present
                                     </button>
-                                    <button onclick="saveAttendance()" id="saveAttendanceBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-medium shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2">
+                                  <button type="button" onclick="saveAttendance()" id="saveAttendanceBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-medium shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2">
                                         <i class="fas fa-save"></i> Save
                                     </button>
                                 </div>
                             </div>
                             
-                            <form id="attendanceForm" action="{{ route('teacher.attendance.bulk-store') }}" method="POST">
+                           <form id="attendanceForm" onsubmit="event.preventDefault();">
                                 @csrf
                                 <input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}">
                                 <input type="hidden" name="section_id" value="{{ $activeSection->id ?? '' }}">
@@ -730,10 +730,10 @@
                                             <td class="px-4 py-3">
                                                 <div class="flex items-center gap-3">
                                                     <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                                                        {{ strtoupper(substr($student->first_name, 0, 1)) }}{{ strtoupper(substr($student->last_name, 0, 1)) }}
+                                                        {{ strtoupper(substr($student->user->first_name, 0, 1)) }}{{ strtoupper(substr($student->user->last_name, 0, 1)) }}
                                                     </div>
                                                     <div>
-                                                        <p class="font-semibold text-slate-800 text-sm">{{ $student->last_name }}, {{ $student->first_name }}</p>
+                                                        <p class="font-semibold text-slate-800 text-sm">{{ $student->user->last_name }}, {{ $student->user->first_name }}</p>
                                                         <p class="text-[10px] text-slate-500 font-mono">LRN: {{ $student->lrn }}</p>
                                                     </div>
                                                 </div>
@@ -798,7 +798,7 @@
                                     <div class="flex-1 min-w-0">
                                         <div class="flex justify-between items-start">
                                             <div>
-                                                <h4 class="font-semibold text-slate-800 text-sm">{{ $grade->student->last_name }}, {{ $grade->student->first_name }}</h4>
+                                                <h4 class="font-semibold text-slate-800 text-sm">{{ $grade->student->user->last_name }}, {{ $grade->student->user->first_name }}</h4>
                                                 <p class="text-xs text-slate-500">{{ $grade->subject->name }} • {{ $grade->quarter }} Quarter</p>
                                             </div>
                                             <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">Encoded</span>
@@ -974,66 +974,79 @@ setInterval(updateClock, 1000);
 
 
         // Attendance Functions
-        function setAttendance(btn, studentId, status) {
-            const row = btn.closest('tr');
-            row.querySelectorAll('.attendance-btn').forEach(b => {
-                b.className = 'attendance-btn w-9 h-9 rounded-full border-2 border-slate-200 hover:border-indigo-400 bg-white flex items-center justify-center text-xs text-slate-600';
-            });
-            
-            btn.className = `attendance-btn w-9 h-9 rounded-full border-2 active-${status} flex items-center justify-center text-xs`;
-            
-            const input = document.getElementById(`status-${studentId}`);
-            if (input) input.value = status;
-            
-            showToast(`Marked as ${status.charAt(0).toUpperCase() + status.slice(1)}`, 'success');
-        }
+function setAttendance(btn, studentId, status) {
+    const row = btn.closest('tr');
+    row.querySelectorAll('.attendance-btn').forEach(b => {
+        b.className = 'attendance-btn w-9 h-9 rounded-full border-2 border-slate-200 hover:border-indigo-400 bg-white flex items-center justify-center text-xs text-slate-600';
+    });
+    
+    btn.className = `attendance-btn w-9 h-9 rounded-full border-2 active-${status} flex items-center justify-center text-xs`;
+    
+    const input = document.getElementById(`status-${studentId}`);
+    if (input) input.value = status;
+    
+
+}
         
-        function markAllPresent() {
-            document.querySelectorAll('tr[data-student-id]').forEach(row => {
-                const studentId = row.dataset.studentId;
-                const presentBtn = row.querySelector('[data-status="present"]');
-                if (presentBtn) setAttendance(presentBtn, studentId, 'present');
-            });
-            showToast('All students marked present', 'success');
-        }
+      function markAllPresent() {
+    window.isBulkOperation = true; // Add this line
+    document.querySelectorAll('tr[data-student-id]').forEach(row => {
+        const studentId = row.dataset.studentId;
+        const presentBtn = row.querySelector('[data-status="present"]');
+        if (presentBtn) setAttendance(presentBtn, studentId, 'present');
+    });
+    window.isBulkOperation = false; // Add this line
+    showToast('All students marked present', 'success');
+}
+
         
-        function saveAttendance() {
-            const form = document.getElementById('attendanceForm');
-            const btn = document.getElementById('saveAttendanceBtn');
-            
-            const unmarked = Array.from(document.querySelectorAll('input[name^="attendance["][name$="[status]"]')).filter(input => !input.value);
-            
-            if (unmarked.length > 0 && !confirm(`${unmarked.length} student(s) unmarked. Continue?`)) return;
-            
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
-            
-            fetch(form.action, {
-                method: 'POST',
-                body: new FormData(form),
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                }
-            })
-            .then(r => r.json())
-            .then(data => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save';
-                
-                if (data.success) {
-                    showToast('Attendance saved!', 'success');
-                    updateCalendar(data.summary);
-                } else {
-                    showToast(data.message || 'Error saving', 'error');
-                }
-            })
-            .catch(() => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save';
-                showToast('Network error', 'error');
-            });
+function saveAttendance() {
+    const form = document.getElementById('attendanceForm');
+    const btn = document.getElementById('saveAttendanceBtn');
+    
+    const unmarked = Array.from(document.querySelectorAll('input[name^="attendance["][name$="[status]"]')).filter(input => !input.value);
+    
+    if (unmarked.length > 0 && !confirm(`${unmarked.length} student(s) unmarked. Continue?`)) return;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+    
+    // Use hardcoded URL instead of form.action
+    fetch('{{ route("teacher.attendance.bulk-store") }}', {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
         }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save';
+        
+        if (data.success || data.message) {
+            showToast(data.message || 'Attendance saved!', 'success');
+            if (data.summary) updateCalendar(data.summary);
+        } else {
+            showToast(data.message || 'Error saving', 'error');
+        }
+    })
+    .catch(error => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save';
+        console.error('Error:', error);
+        showToast('Network error: ' + error.message, 'error');
+    });
+    
+    return false; // Extra safety
+}
         
         // Mini Calendar
 function generateCalendar() {

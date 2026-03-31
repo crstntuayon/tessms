@@ -7,6 +7,7 @@ use App\Models\Section;
 use App\Models\Grade;
 use App\Models\GradeLevel;
 use App\Models\Subject;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class GradeController extends Controller
@@ -17,30 +18,23 @@ class GradeController extends Controller
             abort(403);
         }
 
-        // Students in the section
         $students = $section->students()->with('user')->get();
-
-        // Get the section's grade level only
         $gradeLevel = $section->gradeLevel;
-        $gradeLevels = collect([$gradeLevel]); // Wrap in collection for the view
+        $gradeLevels = collect([$gradeLevel]);
 
-        // Get selected grade level and filtered subjects
         $selectedGradeLevel = null;
         $filteredSubjects = collect();
         $selectedSubject = null;
         $grades = collect();
-        $existingGrades = collect(); // Store existing grades data for JS
+        $existingGrades = collect();
 
-        // Always use the section's grade level
         $selectedGradeLevel = $gradeLevel;
         $filteredSubjects = $gradeLevel->subjects ?? collect();
 
-        // If subject is selected, load existing grades for that subject
         if ($request->filled('subject')) {
             $selectedSubject = Subject::find($request->subject);
             
             if ($selectedSubject) {
-                // Get existing grades with components for this subject and section
                 $grades = Grade::where('section_id', $section->id)
                     ->where('subject_id', $selectedSubject->id)
                     ->where('quarter', $request->get('quarter', 1))
@@ -49,14 +43,23 @@ class GradeController extends Controller
                         return $item->student_id . '_' . $item->component_type;
                     });
                 
-                // Prepare data for JavaScript to populate inputs
                 foreach ($grades as $key => $grade) {
                     $existingGrades[$key] = [
                         'scores' => json_decode($grade->scores, true) ?? [],
+                        'titles' => json_decode($grade->titles, true) ?? [],
+                        'total_items' => json_decode($grade->total_items, true) ?? [],
                         'total_score' => $grade->total_score,
                         'percentage_score' => $grade->percentage_score,
                     ];
                 }
+                
+                $wwGrade = $grades->firstWhere('component_type', 'written_work');
+                $ptGrade = $grades->firstWhere('component_type', 'performance_task');
+                
+                $existingGrades['ww_titles'] = $wwGrade ? (json_decode($wwGrade->titles, true) ?? []) : [];
+                $existingGrades['pt_titles'] = $ptGrade ? (json_decode($ptGrade->titles, true) ?? []) : [];
+                $existingGrades['ww_total_items'] = $wwGrade ? (json_decode($wwGrade->total_items, true) ?? []) : [];
+                $existingGrades['pt_total_items'] = $ptGrade ? (json_decode($ptGrade->total_items, true) ?? []) : [];
             }
         }
 
@@ -93,9 +96,12 @@ class GradeController extends Controller
             'ww' => 'nullable|array',
             'pt' => 'nullable|array',
             'qe' => 'nullable|array',
+            'ww_titles' => 'nullable|array',
+            'pt_titles' => 'nullable|array',
+            'ww_total_items' => 'nullable|array',
+            'pt_total_items' => 'nullable|array',
         ]);
 
-        // Validate weights sum to 100
         $totalWeight = $request->ww_weight + $request->pt_weight + $request->qe_weight;
         if (round($totalWeight, 2) != 100) {
             return back()->with('error', 'Component weights must sum to 100%. Current: ' . $totalWeight . '%');
@@ -104,30 +110,34 @@ class GradeController extends Controller
         $subjectId = $request->subject_id;
         $quarter = $request->quarter;
 
-        // Process Written Work grades
+        // Get active school year
+        $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
+        $schoolYearId = $activeSchoolYearId;
+
         if ($request->has('ww')) {
+            $wwTitles = $request->ww_titles ?? [];
+            $wwTotalItems = $request->ww_total_items ?? [];
             foreach ($request->ww as $studentId => $scores) {
-                $this->saveGradeComponents($section->id, $studentId, $subjectId, $quarter, 'written_work', $scores);
+                $this->saveGradeComponents($section->id, $studentId, $subjectId, $quarter, 'written_work', $scores, $wwTitles, $wwTotalItems, $schoolYearId);
             }
         }
 
-        // Process Performance Task grades
         if ($request->has('pt')) {
+            $ptTitles = $request->pt_titles ?? [];
+            $ptTotalItems = $request->pt_total_items ?? [];
             foreach ($request->pt as $studentId => $scores) {
-                $this->saveGradeComponents($section->id, $studentId, $subjectId, $quarter, 'performance_task', $scores);
+                $this->saveGradeComponents($section->id, $studentId, $subjectId, $quarter, 'performance_task', $scores, $ptTitles, $ptTotalItems, $schoolYearId);
             }
         }
 
-        // Process Quarterly Exam grades
         if ($request->has('qe')) {
             foreach ($request->qe as $studentId => $score) {
                 if ($score !== null && $score !== '') {
-                    $this->saveQuarterlyExam($section->id, $studentId, $subjectId, $quarter, $score);
+                    $this->saveQuarterlyExam($section->id, $studentId, $subjectId, $quarter, $score, $schoolYearId);
                 }
             }
         }
 
-        // Calculate and save final grades for all students
         $students = $section->students()->pluck('id');
         foreach ($students as $studentId) {
             $this->calculateAndSaveFinalGrade(
@@ -137,7 +147,8 @@ class GradeController extends Controller
                 $quarter,
                 $request->ww_weight,
                 $request->pt_weight,
-                $request->qe_weight
+                $request->qe_weight,
+                $schoolYearId
             );
         }
 
@@ -147,9 +158,8 @@ class GradeController extends Controller
     /**
      * Save grade components (Written Work or Performance Tasks)
      */
-    private function saveGradeComponents($sectionId, $studentId, $subjectId, $quarter, $componentType, $scores)
+    private function saveGradeComponents($sectionId, $studentId, $subjectId, $quarter, $componentType, $scores, $titles = [], $totalItems = [], $schoolYearId = null)
     {
-        // Remove empty scores and calculate statistics
         $validScores = array_filter($scores, function($score) {
             return $score !== null && $score !== '';
         });
@@ -161,9 +171,14 @@ class GradeController extends Controller
         $totalScore = array_sum($validScores);
         $count = count($validScores);
 
-        // Calculate percentage score (assuming 100 points per activity by default)
-        $totalPossible = $count * 100; // Can be customized based on actual total items
-        $percentageScore = ($totalScore / $totalPossible) * 100;
+        // Calculate percentage score using individual total items
+        $totalPossible = 0;
+        foreach ($validScores as $index => $score) {
+            $itemCount = isset($totalItems[$index]) && $totalItems[$index] > 0 ? $totalItems[$index] : 100;
+            $totalPossible += $itemCount;
+        }
+        
+        $percentageScore = $totalPossible > 0 ? ($totalScore / $totalPossible) * 100 : 0;
 
         Grade::updateOrCreate(
             [
@@ -172,9 +187,13 @@ class GradeController extends Controller
                 'subject_id' => $subjectId,
                 'quarter' => $quarter,
                 'component_type' => $componentType,
+                'school_year_id' => $schoolYearId,
             ],
             [
+                'school_year_id' => $schoolYearId,
                 'scores' => json_encode(array_values($validScores)),
+                'titles' => json_encode(array_values($titles)),
+                'total_items' => json_encode(array_values($totalItems)),
                 'total_score' => $totalScore,
                 'percentage_score' => round($percentageScore, 2),
             ]
@@ -184,7 +203,7 @@ class GradeController extends Controller
     /**
      * Save Quarterly Exam grade
      */
-    private function saveQuarterlyExam($sectionId, $studentId, $subjectId, $quarter, $score)
+    private function saveQuarterlyExam($sectionId, $studentId, $subjectId, $quarter, $score, $schoolYearId = null)
     {
         $totalItems = 100;
         $percentageScore = ($score / $totalItems) * 100;
@@ -196,8 +215,10 @@ class GradeController extends Controller
                 'subject_id' => $subjectId,
                 'quarter' => $quarter,
                 'component_type' => 'quarterly_exam',
+                'school_year_id' => $schoolYearId,
             ],
             [
+                'school_year_id' => $schoolYearId,
                 'total_score' => $score,
                 'percentage_score' => round($percentageScore, 2),
             ]
@@ -207,15 +228,15 @@ class GradeController extends Controller
     /**
      * Calculate weighted scores and final grade with transmutation
      */
-    private function calculateAndSaveFinalGrade($sectionId, $studentId, $subjectId, $quarter, $wwWeight, $ptWeight, $qeWeight)
+    private function calculateAndSaveFinalGrade($sectionId, $studentId, $subjectId, $quarter, $wwWeight, $ptWeight, $qeWeight, $schoolYearId = null)
     {
-        // Get component scores
         $wwGrade = Grade::where([
             'section_id' => $sectionId,
             'student_id' => $studentId,
             'subject_id' => $subjectId,
             'quarter' => $quarter,
             'component_type' => 'written_work',
+            'school_year_id' => $schoolYearId,
         ])->first();
 
         $ptGrade = Grade::where([
@@ -224,6 +245,7 @@ class GradeController extends Controller
             'subject_id' => $subjectId,
             'quarter' => $quarter,
             'component_type' => 'performance_task',
+            'school_year_id' => $schoolYearId,
         ])->first();
 
         $qeGrade = Grade::where([
@@ -232,9 +254,9 @@ class GradeController extends Controller
             'subject_id' => $subjectId,
             'quarter' => $quarter,
             'component_type' => 'quarterly_exam',
+            'school_year_id' => $schoolYearId,
         ])->first();
 
-        // Calculate weighted scores
         $wwWeighted = $wwGrade ? ($wwGrade->percentage_score * ($wwWeight / 100)) : 0;
         $ptWeighted = $ptGrade ? ($ptGrade->percentage_score * ($ptWeight / 100)) : 0;
         $qeWeighted = $qeGrade ? ($qeGrade->percentage_score * ($qeWeight / 100)) : 0;
@@ -242,7 +264,6 @@ class GradeController extends Controller
         $initialGrade = $wwWeighted + $ptWeighted + $qeWeighted;
         $transmutedGrade = $this->transmuteGrade($initialGrade);
 
-        // Save or update final grade record
         Grade::updateOrCreate(
             [
                 'section_id' => $sectionId,
@@ -250,8 +271,10 @@ class GradeController extends Controller
                 'subject_id' => $subjectId,
                 'quarter' => $quarter,
                 'component_type' => 'final_grade',
+                'school_year_id' => $schoolYearId,
             ],
             [
+                'school_year_id' => $schoolYearId,
                 'ww_weighted' => round($wwWeighted, 2),
                 'pt_weighted' => round($ptWeighted, 2),
                 'qe_weighted' => round($qeWeighted, 2),

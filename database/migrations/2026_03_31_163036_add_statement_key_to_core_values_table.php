@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('books', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+Schema::table('core_values', function (Blueprint $table) {
+    $table->string('statement_key')->after('core_value');
+});
     }
 
     /**
@@ -22,6 +21,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('books');
+        Schema::table('core_values', function (Blueprint $table) {
+            //
+            $table->dropColumn('statement_key');
+            
+        });
     }
 };

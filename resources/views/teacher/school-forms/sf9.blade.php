@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,47 +7,59 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Arial:wght@400;700&display=swap');
         
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f1f5f9;
+            font-family: 'Arial', sans-serif;
+            background: #f3f4f6;
         }
         
+        /* Official DepEd SF9 Container - Standard Letter Size with border for screen only */
         .sf9-container {
-            max-width: 210mm;
+            width: 8.5in;
+            min-height: 11in;
             margin: 0 auto;
             background: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #000;
+            padding: 0.4in;
+            position: relative;
+            box-sizing: border-box;
         }
         
+        /* Official Table Styling - Black borders only */
         .sf9-table {
             border-collapse: collapse;
             width: 100%;
-            font-size: 9px;
+            font-size: 9.5pt;
         }
         
         .sf9-table th,
         .sf9-table td {
             border: 1px solid #000;
-            padding: 3px 4px;
+            padding: 4px 6px;
             text-align: center;
             vertical-align: middle;
         }
         
         .sf9-table th {
-            background-color: #e5e7eb;
-            font-weight: 600;
-            font-size: 8px;
+            background: #fff;
+            color: #000;
+            font-weight: bold;
+            font-size: 8.5pt;
+            text-transform: none;
         }
         
+        /* Official Header Box */
         .header-box {
-            border: 2px solid #1e3a8a;
-            padding: 8px;
+            border: 2px solid #000;
+            padding: 10px;
             text-align: center;
-            background: #f8fafc;
+            background: #fff;
+            margin-bottom: 0;
         }
         
+        /* Print Button - Floating */
         .print-btn {
             position: fixed;
             bottom: 30px;
@@ -60,477 +71,857 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #1e40af;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
         }
         
-        /* Print styles */
-        @media print {
-            @page {
-                size: letter portrait;
-                margin: 0.5in 0.4in 0.5in 0.4in;
-            }
-            
-            aside,
-            nav[class*="w-72"],
-            div[class*="w-72"],
-            .sidebar,
-            #sidebar,
-            [class*="sidebar"],
-            .no-print {
-                display: none !important;
-            }
-            
-            .ml-72,
-            [class*="ml-72"] {
-                margin-left: 0 !important;
-                padding-left: 0 !important;
-                width: 100% !important;
-            }
-            
-            body {
-                background: white;
-                font-size: 9pt;
-            }
-            
-            .sf9-container {
-                box-shadow: none;
-                margin: 0;
-                padding: 0;
-                max-width: 100% !important;
-            }
-            
-            .sf9-table {
-                font-size: 8pt;
-            }
-            
-            .sf9-table th,
-            .sf9-table td {
-                padding: 2px 3px;
-            }
+        .print-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
         }
         
+        /* Section Headers - Simple uppercase */
+        .section-header {
+            background: #fff;
+            color: #000;
+            padding: 5px 8px;
+            font-weight: bold;
+            font-size: 9.5pt;
+            text-transform: uppercase;
+            border: 1px solid #000;
+            border-bottom: 2px solid #000;
+            margin-top: 12px;
+            margin-bottom: 0;
+        }
+        
+        /* Info Grid - Traditional form layout */
+        .info-grid {
+            border: 1px solid #000;
+            border-top: none;
+        }
+        
+        .info-row {
+            display: flex;
+            border-bottom: 1px solid #000;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 100px;
+            font-size: 9pt;
+            padding: 4px 8px;
+            border-right: 1px solid #000;
+            background: #f9f9f9;
+            text-transform: uppercase;
+        }
+        
+        .info-value {
+            flex: 1;
+            font-weight: normal;
+            font-size: 9pt;
+            padding: 4px 8px;
+            text-transform: uppercase;
+        }
+        
+        /* Grade styling - Official colors */
+        .grade-passed {
+            color: #000;
+            font-weight: normal;
+        }
+        
+        .grade-failed {
+            color: #000;
+            font-weight: bold;
+        }
+        
+        /* Underline fields for signatures */
         .underline-field {
             border-bottom: 1px solid #000;
             display: inline-block;
             min-width: 100px;
-            font-weight: 600;
+            font-weight: bold;
         }
         
+        /* Core values table */
         .core-values-table td {
-            font-size: 8px;
+            font-size: 8.5pt;
             text-align: left;
+            padding: 3px 6px;
+        }
+        
+        /* Attendance table */
+        .attendance-table td {
+            font-size: 8.5pt;
+            padding: 3px 4px;
+        }
+        
+        /* Student selector - Clean UI */
+        .student-selector-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #d1d5db;
+        }
+        
+        /* Print styles - Exact DepEd format, NO container border */
+        @media print {
+            @page {
+                size: letter portrait;
+                margin: 0.25in;
+            }
+            
+            body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Hide sidebar completely */
+            aside,
+            nav,
+            .sidebar,
+            [class*="sidebar"],
+            #sidebar,
+            .no-print {
+                display: none !important;
+                visibility: hidden !important;
+                width: 0 !important;
+                height: 0 !important;
+                position: absolute !important;
+                left: -9999px !important;
+            }
+            
+            /* Reset main content margins */
+            .ml-72,
+            [class*="ml-"],
+            main,
+            .main-content,
+            #main-content {
+                margin-left: 0 !important;
+                padding-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            
+            /* Container adjustments - NO BORDER when printing */
+            .sf9-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                border: none !important; /* REMOVED black border */
+                page-break-inside: avoid;
+                box-sizing: border-box;
+            }
+            
+            .sf9-table {
+                font-size: 8.5pt !important;
+                width: 100% !important;
+            }
+            
+            .sf9-table th,
+            .sf9-table td {
+                padding: 2px 4px !important;
+                border: 1px solid #000 !important;
+            }
+            
+            .header-box {
+                border: 2px solid #000 !important;
+            }
+            
+            .section-header {
+                border: 1px solid #000 !important;
+                border-bottom: 2px solid #000 !important;
+            }
+            
+            .info-grid {
+                border: 1px solid #000 !important;
+            }
+            
+            .info-label {
+                border-right: 1px solid #000 !important;
+            }
+            
+            .info-row {
+                border-bottom: 1px solid #000 !important;
+            }
+            
+            /* Ensure background colors print */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+        
+        /* Stats cards - Subtle design */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 6px;
+            padding: 16px;
+            border: 1px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .stat-icon.blue { background: #dbeafe; color: #1e40af; }
+        .stat-icon.green { background: #dcfce7; color: #166534; }
+        .stat-icon.purple { background: #f3e8ff; color: #7c3aed; }
+        .stat-icon.amber { background: #fef3c7; color: #92400e; }
+        
+        /* Marking legend */
+        .marking-box {
+            border: 1px solid #000;
+            padding: 6px;
+            font-size: 8pt;
+            margin-top: 6px;
+        }
+        
+        /* Signature lines */
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 20px;
+            padding-top: 4px;
+            text-align: center;
+        }
+        
+        /* Certificate section */
+        .certificate-box {
+            border: 1px solid #000;
+            padding: 10px;
+            margin-top: 12px;
+        }
+        
+        /* Footer */
+        .sf9-footer {
+            border-top: 1px solid #000;
+            padding-top: 6px;
+            margin-top: 12px;
+            font-size: 7.5pt;
+            text-align: center;
+        }
+        
+        /* Parent signature box */
+        .parent-sig-box {
+            border: 1px solid #000;
+            padding: 8px;
+            margin-top: 10px;
+        }
+        
+        .parent-sig-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        
+        .sig-line {
+            border-bottom: 1px solid #000;
+            height: 24px;
+            margin-bottom: 2px;
+        }
+        
+        /* Adviser message box */
+        .message-box {
+            border: 1px solid #000;
+            padding: 8px;
+            margin-top: 8px;
+            font-style: italic;
+            font-size: 8.5pt;
+            text-align: center;
+        }
+        
+        /* Grading scale table */
+        .grading-scale-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8pt;
+        }
+        
+        .grading-scale-table td {
+            border: 1px solid #ccc;
             padding: 2px 4px;
         }
         
-        .attendance-table td {
-            font-size: 8px;
-            padding: 2px 4px;
+        /* Core values marking */
+        .marking-legend {
+            display: flex;
+            gap: 12px;
+            font-size: 8pt;
+            margin-top: 4px;
+        }
+        
+        .marking-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* Two column layout for bottom sections */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
         }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen">
+<body class="bg-gray-200 min-h-screen">
 
     <!-- Include Sidebar -->
     @include('teacher.includes.sidebar')
 
     <!-- Main Content -->
-    <div class="ml-72 p-6">
+    <div class="ml-72 p-6 transition-all duration-300" id="main-content">
         
-        <!-- Page Header -->
-        <div class="mb-4 flex items-center justify-between no-print">
+        <!-- Page Header - UI Only -->
+        <div class="mb-6 flex items-center justify-between no-print">
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">School Form 9 (SF9)</h1>
-                <p class="text-slate-500">Learner's Progress Report Card</p>
+                <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-900 flex items-center justify-center text-white">
+                        <i class="fas fa-graduation-cap text-lg"></i>
+                    </div>
+                    <div>
+                        School Form 9 (SF9)
+                        <p class="text-sm font-normal text-gray-500 mt-0">Learner's Progress Report Card</p>
+                    </div>
+                </h1>
             </div>
             <div class="flex gap-3">
-                <div class="px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-sm font-medium">
-                    <i class="fas fa-calendar-alt mr-2"></i>{{ $schoolYear }}
+                <div class="px-4 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 text-sm font-semibold flex items-center gap-2">
+                    <i class="fas fa-calendar-alt"></i>
+                    {{ $schoolYear }}
                 </div>
             </div>
         </div>
 
         <!-- Student Selector -->
-        <div class="no-print mb-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <div class="no-print mb-6 student-selector-card">
             <form method="GET" action="{{ route('teacher.sf9') }}" class="flex items-end gap-4">
                 <div class="flex-1">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Select Student</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                        <i class="fas fa-user-graduate text-blue-800"></i>
+                        Select Student
+                    </label>
                     <select name="student_id" onchange="this.form.submit()" 
-                        class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Select Student --</option>
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-700 font-medium bg-gray-50">
+                        <option value="">-- Select a Student --</option>
                         @foreach($students as $student)
                             <option value="{{ $student->id }}" {{ $selectedStudent && $selectedStudent->id == $student->id ? 'selected' : '' }}>
-                                {{ $student->user->last_name ?? '' }}, {{ $student->user->first_name ?? '' }} {{ $student->user->middle_name ?? '' }}
+                                {{ $student->user->last_name ?? '' }}, {{ $student->user->first_name ?? '' }} {{ $student->user->middle_name ?? '' }} 
+                                - {{ $student->section->name ?? '' }} ({{ $student->section->gradeLevel->name ?? '' }})
                             </option>
                         @endforeach
                     </select>
                 </div>
-                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium">
+                <button type="submit" class="px-6 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition font-semibold shadow flex items-center gap-2">
+                    <i class="fas fa-search"></i>
                     Load Report Card
                 </button>
             </form>
         </div>
 
         @if(!$selectedStudent)
-            <div class="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center no-print mb-4">
-                <i class="fas fa-exclamation-triangle text-amber-500 text-3xl mb-2"></i>
-                <p class="text-amber-800 font-medium">Please select a student to view their report card.</p>
+            <div class="bg-amber-50 border-2 border-amber-300 rounded-lg p-8 text-center no-print mb-6">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-amber-600 text-2xl"></i>
+                </div>
+                <h3 class="text-amber-800 font-bold text-lg mb-2">No Student Selected</h3>
+                <p class="text-amber-700">Please select a student from the dropdown above to view their report card.</p>
             </div>
         @endif
 
         @if($selectedStudent)
-        <!-- SF9 Report Card -->
-        <div class="sf9-container bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+        @php
+            $user = $selectedStudent->user;
+            $section = $selectedStudent->section;
+            $gradeLevel = $section->gradeLevel ?? null;
             
-            <!-- Header Section -->
-            <div class="header-box mb-4">
-                <div class="text-center space-y-1">
-                    <p class="text-xs font-semibold">Republic of the Philippines</p>
-                    <p class="text-xs font-bold">DEPARTMENT OF EDUCATION</p>
-                    <p class="text-[10px]">Region <span class="underline-field">{{ $schoolRegion }}</span></p>
-                    <p class="text-[10px]">SCHOOLS DIVISION OF <span class="underline-field">{{ $schoolDivision }}</span></p>
-                    <p class="text-[10px]"><span class="underline-field">{{ $schoolDistrict }}</span> District</p>
-                    <p class="text-sm font-bold mt-2">{{ $schoolName }}</p>
-                    <p class="text-lg font-bold text-indigo-900 mt-1">PROGRESS REPORT CARD</p>
-                    <p class="text-xs">School Year <span class="underline-field">{{ $schoolYear }}</span></p>
+            $age = '';
+            if ($selectedStudent->birthdate) {
+                $birth = \Carbon\Carbon::parse($selectedStudent->birthdate);
+                $now = \Carbon\Carbon::now();
+                $age = $birth->diffInYears($now);
+            }
+        @endphp
+
+        <!-- Quick Stats -->
+        <div class="stats-grid no-print">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase">Subjects</p>
+                    <p class="text-xl font-bold text-gray-800">{{ $subjectGrades->count() }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase">Passed</p>
+                    <p class="text-xl font-bold text-green-700">{{ $subjectGrades->where('remarks', 'Passed')->count() }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase">General Average</p>
+                    <p class="text-xl font-bold text-purple-700">{{ $generalAverage ?? 'N/A' }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon amber">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase">Attendance</p>
+                    <p class="text-xl font-bold text-amber-700">{{ $attendances->where('status', 'present')->count() }} Days</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- OFFICIAL SF9 REPORT CARD -->
+        <div class="sf9-container bg-white">
+            
+            <!-- Header Section - Official DepEd Format -->
+            <div class="header-box">
+                <div class="text-center">
+                    <p class="text-xs font-normal mb-1">Republic of the Philippines</p>
+                    <p class="text-sm font-bold uppercase tracking-wide border-b border-black pb-1 mb-1 inline-block">Department of Education</p>
+                    <div class="flex justify-center gap-8 mt-2 text-xs">
+                        <span>Region <span class="underline-field">{{ $schoolRegion ?? '__' }}</span></span>
+                        <span>Division of <span class="underline-field">{{ $schoolDivision ?? '____________________' }}</span></span>
+                        <span>District <span class="underline-field">{{ $schoolDistrict ?? '__________' }}</span></span>
+                    </div>
+                    <p class="text-base font-bold mt-2 uppercase tracking-wide">{{ $schoolName ?? 'SCHOOL NAME' }}</p>
+                    <p class="text-lg font-bold mt-2 uppercase tracking-widest border-t-2 border-b-2 border-black inline-block px-6 py-1">
+                        Learner's Progress Report Card
+                    </p>
+                    <p class="text-xs mt-2 font-bold">School Year <span class="underline-field">{{ $schoolYear }}</span></p>
                 </div>
             </div>
 
             <!-- Student Information -->
-            @php
-                $user = $selectedStudent->user;
-                $section = $selectedStudent->section;
-                $gradeLevel = $section->gradeLevel ?? null;
-                
-                // Calculate age
-                $age = '';
-                if ($selectedStudent->birthdate) {
-                    $birth = \Carbon\Carbon::parse($selectedStudent->birthdate);
-                    $now = \Carbon\Carbon::now();
-                    $age = $birth->diffInYears($now);
-                }
-            @endphp
-
-            <div class="mb-4 space-y-1 text-sm">
-                <div class="flex items-center gap-2">
-                    <span class="font-semibold w-20 text-xs">NAME:</span>
-                    <span class="border-b border-black flex-1 px-2 font-bold uppercase">{{ $user->last_name ?? '' }}, {{ $user->first_name ?? '' }} {{ $user->middle_name ?? '' }}</span>
+            <div class="section-header">
+                Learner's Information
+            </div>
+            <div class="info-grid">
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">{{ $user->last_name ?? '' }}, {{ $user->first_name ?? '' }} {{ $user->middle_name ?? '' }}</span>
+                    <span class="info-label" style="width: 80px; border-left: 1px solid #000;">LRN:</span>
+                    <span class="info-value" style="width: 140px;">{{ $selectedStudent->lrn ?? '' }}</span>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2 flex-1">
-                        <span class="font-semibold w-20 text-xs">Age:</span>
-                        <span class="border-b border-black w-16 text-center">{{ $age }}</span>
-                    </div>
-                    <div class="flex items-center gap-2 flex-1">
-                        <span class="font-semibold w-16 text-xs">Sex:</span>
-                        <span class="border-b border-black w-20 text-center uppercase">{{ $selectedStudent->gender ?? '' }}</span>
-                    </div>
-                    <div class="flex items-center gap-2 flex-1">
-                        <span class="font-semibold w-20 text-xs">Grade:</span>
-                        <span class="border-b border-black w-16 text-center">{{ $gradeLevel->name ?? '' }}</span>
-                    </div>
-                    <div class="flex items-center gap-2 flex-1">
-                        <span class="font-semibold w-20 text-xs">Section:</span>
-                        <span class="border-b border-black w-24 text-center">{{ $section->name ?? '' }}</span>
-                    </div>
-                    <div class="flex items-center gap-2 flex-1">
-                        <span class="font-semibold w-12 text-xs">LRN:</span>
-                        <span class="border-b border-black flex-1 font-mono text-xs">{{ $selectedStudent->lrn ?? '' }}</span>
-                    </div>
+                <div class="info-row">
+                    <span class="info-label">Age:</span>
+                    <span class="info-value">{{ floor($age) }}</span>
+                    <span class="info-label" style="width: 80px; border-left: 1px solid #000;">Sex:</span>
+                    <span class="info-value" style="width: 140px;">{{ $selectedStudent->gender ?? '' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Grade Level:</span>
+                    <span class="info-value">{{ $gradeLevel->name ?? '' }}</span>
+                    <span class="info-label" style="width: 80px; border-left: 1px solid #000;">Section:</span>
+                    <span class="info-value" style="width: 140px;">{{ $section->name ?? '' }}</span>
                 </div>
             </div>
 
             <!-- Report on Learning Progress and Achievement -->
-            <div class="mb-4">
-                <h3 class="text-xs font-bold bg-indigo-600 text-white py-1 px-2 mb-2">REPORT ON LEARNING PROGRESS AND ACHIEVEMENT</h3>
-                
-                <table class="sf9-table">
-                    <thead>
-                        <tr>
-                            <th rowspan="2" style="width: 30%;">Learning Areas</th>
-                            <th colspan="4">Quarter</th>
-                            <th rowspan="2" style="width: 12%;">Final Rating</th>
-                            <th rowspan="2" style="width: 15%;">Remarks</th>
-                        </tr>
-                        <tr>
-                            <th style="width: 8%;">1</th>
-                            <th style="width: 8%;">2</th>
-                            <th style="width: 8%;">3</th>
-                            <th style="width: 8%;">4</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php
-                            $subjects = [
-                                'Mother Tongue' => 'mother_tongue',
-                                'Filipino' => 'filipino',
-                                'English' => 'english',
-                                'Mathematics' => 'mathematics',
-                                'Science' => 'science',
-                                'Araling Panlipunan' => 'ap',
-                                'Edukasyon sa Pagpapakatao' => 'esp',
-                                'Music' => 'music',
-                                'Arts' => 'arts',
-                                'Physical Education' => 'pe',
-                                'Health' => 'health',
-                                'Edukasyong Pantahanan at Pangkabuhayan' => 'epp',
-                                'Technology and Livelihood Education' => 'tle'
-                            ];
-                            
-                            $finalRatings = [];
-                            $totalGrade = 0;
-                            $subjectCount = 0;
-                        @endphp
+            <div class="section-header">
+                Report on Learning Progress and Achievement
+            </div>
+            
+            <table class="sf9-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 32%; text-align: left; padding-left: 8px;">Learning Areas</th>
+                        <th colspan="4">Quarterly Rating</th>
+                        <th rowspan="2" style="width: 12%;">Final Rating</th>
+                        <th rowspan="2" style="width: 12%;">Remarks</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 9%;">1st</th>
+                        <th style="width: 9%;">2nd</th>
+                        <th style="width: 9%;">3rd</th>
+                        <th style="width: 9%;">4th</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($subjectGrades as $subjectGrade)
+                    <tr>
+                        <td class="text-left pl-2 text-sm" style="font-size: 9pt;">{{ $subjectGrade['subject_name'] }}</td>
+                        <td>{{ $subjectGrade['quarter_1'] ?: '' }}</td>
+                        <td>{{ $subjectGrade['quarter_2'] ?: '' }}</td>
+                        <td>{{ $subjectGrade['quarter_3'] ?: '' }}</td>
+                        <td>{{ $subjectGrade['quarter_4'] ?: '' }}</td>
+                        <td class="font-bold {{ $subjectGrade['final_grade'] >= 75 ? '' : 'grade-failed' }}">
+                            {{ $subjectGrade['final_grade'] ?: '' }}
+                        </td>
+                        <td class="{{ $subjectGrade['remarks'] == 'Failed' ? 'grade-failed' : '' }}">
+                            {{ $subjectGrade['remarks'] ?: '' }}
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" class="py-6 text-gray-500 text-center">
+                            No subjects found for this grade level.
+                        </td>
+                    </tr>
+                    @endforelse
 
-                        @foreach($subjects as $subjectName => $subjectKey)
-                            @php
-                                $grade = $grades->firstWhere('subject', $subjectKey);
-                                $q1 = $grade->quarter_1 ?? '';
-                                $q2 = $grade->quarter_2 ?? '';
-                                $q3 = $grade->quarter_3 ?? '';
-                                $q4 = $grade->quarter_4 ?? '';
-                                
-                                // Calculate final rating
-                                $quarters = array_filter([$q1, $q2, $q3, $q4], function($v) { return $v !== ''; });
-                                $final = count($quarters) > 0 ? round(array_sum($quarters) / count($quarters)) : '';
-                                
-                                if ($final !== '') {
-                                    $finalRatings[$subjectName] = $final;
-                                    $totalGrade += $final;
-                                    $subjectCount++;
-                                }
-                                
-                                $remark = '';
-                                if ($final !== '') {
-                                    $remark = $final >= 75 ? 'Passed' : 'Failed';
-                                }
-                            @endphp
-                            @if($grade || $final !== '')
+                    @if($generalAverage !== null)
+                    <tr style="background: #f3f4f6; font-weight: bold;">
+                        <td colspan="5" class="text-right pr-4" style="font-size: 9pt;">GENERAL AVERAGE</td>
+                        <td class="{{ $generalAverage >= 75 ? '' : 'grade-failed' }}">{{ $generalAverage }}</td>
+                        <td class="{{ $generalAverage >= 75 ? '' : 'grade-failed' }}">
+                            {{ $generalAverage >= 75 ? 'Passed' : 'Failed' }}
+                        </td>
+                    </tr>
+                    @endif
+                </tbody>
+            </table>
+
+            <!-- Descriptors and Grading Scale -->
+            <div class="two-column">
+                <div class="border border-black p-2">
+                    <h4 class="font-bold text-xs mb-2 uppercase text-center border-b border-black pb-1">Descriptors & Grading Scale</h4>
+                    <table class="grading-scale-table">
+                        <tbody>
                             <tr>
-                                <td class="text-left pl-2 text-[9px]">{{ $subjectName }}</td>
-                                <td class="font-semibold">{{ $q1 }}</td>
-                                <td class="font-semibold">{{ $q2 }}</td>
-                                <td class="font-semibold">{{ $q3 }}</td>
-                                <td class="font-semibold">{{ $q4 }}</td>
-                                <td class="font-bold text-[10px]">{{ $final }}</td>
-                                <td class="text-[8px]">{{ $remark }}</td>
+                                <td class="text-left">Outstanding</td>
+                                <td class="text-center font-bold">90-100</td>
+                                <td class="text-center">Passed</td>
                             </tr>
-                            @endif
-                        @endforeach
-
-                        @php
-                            $generalAverage = $subjectCount > 0 ? round($totalGrade / $subjectCount) : '';
-                        @endphp
-
-                        <tr class="bg-gray-100 font-bold">
-                            <td colspan="5" class="text-right pr-2 text-[10px]">General Average</td>
-                            <td class="text-[11px] border-2 border-black">{{ $generalAverage }}</td>
-                            <td class="text-[9px]">{{ $generalAverage >= 75 ? 'Passed' : ($generalAverage ? 'Failed' : '') }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- Descriptors and Grading Scale -->
-                <div class="mt-2 grid grid-cols-2 gap-4 text-[8px]">
-                    <div>
-                        <table class="w-full border border-black">
-                            <thead>
-                                <tr class="bg-gray-200">
-                                    <th class="border border-black p-1">Descriptors</th>
-                                    <th class="border border-black p-1">Grading Scale</th>
-                                    <th class="border border-black p-1">Remarks</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td class="border border-black p-1">Outstanding</td><td class="border border-black p-1 text-center">90-100</td><td class="border border-black p-1 text-center">Passed</td></tr>
-                                <tr><td class="border border-black p-1">Very Satisfactory</td><td class="border border-black p-1 text-center">85-89</td><td class="border border-black p-1 text-center">Passed</td></tr>
-                                <tr><td class="border border-black p-1">Satisfactory</td><td class="border border-black p-1 text-center">80-84</td><td class="border border-black p-1 text-center">Passed</td></tr>
-                                <tr><td class="border border-black p-1">Fairly Satisfactory</td><td class="border border-black p-1 text-center">75-79</td><td class="border border-black p-1 text-center">Passed</td></tr>
-                                <tr><td class="border border-black p-1">Did Not Meet Expectations</td><td class="border border-black p-1 text-center">Below 75</td><td class="border border-black p-1 text-center">Failed</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="flex items-center">
-                        <p class="text-[9px] leading-relaxed">
-                            <strong>Dear Parent,</strong><br>
-                            This report card shows the ability and the progress your child has made in the different learning areas as well as his/her progress in core values.<br>
-                            The school welcomes you should you desire to know more about your child's progress.
-                        </p>
-                    </div>
+                            <tr>
+                                <td class="text-left">Very Satisfactory</td>
+                                <td class="text-center font-bold">85-89</td>
+                                <td class="text-center">Passed</td>
+                            </tr>
+                            <tr>
+                                <td class="text-left">Satisfactory</td>
+                                <td class="text-center font-bold">80-84</td>
+                                <td class="text-center">Passed</td>
+                            </tr>
+                            <tr>
+                                <td class="text-left">Fairly Satisfactory</td>
+                                <td class="text-center font-bold">75-79</td>
+                                <td class="text-center">Passed</td>
+                            </tr>
+                            <tr>
+                                <td class="text-left">Did Not Meet Expectations</td>
+                                <td class="text-center font-bold">Below 75</td>
+                                <td class="text-center font-bold">Failed</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="border border-black p-2 flex flex-col justify-center">
+                    <p class="text-xs italic text-center leading-relaxed">
+                        "This report card shows the ability and progress your child has made in different learning areas as well as their growth in core values. The school welcomes you should you desire to know more about your child's progress."
+                    </p>
                 </div>
             </div>
 
-            <!-- Report on Learner's Observed Values -->
-            <div class="mb-4">
-                <h3 class="text-xs font-bold bg-indigo-600 text-white py-1 px-2 mb-2">REPORT ON LEARNER'S OBSERVED VALUES</h3>
-                
-                <table class="sf9-table core-values-table">
-                    <thead>
-                        <tr>
-                            <th rowspan="2" style="width: 15%;">Core Values</th>
-                            <th rowspan="2" style="width: 50%;">Behavior Statements</th>
-                            <th colspan="4">Quarter</th>
-                        </tr>
-                        <tr>
-                            <th style="width: 8%;">1</th>
-                            <th style="width: 8%;">2</th>
-                            <th style="width: 8%;">3</th>
-                            <th style="width: 8%;">4</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td rowspan="2" class="font-semibold align-top">1. Maka-Diyos</td>
-                            <td>Expresses one's spiritual beliefs while respecting the spiritual beliefs of others</td>
-                            <td></td><td></td><td></td><td></td>
-                        </tr>
-                        <tr>
-                            <td>Shows adherence to ethical principles by upholding truth</td>
-                            <td></td><td></td><td></td><td></td>
-                        </tr>
-                        <tr>
-                            <td rowspan="2" class="font-semibold align-top">2. Makatao</td>
-                            <td>Is sensitive to individual, social, and cultural differences</td>
-                            <td></td><td></td><td></td><td></td>
-                        </tr>
-                        <tr>
-                            <td>Demonstrates contributions toward solidarity</td>
-                            <td></td><td></td><td></td><td></td>
-                        </tr>
-                        <tr>
-                            <td class="font-semibold">3. Maka-Kalikasan</td>
-                            <td>Cares for the environment and utilizes resources wisely, judiciously, and economically</td>
-                            <td></td><td></td><td></td><td></td>
-                        </tr>
-                        <tr>
-                            <td rowspan="2" class="font-semibold align-top">4. Maka-bansa</td>
-                            <td>Demonstrates pride in being a Filipino; exercises the rights and responsibilities of a Filipino citizen</td>
-                            <td></td><td></td><td></td><td></td>
-                        </tr>
-                        <tr>
-                            <td>Demonstrates appropriate behavior in carrying out activities in the school, community, and country</td>
-                            <td></td><td></td><td></td><td></td>
-                        </tr>
-                    </tbody>
-                </table>
+       <!-- Report on Learner's Observed Values -->
+<div class="section-header">
+    Report on Learner's Observed Values
+</div>
 
-                <div class="mt-1 text-[8px] space-y-1">
-                    <p><strong>Marking:</strong> AO - Always Observed | SO - Sometimes Observed | RO - Rarely Observed | NO - Not Observed</p>
-                </div>
-            </div>
+@php
+// Get unique core values and their statement keys from the database records
+$coreValueGroups = $coreValues->map(function($statements) {
+    return $statements->keys()->sort()->values();
+})->sortKeys();
+
+// Define the proper ordering of core values
+$coreValueOrder = ['Maka-Diyos', 'Makatao', 'Maka-Kalikasan', 'Maka-bansa'];
+
+// Reorder according to standard
+$sortedCoreValues = collect($coreValueOrder)->mapWithKeys(function($cv) use ($coreValues) {
+    return $coreValues->has($cv) ? [$cv => $coreValues[$cv]] : [];
+});
+
+// Add any other core values not in standard order
+foreach ($coreValues as $cv => $statements) {
+    if (!in_array($cv, $coreValueOrder)) {
+        $sortedCoreValues[$cv] = $statements;
+    }
+}
+
+// Helper function to get rating for specific core value, statement_key, and quarter
+$getCoreValueRating = function($coreValue, $statementKey, $quarter) use ($sortedCoreValues) {
+    $cvData = $sortedCoreValues->get($coreValue);
+    if (!$cvData) return '';
+    
+    $statementData = $cvData->get($statementKey);
+    if (!$statementData) return '';
+    
+    $record = $statementData->firstWhere('quarter', $quarter);
+    return $record ? $record->rating : '';
+};
+
+// Helper function to get behavior statement text
+$getBehaviorStatement = function($coreValue, $statementKey) use ($sortedCoreValues) {
+    $cvData = $sortedCoreValues->get($coreValue);
+    if (!$cvData) return '';
+    
+    $statementData = $cvData->get($statementKey);
+    if (!$statementData || $statementData->isEmpty()) return '';
+    
+    return $statementData->first()->behavior_statement ?? '';
+};
+@endphp
+
+<table class="sf9-table core-values-table">
+    <thead>
+        <tr>
+            <th rowspan="2" style="width: 12%; text-align: left; vertical-align: middle;">Core Values</th>
+            <th rowspan="2" style="width: 55%; text-align: left; vertical-align: middle;">Behavior Statements</th>
+            <th colspan="4" style="text-align: center;">Quarter</th>
+        </tr>
+        <tr>
+            <th style="width: 8%; text-align: center; vertical-align: middle;">1st</th>
+            <th style="width: 8%; text-align: center; vertical-align: middle;">2nd</th>
+            <th style="width: 8%; text-align: center; vertical-align: middle;">3rd</th>
+            <th style="width: 8%; text-align: center; vertical-align: middle;">4th</th>
+        </tr>
+    </thead>
+    <tbody>
+        @php 
+        $rowIndex = 0;
+        $coreValueNumber = 1;
+        @endphp
+        
+        @foreach($sortedCoreValues as $coreValue => $statements)
+            @php
+            $statementKeys = $statements->keys()->sort()->values();
+            $behaviorCount = $statementKeys->count();
+            @endphp
+            
+            @foreach($statementKeys as $index => $statementKey)
+                <tr @if($rowIndex % 2 == 1) style="background: #f9fafb;" @endif>
+                    @if($index === 0)
+                        <td rowspan="{{ $behaviorCount }}" class="font-bold align-top bg-gray-50" style="font-size: 8.5pt; text-align: left; vertical-align: top;">
+                            {{ $coreValueNumber }}. {{ $coreValue }}
+                        </td>
+                    @endif
+                    <td style="font-size: 8.5pt; text-align: left; vertical-align: middle;">
+                        {{ $getBehaviorStatement($coreValue, $statementKey) }}
+                    </td>
+                    <td style="text-align: center; vertical-align: middle; font-weight: bold;">
+                        {{ $getCoreValueRating($coreValue, $statementKey, 1) }}
+                    </td>
+                    <td style="text-align: center; vertical-align: middle; font-weight: bold;">
+                        {{ $getCoreValueRating($coreValue, $statementKey, 2) }}
+                    </td>
+                    <td style="text-align: center; vertical-align: middle; font-weight: bold;">
+                        {{ $getCoreValueRating($coreValue, $statementKey, 3) }}
+                    </td>
+                    <td style="text-align: center; vertical-align: middle; font-weight: bold;">
+                        {{ $getCoreValueRating($coreValue, $statementKey, 4) }}
+                    </td>
+                </tr>
+                @php $rowIndex++; @endphp
+            @endforeach
+            
+            @php $coreValueNumber++; @endphp
+        @endforeach
+        
+        @if($sortedCoreValues->isEmpty())
+            <tr>
+                <td colspan="6" class="text-center py-4 text-gray-500">
+                    No core values records found for this student.
+                </td>
+            </tr>
+        @endif
+    </tbody>
+</table>
+
+<div class="marking-box">
+    <span class="font-bold text-xs">Marking:</span>
+    <span class="text-xs ml-2"><strong>AO</strong> - Always Observed</span>
+    <span class="text-xs ml-2"><strong>SO</strong> - Sometimes Observed</span>
+    <span class="text-xs ml-2"><strong>RO</strong> - Rarely Observed</span>
+    <span class="text-xs ml-2"><strong>NO</strong> - Not Observed</span>
+</div>
+
+
 
             <!-- Attendance Record -->
-            <div class="mb-4">
-                <h3 class="text-xs font-bold bg-indigo-600 text-white py-1 px-2 mb-2">ATTENDANCE RECORD</h3>
-                
-                @php
-                    $months = ['Aug', 'Sept', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Total'];
-                    $attendanceData = [];
-                    
-                    // Calculate attendance per month (mock data structure - replace with actual)
-                    foreach ($months as $month) {
-                        if ($month != 'Total') {
-                            $monthAtt = $attendances->filter(function($a) use ($month) {
-                                return date('M', strtotime($a->date)) == $month && $a->status == 'present';
-                            });
-                            $attendanceData[$month] = [
-                                'days' => 20, // School days in month
-                                'present' => $monthAtt->count(),
-                                'absent' => 0
-                            ];
-                        }
-                    }
-                @endphp
-
-                <table class="sf9-table attendance-table">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            @foreach($months as $month)
-                                <th>{{ $month }}</th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="text-left font-semibold pl-2">No. of School Days</td>
-                            @foreach($months as $month)
-                                <td>{{ $month == 'Total' ? array_sum(array_column($attendanceData, 'days')) : ($attendanceData[$month]['days'] ?? '') }}</td>
-                            @endforeach
-                        </tr>
-                        <tr>
-                            <td class="text-left font-semibold pl-2">No. of Days Present</td>
-                            @foreach($months as $month)
-                                <td>{{ $month == 'Total' ? array_sum(array_column($attendanceData, 'present')) : ($attendanceData[$month]['present'] ?? '') }}</td>
-                            @endforeach
-                        </tr>
-                        <tr>
-                            <td class="text-left font-semibold pl-2">No. of Days Absent</td>
-                            @foreach($months as $month)
-                                <td>{{ $month == 'Total' ? array_sum(array_column($attendanceData, 'absent')) : ($attendanceData[$month]['absent'] ?? '') }}</td>
-                            @endforeach
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="section-header">
+                Report on Attendance
             </div>
+            
+            @php
+                $months = ['JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR', 'APR', 'MAY'];
+                $attendanceData = [];
+                $totalPresent = 0;
+                $totalAbsent = 0;
+                $totalLate = 0;
+                $totalSchoolDays = 0;
+                
+                foreach ($months as $month) {
+                    $monthAttendances = $attendances->filter(function($a) use ($month) {
+                        return strtoupper(date('M', strtotime($a->date))) === $month;
+                    });
+                    
+                    $present = $monthAttendances->where('status', 'present')->count();
+                    $absent = $monthAttendances->where('status', 'absent')->count();
+                    $late = $monthAttendances->where('status', 'late')->count();
+                    $schoolDays = $present + $absent + $late;
+                    
+                    $attendanceData[$month] = [
+                        'days' => $schoolDays > 0 ? $schoolDays : '',
+                        'present' => $present > 0 ? $present : '',
+                        'absent' => $absent > 0 ? $absent : '',
+                        'late' => $late > 0 ? $late : ''
+                    ];
+                    
+                    $totalPresent += $present;
+                    $totalAbsent += $absent;
+                    $totalLate += $late;
+                    $totalSchoolDays += $schoolDays;
+                }
+            @endphp
+
+            <table class="sf9-table attendance-table">
+                <thead>
+                    <tr>
+                        <th class="text-left pl-2" style="width: 20%;">Month</th>
+                        @foreach($months as $month)
+                            <th style="width: 6%;">{{ $month }}</th>
+                        @endforeach
+                        <th style="width: 8%;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of School Days</td>
+                        @foreach($months as $month)
+                            <td>{{ $attendanceData[$month]['days'] }}</td>
+                        @endforeach
+                        <td class="font-bold">{{ $totalSchoolDays > 0 ? $totalSchoolDays : '' }}</td>
+                    </tr>
+                    <tr style="background: #f9fafb;">
+                        <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of Days Present</td>
+                        @foreach($months as $month)
+                            <td>{{ $attendanceData[$month]['present'] }}</td>
+                        @endforeach
+                        <td class="font-bold">{{ $totalPresent > 0 ? $totalPresent : '' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of Days Absent</td>
+                        @foreach($months as $month)
+                            <td>{{ $attendanceData[$month]['absent'] }}</td>
+                        @endforeach
+                        <td class="font-bold">{{ $totalAbsent > 0 ? $totalAbsent : '' }}</td>
+                    </tr>
+                    <tr style="background: #f9fafb;">
+                        <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of Times Tardy</td>
+                        @foreach($months as $month)
+                            <td>{{ $attendanceData[$month]['late'] }}</td>
+                        @endforeach
+                        <td class="font-bold">{{ $totalLate > 0 ? $totalLate : '' }}</td>
+                    </tr>
+                </tbody>
+            </table>
 
             <!-- Parent/Guardian Signature -->
-            <div class="mb-4">
-                <h3 class="text-xs font-bold bg-indigo-600 text-white py-1 px-2 mb-2">PARENT/GUARDIAN'S SIGNATURE</h3>
-                <div class="space-y-2 text-[9px]">
-                    <div class="flex items-center gap-2">
-                        <span class="w-24">1st Quarter:</span>
-                        <span class="border-b border-black flex-1"></span>
+            <div class="parent-sig-box">
+                <h4 class="font-bold text-xs mb-2 uppercase">Parent/Guardian's Signature</h4>
+                <div class="parent-sig-grid">
+                    @foreach(['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'] as $quarter)
+                    <div class="text-center">
+                        <div class="sig-line"></div>
+                        <span class="text-xs text-gray-700 font-semibold">{{ $quarter }}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-24">2nd Quarter:</span>
-                        <span class="border-b border-black flex-1"></span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-24">3rd Quarter:</span>
-                        <span class="border-b border-black flex-1"></span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-24">4th Quarter:</span>
-                        <span class="border-b border-black flex-1"></span>
-                    </div>
+                    @endforeach
                 </div>
             </div>
 
             <!-- Signatures -->
-            <div class="mt-6 grid grid-cols-2 gap-8 text-xs">
+            <div class="grid grid-cols-2 gap-8 mt-6 px-8">
                 <div class="text-center">
-                    <div class="mt-8 border-t border-black pt-1">
-                        <p class="font-bold uppercase">{{ $adviserName }}</p>
-                        <p class="text-[9px] mt-0.5">Adviser</p>
+                    <div class="signature-line w-56 mx-auto">
+                        <p class="font-bold text-sm uppercase">{{ $adviserName ?? '_________________' }}</p>
+                        <p class="text-xs text-gray-700 font-semibold">Class Adviser</p>
                     </div>
                 </div>
                 <div class="text-center">
-                    <div class="mt-8 border-t border-black pt-1">
-                        <p class="font-bold uppercase">{{ $schoolHead }}</p>
-                        <p class="text-[9px] mt-0.5">School Head</p>
+                    <div class="signature-line w-56 mx-auto">
+                        <p class="font-bold text-sm uppercase">{{ $schoolHead ?? '_________________' }}</p>
+                        <p class="text-xs text-gray-700 font-semibold">School Head</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Certificate of Transfer (Bottom Section) -->
-            <div class="mt-6 border-t-2 border-indigo-900 pt-4">
-                <h3 class="text-xs font-bold text-indigo-900 mb-2">CERTIFICATE OF TRANSFER</h3>
-                <div class="text-[9px] space-y-1">
+            <!-- Certificate of Transfer -->
+            <div class="certificate-box">
+                <h3 class="text-xs font-bold mb-2 uppercase border-b border-black pb-1">Certificate of Transfer</h3>
+                <div class="space-y-2 text-xs">
                     <div class="flex items-center gap-2">
                         <span>Admitted to Grade:</span>
-                        <span class="border-b border-black w-20"></span>
+                        <span class="underline-field flex-1"></span>
                         <span>Section:</span>
-                        <span class="border-b border-black w-32"></span>
+                        <span class="underline-field w-32"></span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span>Eligible for Admission to Grade:</span>
-                        <span class="border-b border-black w-32"></span>
+                        <span class="underline-field flex-1"></span>
                     </div>
-                    <div class="flex items-center gap-4 mt-2">
-                        <span>Approved:</span>
-                        <div class="flex-1 text-center">
-                            <div class="border-t border-black pt-1 mt-4">
-                                <p class="font-bold uppercase">{{ $schoolHead }}</p>
-                                <p class="text-[8px]">School Head</p>
+                    <div class="flex justify-end mt-3">
+                        <div class="text-center">
+                            <div class="border-t border-black pt-1 w-48">
+                                <p class="font-bold text-xs uppercase">{{ $schoolHead ?? '_________________' }}</p>
+                                <p class="text-xs text-gray-700">School Head</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancellation of Eligibility -->
+            <div class="certificate-box" style="margin-top: 8px;">
+                <h3 class="text-xs font-bold mb-2 uppercase border-b border-black pb-1">Cancellation of Eligibility to Transfer</h3>
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span>Admitted in:</span>
+                        <span class="underline-field flex-1"></span>
+                        <span>Date:</span>
+                        <span class="underline-field w-32"></span>
+                    </div>
+                    <div class="flex justify-end">
+                        <div class="text-center">
+                            <div class="border-t border-black pt-1 w-48">
+                                <p class="text-xs text-gray-700">Principal</p>
                             </div>
                         </div>
                     </div>
@@ -538,9 +929,9 @@
             </div>
 
             <!-- Footer -->
-            <div class="mt-4 pt-2 border-t border-slate-300 text-[8px] text-slate-500 flex justify-between">
-                <span>DepEd School Form 9</span>
-                <span>Date Generated: {{ now()->format('F d, Y') }}</span>
+            <div class="sf9-footer">
+                <p class="font-bold text-xs">DepEd School Form 9 (SF9) | Page 1 of 1</p>
+                <p class="text-gray-600 mt-1" style="font-size: 7pt;">Generated: {{ now()->format('F d, Y h:i A') }}</p>
             </div>
 
         </div>
@@ -549,7 +940,7 @@
     </div>
 
     <!-- Floating Print Button -->
-    <button onclick="window.print()" class="no-print print-btn bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-xl shadow-indigo-500/40">
+    <button onclick="window.print()" class="no-print print-btn text-white hover:bg-blue-800 transition-colors">
         <i class="fas fa-print text-xl"></i>
     </button>
 

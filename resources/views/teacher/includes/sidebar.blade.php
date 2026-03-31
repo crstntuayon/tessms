@@ -7,6 +7,9 @@ $sections = \App\Models\Section::with('gradeLevel')
     ->get();
 @endphp
 
+<!-- Add this in the <head> section -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 <div class="flex flex-col w-72 h-screen bg-white/80 backdrop-blur-xl text-slate-800 fixed border-r border-white/50 shadow-2xl shadow-slate-200/50">
     
     <!-- Logo/Brand Section -->
@@ -173,13 +176,20 @@ $sections = \App\Models\Section::with('gradeLevel')
                                 <span>Attendance</span>
                             </a>
                         </li>
-                        <li>
-                            <a href="{{ route('teacher.sections.grades', $section) }}" 
-                               class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-                                <i class="fas fa-chart-line text-xs w-4"></i>
-                                <span>Grades</span>
-                            </a>
-                        </li>
+                       <li>
+    <a href="{{ route('teacher.sections.grades', $section) }}" 
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
+        <i class="fas fa-chart-line text-xs w-4"></i>
+        <span>Grades</span>
+    </a>
+</li>
+<li>
+    <a href="{{ route('teacher.sections.core-values.index', $section) }}" 
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
+        <i class="fas fa-star text-xs w-4"></i>
+        <span>Observed Core Values</span>
+    </a>
+</li>
                     </ul>
                 </details>
             </li>

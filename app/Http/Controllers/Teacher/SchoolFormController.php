@@ -15,6 +15,7 @@ use App\Models\Grade;
 use App\Models\Enrollment;
 use App\Models\SchoolYear;
 use App\Models\Setting;
+use App\Models\CoreValue;
 
 class SchoolFormController extends Controller
 {
@@ -393,89 +394,155 @@ public function calculateAge($birthDate, $year)
 
     
 
-    public function sf9(Request $request)
-    {
-        $sections = $this->getTeacherSections();
-        
-        // Get active school year from settings
-        $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
-        $activeSchoolYear = SchoolYear::find($activeSchoolYearId) ?? SchoolYear::where('is_active', true)->first();
-        
-        $schoolYear = $activeSchoolYear ? $activeSchoolYear->name : '2025-2026';
-        
-        // Get school settings - include both 'school' and 'general' groups
-        $schoolSettings = Setting::whereIn('group', ['school', 'general'])->get()->keyBy('key')->map->value;
-        
-        $schoolId = $schoolSettings['deped_school_id'] ?? '_______';
-        $schoolName = $schoolSettings['school_name'] ?? 'TUGAWE ELEMENTARY SCHOOL';
-        $schoolDivision = $schoolSettings['school_division'] ?? '_______';
-        $schoolRegion = $schoolSettings['school_region'] ?? '_______';
-        $schoolDistrict = $schoolSettings['school_district'] ?? '_______';
-        $schoolHead = $schoolSettings['school_head'] ?? '_______';
-        
-        // Get all students from teacher's sections
-        $students = collect();
-        foreach ($sections as $section) {
-            $sectionStudents = Student::with(['user', 'section.gradeLevel'])
-                ->whereHas('enrollments', function($q) use ($activeSchoolYear) {
-                    $q->where('school_year_id', $activeSchoolYear->id)
-                      ->where('status', 'enrolled');
-                })
-                ->where('section_id', $section->id)
-                ->get();
-            $students = $students->merge($sectionStudents);
-        }
-        $students = $students->unique('id')->sortBy('user.last_name');
-        
-        // Get selected student
-        $selectedStudent = $request->student_id
-            ? Student::with(['user', 'section.gradeLevel', 'section.teacher.user'])->find($request->student_id)
-            : null;
-        
-        // Get adviser name
-        $adviserName = '___________';
-        if ($selectedStudent && $selectedStudent->section && $selectedStudent->section->teacher) {
-            $teacherUser = $selectedStudent->section->teacher->user;
-            if ($teacherUser) {
-                $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
-                              ($teacherUser->first_name ?? '') . ' ' . 
-                              ($teacherUser->middle_name ?? '');
-                $adviserName = trim($adviserName) ?: $teacherUser->name ?? '___________';
-            } else {
-                $adviserName = $selectedStudent->section->teacher->name ?? '___________';
-            }
-        }
-
-        // Get grades for selected student
-        $grades = collect();
-        $attendances = collect();
-        
-        if ($selectedStudent) {
-            $grades = Grade::where('student_id', $selectedStudent->id)
-                ->where('school_year_id', $activeSchoolYear->id)
-                ->get();
-                
-            $attendances = Attendance::where('student_id', $selectedStudent->id)
-                ->where('school_year_id', $activeSchoolYear->id)
-                ->get();
-        }
-
-        return view('teacher.school-forms.sf9', compact(
-            'students',
-            'selectedStudent',
-            'adviserName',
-            'grades',
-            'attendances',
-            'schoolYear',
-            'activeSchoolYear',
-            'schoolId',
-            'schoolName',
-            'schoolDivision',
-            'schoolRegion',
-            'schoolDistrict',
-            'schoolHead'
-        ));
+public function sf9(Request $request)
+{
+    $sections = $this->getTeacherSections();
+    
+    // Get active school year from settings
+    $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
+    $activeSchoolYear = SchoolYear::find($activeSchoolYearId) ?? SchoolYear::where('is_active', true)->first();
+    
+    $schoolYear = $activeSchoolYear ? $activeSchoolYear->name : '2025-2026';
+    
+    // Get school settings
+    $schoolSettings = Setting::whereIn('group', ['school', 'general'])->get()->keyBy('key')->map->value;
+    
+    $schoolId = $schoolSettings['deped_school_id'] ?? '_______';
+    $schoolName = $schoolSettings['school_name'] ?? 'TUGAWE ELEMENTARY SCHOOL';
+    $schoolDivision = $schoolSettings['school_division'] ?? '_______';
+    $schoolRegion = $schoolSettings['school_region'] ?? '_______';
+    $schoolDistrict = $schoolSettings['school_district'] ?? '_______';
+    $schoolHead = $schoolSettings['school_head'] ?? '_______';
+    
+    // Get all students from teacher's sections
+    $students = collect();
+    foreach ($sections as $section) {
+        $sectionStudents = Student::with(['user', 'section.gradeLevel'])
+            ->whereHas('enrollments', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id)
+                  ->where('status', 'enrolled');
+            })
+            ->where('section_id', $section->id)
+            ->get();
+        $students = $students->merge($sectionStudents);
     }
+    $students = $students->unique('id')->sortBy('user.last_name');
+    
+    // Get selected student
+    $selectedStudent = $request->student_id
+        ? Student::with(['user', 'section.gradeLevel.subjects', 'section.teacher.user'])->find($request->student_id)
+        : null;
+    
+    // Get adviser name
+    $adviserName = '___________';
+    if ($selectedStudent && $selectedStudent->section && $selectedStudent->section->teacher) {
+        $teacherUser = $selectedStudent->section->teacher->user;
+        if ($teacherUser) {
+            $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
+                          ($teacherUser->first_name ?? '') . ' ' . 
+                          ($teacherUser->middle_name ?? '');
+            $adviserName = trim($adviserName) ?: $teacherUser->name ?? '___________';
+        } else {
+            $adviserName = $selectedStudent->section->teacher->name ?? '___________';
+        }
+    }
+
+    // Get grades for selected student
+    $subjectGrades = collect();
+    $attendances = collect();
+    $generalAverage = null;
+    $coreValues = collect(); // Initialize core values collection
+    
+    if ($selectedStudent) {
+        // Get attendance records
+        $attendances = Attendance::where('student_id', $selectedStudent->id)
+            ->where('school_year_id', $activeSchoolYear->id)
+            ->get();
+        
+       
+ // Get core values records - GROUPED by core_value and quarter
+$coreValues = CoreValue::where('student_id', $selectedStudent->id)
+    ->where('school_year_id', $activeSchoolYear->id)
+    ->get()
+    ->groupBy(['core_value', 'statement_key']);
+        
+        // Build subject grades array from grade level subjects
+        $gradeLevelSubjects = $selectedStudent->section->gradeLevel->subjects ?? collect();
+        
+        $totalFinalGrade = 0;
+        $gradedSubjectsCount = 0;
+        
+        foreach ($gradeLevelSubjects as $subject) {
+            // Get all final_grade records for this subject (quarters 1-4 and year-end)
+            $allGrades = Grade::where([
+                'student_id' => $selectedStudent->id,
+                'subject_id' => $subject->id,
+                'school_year_id' => $activeSchoolYear->id,
+                'component_type' => 'final_grade',
+            ])->get()->keyBy('quarter');
+            
+            // Extract quarter grades (quarter 1-4)
+            $q1 = $allGrades->get(1)?->final_grade;
+            $q2 = $allGrades->get(2)?->final_grade;
+            $q3 = $allGrades->get(3)?->final_grade;
+            $q4 = $allGrades->get(4)?->final_grade;
+            
+            // Get year-end final grade (quarter = NULL or 0)
+            $yearEndGrade = $allGrades->get(null)?->final_grade ?? $allGrades->get(0)?->final_grade;
+            
+            // If no year-end grade, calculate average of available quarters
+            $finalGrade = $yearEndGrade;
+            if (!$finalGrade) {
+                $quarters = array_filter([$q1, $q2, $q3, $q4], fn($q) => $q !== null);
+                if (count($quarters) > 0) {
+                    $finalGrade = round(array_sum($quarters) / count($quarters));
+                }
+            }
+            
+            $remarks = '';
+            if ($finalGrade !== null) {
+                $remarks = $finalGrade >= 75 ? 'Passed' : 'Failed';
+                $totalFinalGrade += $finalGrade;
+                $gradedSubjectsCount++;
+            }
+            
+            $subjectGrades->push([
+                'subject_id' => $subject->id,
+                'subject_name' => $subject->name,
+                'subject_code' => $subject->code,
+                'quarter_1' => $q1,
+                'quarter_2' => $q2,
+                'quarter_3' => $q3,
+                'quarter_4' => $q4,
+                'final_grade' => $finalGrade,
+                'remarks' => $remarks,
+            ]);
+        }
+        
+        // Calculate general average
+        $generalAverage = $gradedSubjectsCount > 0 ? round($totalFinalGrade / $gradedSubjectsCount) : null;
+    }
+
+    return view('teacher.school-forms.sf9', compact(
+        'students',
+        'selectedStudent',
+        'adviserName',
+        'subjectGrades',
+        'generalAverage',
+        'attendances',
+        'coreValues', // Add to compact
+        'schoolYear',
+        'activeSchoolYear',
+        'schoolId',
+        'schoolName',
+        'schoolDivision',
+        'schoolRegion',
+        'schoolDistrict',
+        'schoolHead'
+    ));
+}
+
+
 
     /**
      * SF10 - Learner's Permanent Academic Record (Form 137)

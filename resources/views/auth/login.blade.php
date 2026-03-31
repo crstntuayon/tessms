@@ -177,19 +177,25 @@
         }
 
         /* Side Panel Animation */
-        .side-panel {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 100%;
-            max-width: 480px;
-            height: 100vh;
-            background: white;
-            z-index: 100;
-            transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: -10px 0 40px rgba(0,0,0,0.1);
-            overflow-y: auto;
-        }
+      .side-panel {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    background: white;
+    z-index: 100;
+    transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.1);
+    overflow-y: auto;
+}
+
+@media (min-width: 640px) {
+    .side-panel {
+        max-width: 480px;
+    }
+}
 
         .side-panel.active {
             right: 0;
@@ -332,6 +338,53 @@
             border-width: 0 2px 2px 0;
             transform: rotate(45deg);
         }
+
+        /* Extra Small Screen Optimizations */
+@media (max-width: 375px) {
+    .hero-bg h1 {
+        font-size: 2.25rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    .side-panel {
+        max-width: 100% !important;
+    }
+    
+    .max-w-7xl {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+}
+
+/* Prevent horizontal overflow */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Ensure images don't overflow */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Touch-friendly tap targets on mobile */
+@media (max-width: 768px) {
+    button, 
+    .nav-link,
+    input,
+    select {
+        min-height: 44px;
+    }
+    
+    h2 {
+        font-size: 1.875rem !important;
+    }
+    
+    h3 {
+        font-size: 1.5rem !important;
+    }
+}
     </style>
 </head>
 
@@ -423,7 +476,7 @@
                     </div>
 
                     <!-- Quick Stats -->
-                    <div class="grid grid-cols-3 gap-4 mt-12 pt-8 border-t border-slate-200/60">
+                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12 pt-8 border-t border-slate-200/60">
                         <div>
                             <p class="text-3xl font-bold text-teal-600">{{ $students->count() }}+</p>
                             <p class="text-sm text-slate-500 font-medium">Students</p>
@@ -582,14 +635,13 @@ function imageSlider() {
                     <div class="absolute inset-0 bg-gradient-to-br from-teal-400/20 to-orange-400/20 rounded-full blur-3xl scale-150 group-hover:scale-175 transition-transform duration-700"></div>
                     
                     <!-- Logo Circle Frame -->
-                    <div class="relative w-80 h-80 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] rounded-full bg-white shadow-2xl flex items-center justify-center
-                                border-8 border-white group-hover:shadow-3xl transition-all duration-500">
+                  <div class="relative w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full bg-white shadow-2xl flex items-center justify-center border-8 border-white group-hover:shadow-3xl transition-all duration-500">
                         
                         <!-- Inner Ring -->
                         <div class="absolute inset-4 rounded-full border-2 border-dashed border-teal-200/60 animate-spin-slow" style="animation-duration: 20s;"></div>
                         
                         <!-- Logo Image - No Background, Bigger -->
-                        <div class="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 p-4">
+                      <div class="relative w-48 h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 p-4">
                             <img src="{{ asset('images/logo.png') }}" 
                                  alt="Tugawe Elementary School Logo" 
                                  class="w-full h-full object-contain drop-shadow-2xl
@@ -868,7 +920,7 @@ function imageSlider() {
 
             <!-- Teaching Staff Preview -->
             @if($teachingStaff->count())
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+         <div class="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
                 @foreach($teachingStaff->take(6) as $teacher)
                 <div class="text-center group">
                     <div class="relative mb-4 mx-auto w-24 h-24">
@@ -1220,7 +1272,7 @@ function imageSlider() {
                 Personal Information
             </h3>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <div class="group">
                     <label class="block text-sm font-medium text-slate-700 mb-2">First Name <span class="text-red-500">*</span></label>
                     <input type="text" name="first_name" placeholder="Juan" required 
@@ -1385,7 +1437,7 @@ function imageSlider() {
                        class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Barangay</label>
                     <input type="text" name="barangay" placeholder="Barangay" 
@@ -1416,7 +1468,7 @@ function imageSlider() {
         Academic Information
     </h3>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">Grade Level <span class="text-red-500">*</span></label>
             <select name="grade_level_id" required 
@@ -1469,7 +1521,7 @@ function imageSlider() {
                 Account Setup & Photo
             </h3>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Username <span class="text-red-500">*</span></label>
                     <div class="relative">

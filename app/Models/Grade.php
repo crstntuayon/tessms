@@ -22,6 +22,8 @@ protected $fillable = [
     'initial_grade',
     'final_grade',
     'remarks',
+    'titles',
+    'total_items',
 ];
 
     public function student()

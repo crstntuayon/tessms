@@ -375,6 +375,16 @@ $sidebarPendingCount = $activeSchoolYear
         </div>
 
 
+
+        <a href="{{ route('admin.school-years.index') }}" 
+   class="nav-item {{ request()->routeIs('admin.school-years.*') ? 'active' : '' }} flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.school-year.*') ? 'text-blue-600 bg-blue-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+    <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.school-year.*') ? 'bg-blue-100' : 'bg-slate-100 group-hover:bg-blue-50' }} flex items-center justify-center transition-colors">
+        <i class="fas fa-calendar-alt text-sm {{ request()->routeIs('admin.school-year.*') ? 'text-blue-600' : 'group-hover:text-blue-600' }}"></i>
+    </div>
+    <span>School Year</span>
+</a>
+
+
     </nav>
 
     <!-- Bottom Section: Logout & User Profile -->

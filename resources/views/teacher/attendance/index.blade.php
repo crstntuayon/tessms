@@ -26,8 +26,74 @@
 
     <!-- Main Content -->
     <div class="ml-72 w-full min-h-screen p-8">
+
+
+    
         
         <!-- Breadcrumb & Header Section -->
+
+
+        @if(session('success'))
+<div id="successAlert" class="mb-6 relative overflow-hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 animate-fade-in">
+
+    <!-- Icon -->
+    <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-check text-emerald-600"></i>
+    </div>
+
+    <!-- Message -->
+    <div>
+        <p class="font-semibold text-emerald-900">Success!</p>
+        <p class="text-sm text-emerald-700">{{ session('success') }}</p>
+    </div>
+
+    <!-- Close Button -->
+    <button onclick="closeSuccess()" class="ml-auto w-8 h-8 rounded-full hover:bg-emerald-100 flex items-center justify-center transition-colors">
+        <i class="fas fa-times text-emerald-600"></i>
+    </button>
+
+    <!-- Countdown Bar -->
+    <div id="progressBar" class="absolute bottom-0 left-0 h-1 bg-emerald-500"></div>
+</div>
+@endif
+<script>
+function closeSuccess() {
+    const alert = document.getElementById('successAlert');
+    if (alert) {
+        alert.style.transition = 'all 0.4s ease';
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateY(-10px)';
+        setTimeout(() => alert.remove(), 400);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const alert = document.getElementById('successAlert');
+    const bar = document.getElementById('progressBar');
+
+    if (!alert || !bar) return;
+
+    let duration = 5000; // 5 seconds
+    let start = Date.now();
+
+    function animate() {
+        let elapsed = Date.now() - start;
+        let progress = Math.max(0, 100 - (elapsed / duration) * 100);
+
+        bar.style.width = progress + '%';
+
+        if (elapsed < duration) {
+            requestAnimationFrame(animate);
+        } else {
+            closeSuccess();
+        }
+    }
+
+    bar.style.width = '100%';
+    animate();
+});
+</script>
+
         <div class="mb-8">
             <nav class="flex items-center gap-2 text-sm text-slate-500 mb-4">
                 <a href="{{ route('teacher.dashboard') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a>
@@ -85,21 +151,7 @@
             </div>
         </div>
 
-        <!-- Success Message -->
-        @if(session('success'))
-            <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 animate-fade-in">
-                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-check text-emerald-600"></i>
-                </div>
-                <div>
-                    <p class="font-semibold text-emerald-900">Success!</p>
-                    <p class="text-sm text-emerald-700">{{ session('success') }}</p>
-                </div>
-                <button onclick="this.parentElement.remove()" class="ml-auto w-8 h-8 rounded-full hover:bg-emerald-100 flex items-center justify-center transition-colors">
-                    <i class="fas fa-times text-emerald-600"></i>
-                </button>
-            </div>
-        @endif
+      
 
         <!-- Date Selector Card -->
         <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl shadow-slate-200/50 p-6 mb-6">
@@ -159,7 +211,7 @@
                     <table class="w-full">
                         <thead>
                             <tr class="bg-slate-50/80 border-b border-slate-100">
-                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-16">#</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-16">No.</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Student Information</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Learner's Reference Number</th>
                                 <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider w-48">Status</th>

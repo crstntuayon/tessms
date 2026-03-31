@@ -130,5 +130,11 @@ public function getAgeAttribute()
         : null;
 }
 
+    public function coreValues()
+    {
+        return $this->hasMany(CoreValue::class);
+    }
+
+  
     
 }

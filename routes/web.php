@@ -63,15 +63,18 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
               Route::resource('attendance', App\Http\Controllers\Teacher\AttendanceController::class);
               Route::post('/attendance/bulk-store', [App\Http\Controllers\Teacher\AttendanceController::class, 'bulkStore'])
         ->name('attendance.bulk-store');
-              Route::get('/exports/sf9', [App\Http\Controllers\Teacher\ExportController::class, 'sf9'])
+
+  
+
+         Route::get('/exports/sf9', [App\Http\Controllers\Teacher\ExportController::class, 'sf9'])
         ->name('exports.sf9');
          Route::post('/interventions', [App\Http\Controllers\Teacher\InterventionController::class, 'store'])
         ->name('interventions.store');
          Route::get('attendance/monthly', [App\Http\Controllers\Teacher\AttendanceController::class, 'monthly'])->name('attendance.monthly');
-           Route::get('reports/class-record', [App\Http\Controllers\Teacher\ReportsController::class, 'classRecord'])
+         Route::get('reports/class-record', [App\Http\Controllers\Teacher\ReportsController::class, 'classRecord'])
         ->name('reports.class-record');
 
-          Route::get('/profile', [App\Http\Controllers\Teacher\ProfileController::class, 'index'])->name('profile');
+         Route::get('/profile', [App\Http\Controllers\Teacher\ProfileController::class, 'index'])->name('profile');
          
             
 
@@ -90,10 +93,15 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
     Route::delete('/settings/account', [App\Http\Controllers\Teacher\SettingsController::class, 'deleteAccount'])->name('settings.delete-account');
 
 
-      Route::get('sections/{section}/students', [App\Http\Controllers\Teacher\SectionsController::class, 'students'])->name('sections.students');
+    Route::get('sections/{section}/students', [App\Http\Controllers\Teacher\SectionsController::class, 'students'])->name('sections.students');
     Route::get('sections/{section}/attendance', [App\Http\Controllers\Teacher\SectionsController::class, 'attendance'])->name('sections.attendance');
     Route::get('sections/{section}/grades', [App\Http\Controllers\Teacher\SectionsController::class, 'grades'])->name('sections.grades');
-
+  // Core Values Routes
+    Route::get('/sections/{section}/core-values', [App\Http\Controllers\Teacher\CoreValueController::class, 'index'])
+        ->name('sections.core-values.index');
+    
+    Route::post('/sections/{section}/core-values', [App\Http\Controllers\Teacher\CoreValueController::class, 'store'])
+        ->name('sections.core-values.store');
 
         Route::get('/sections/{section}/students', [App\Http\Controllers\Teacher\StudentController::class, 'index'])
                ->name('sections.students');
@@ -254,6 +262,24 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
          Route::resource('school-years', \App\Http\Controllers\Admin\SchoolYearController::class);
         Route::post('/school-year/end', [\App\Http\Controllers\Admin\SchoolYearController::class, 'endSchoolYear'])
     ->name('school-year.end');
+// Fixed: Changed to match naming convention
+Route::post('/school-year/start', [\App\Http\Controllers\Admin\SchoolYearController::class, 'startSchoolYear'])
+    ->name('school-year.start');
+
+Route::post('/school-year/regenerate-qr', [\App\Http\Controllers\Admin\SchoolYearController::class, 'regenerateQrCode'])
+    ->name('school-year.regenerate-qr');
+
+Route::get('/school-year/qr-code/{qrCode}/download', [\App\Http\Controllers\Admin\SchoolYearController::class, 'downloadQrCode'])
+    ->name('school-year.download-qr');
+// Public enrollment routes (no auth required)
+Route::get('/enrollment/form/{token}', [\App\Http\Controllers\Admin\EnrollmentController::class, 'showForm'])->name('enrollment.form');
+Route::post('/enrollment/submit', [\App\Http\Controllers\Admin\EnrollmentController::class, 'submit'])->name('enrollment.submit');
+Route::get('/enrollment/success', [\App\Http\Controllers\Admin\EnrollmentController::class, 'success'])->name('enrollment.success');
+Route::get('/enrollment/subjects', [\App\Http\Controllers\Admin\EnrollmentController::class, 'getSubjects'])->name('enrollment.subjects');
+Route::get('/enrollment/sections', [\App\Http\Controllers\Admin\EnrollmentController::class, 'getSections'])->name('enrollment.sections');
+
+
+
 
           Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])
         ->name('settings.index');

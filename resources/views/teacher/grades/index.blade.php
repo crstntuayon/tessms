@@ -281,10 +281,6 @@
                             <i class="fas fa-pen text-blue-600"></i>
                             Written Work (WW)
                         </h3>
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm text-slate-600">Total Items:</span>
-                            <input type="number" id="wwTotal" value="100" class="w-20 px-3 py-1 rounded-lg border border-blue-200 text-sm font-semibold text-blue-600" onchange="calculateAllWW()">
-                        </div>
                     </div>
                 </div>
                 
@@ -304,9 +300,18 @@
                                 <tr class="bg-slate-50" id="wwHeaderRow">
                                     <th class="px-4 py-3 text-left font-semibold text-slate-700 w-16">#</th>
                                     <th class="px-4 py-3 text-left font-semibold text-slate-700">Student Name</th>
-                                    <th class="px-2 py-3 text-center font-semibold text-slate-700 ww-col-header" data-col="1">WW 1<br><input type="text" class="w-16 text-center bg-transparent border-b border-slate-300 text-xs mt-1" placeholder="Title"></th>
-                                    <th class="px-2 py-3 text-center font-semibold text-slate-700 ww-col-header" data-col="2">WW 2<br><input type="text" class="w-16 text-center bg-transparent border-b border-slate-300 text-xs mt-1" placeholder="Title"></th>
-                                    <th class="px-2 py-3 text-center font-semibold text-slate-700 ww-col-header" data-col="3">WW 3<br><input type="text" class="w-16 text-center bg-transparent border-b border-slate-300 text-xs mt-1" placeholder="Title"></th>
+                                    
+                                    @php $wwTitles = $existingGrades['ww_titles'] ?? []; @endphp
+                                    @php $wwTotalItems = $existingGrades['ww_total_items'] ?? []; @endphp
+                                    
+                                    @for($i = 0; $i < max(3, count($wwTitles)); $i++)
+                                    <th class="px-2 py-3 text-center font-semibold text-slate-700 ww-col-header" data-col="{{ $i + 1 }}">
+                                        <div class="mb-1">WW {{ $i + 1 }}</div>
+                                        <input type="text" name="ww_titles[]" class="ww-title w-16 text-center bg-transparent border-b border-slate-300 text-xs mb-1" placeholder="Title" value="{{ $wwTitles[$i] ?? '' }}">
+                                        <input type="number" name="ww_total_items[]" class="ww-total-item w-16 text-center bg-blue-50 border border-blue-200 rounded text-xs py-1" placeholder="Items" value="{{ $wwTotalItems[$i] ?? 100 }}" min="1" onchange="calculateAllWW()">
+                                    </th>
+                                    @endfor
+                                    
                                     <th class="px-4 py-3 text-center font-semibold text-blue-700 bg-blue-50">Total Score</th>
                                     <th class="px-4 py-3 text-center font-semibold text-blue-700 bg-blue-50">PS</th>
                                     <th class="px-4 py-3 text-center font-semibold text-blue-700 bg-blue-50">WS</th>
@@ -324,15 +329,16 @@
                                             <span class="font-medium text-slate-900">{{ $student->user->last_name }}, {{ $student->user->first_name }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-2 py-3 text-center ww-col" data-col="1">
-                                        <input type="number" name="ww[{{ $student->id }}][]" class="ww-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" min="0" onchange="calculateStudentWW({{ $student->id }})">
+                                    
+                                    @php $wwKey = $student->id . '_written_work'; @endphp
+                                    @php $wwScores = $existingGrades[$wwKey]['scores'] ?? []; @endphp
+                                    
+                                    @for($i = 0; $i < max(3, count($wwTitles)); $i++)
+                                    <td class="px-2 py-3 text-center ww-col" data-col="{{ $i + 1 }}">
+                                        <input type="number" name="ww[{{ $student->id }}][]" class="ww-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" min="0" value="{{ $wwScores[$i] ?? '' }}" onchange="calculateStudentWW({{ $student->id }})">
                                     </td>
-                                    <td class="px-2 py-3 text-center ww-col" data-col="2">
-                                        <input type="number" name="ww[{{ $student->id }}][]" class="ww-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" min="0" onchange="calculateStudentWW({{ $student->id }})">
-                                    </td>
-                                    <td class="px-2 py-3 text-center ww-col" data-col="3">
-                                        <input type="number" name="ww[{{ $student->id }}][]" class="ww-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" min="0" onchange="calculateStudentWW({{ $student->id }})">
-                                    </td>
+                                    @endfor
+                                    
                                     <td class="px-4 py-3 text-center font-semibold text-slate-700">
                                         <span class="ww-total" id="ww-total-{{ $student->id }}">0</span>
                                     </td>
@@ -358,10 +364,6 @@
                             <i class="fas fa-tasks text-purple-600"></i>
                             Performance Tasks (PT)
                         </h3>
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm text-slate-600">Total Items:</span>
-                            <input type="number" id="ptTotal" value="100" class="w-20 px-3 py-1 rounded-lg border border-purple-200 text-sm font-semibold text-purple-600" onchange="calculateAllPT()">
-                        </div>
                     </div>
                 </div>
                 
@@ -381,8 +383,18 @@
                                 <tr class="bg-slate-50" id="ptHeaderRow">
                                     <th class="px-4 py-3 text-left font-semibold text-slate-700 w-16">#</th>
                                     <th class="px-4 py-3 text-left font-semibold text-slate-700">Student Name</th>
-                                    <th class="px-2 py-3 text-center font-semibold text-slate-700 pt-col-header" data-col="1">PT 1<br><input type="text" class="w-16 text-center bg-transparent border-b border-slate-300 text-xs mt-1" placeholder="Title"></th>
-                                    <th class="px-2 py-3 text-center font-semibold text-slate-700 pt-col-header" data-col="2">PT 2<br><input type="text" class="w-16 text-center bg-transparent border-b border-slate-300 text-xs mt-1" placeholder="Title"></th>
+                                    
+                                    @php $ptTitles = $existingGrades['pt_titles'] ?? []; @endphp
+                                    @php $ptTotalItems = $existingGrades['pt_total_items'] ?? []; @endphp
+                                    
+                                    @for($i = 0; $i < max(2, count($ptTitles)); $i++)
+                                    <th class="px-2 py-3 text-center font-semibold text-slate-700 pt-col-header" data-col="{{ $i + 1 }}">
+                                        <div class="mb-1">PT {{ $i + 1 }}</div>
+                                        <input type="text" name="pt_titles[]" class="pt-title w-16 text-center bg-transparent border-b border-slate-300 text-xs mb-1" placeholder="Title" value="{{ $ptTitles[$i] ?? '' }}">
+                                        <input type="number" name="pt_total_items[]" class="pt-total-item w-16 text-center bg-purple-50 border border-purple-200 rounded text-xs py-1" placeholder="Items" value="{{ $ptTotalItems[$i] ?? 100 }}" min="1" onchange="calculateAllPT()">
+                                    </th>
+                                    @endfor
+                                    
                                     <th class="px-4 py-3 text-center font-semibold text-purple-700 bg-purple-50">Total Score</th>
                                     <th class="px-4 py-3 text-center font-semibold text-purple-700 bg-purple-50">PS</th>
                                     <th class="px-4 py-3 text-center font-semibold text-purple-700 bg-purple-50">WS</th>
@@ -400,12 +412,16 @@
                                             <span class="font-medium text-slate-900">{{ $student->user->last_name }}, {{ $student->user->first_name }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-2 py-3 text-center pt-col" data-col="1">
-                                        <input type="number" name="pt[{{ $student->id }}][]" class="pt-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all" min="0" onchange="calculateStudentPT({{ $student->id }})">
+                                    
+                                    @php $ptKey = $student->id . '_performance_task'; @endphp
+                                    @php $ptScores = $existingGrades[$ptKey]['scores'] ?? []; @endphp
+                                    
+                                    @for($i = 0; $i < max(2, count($ptTitles)); $i++)
+                                    <td class="px-2 py-3 text-center pt-col" data-col="{{ $i + 1 }}">
+                                        <input type="number" name="pt[{{ $student->id }}][]" class="pt-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all" min="0" value="{{ $ptScores[$i] ?? '' }}" onchange="calculateStudentPT({{ $student->id }})">
                                     </td>
-                                    <td class="px-2 py-3 text-center pt-col" data-col="2">
-                                        <input type="number" name="pt[{{ $student->id }}][]" class="pt-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all" min="0" onchange="calculateStudentPT({{ $student->id }})">
-                                    </td>
+                                    @endfor
+                                    
                                     <td class="px-4 py-3 text-center font-semibold text-slate-700">
                                         <span class="pt-total" id="pt-total-{{ $student->id }}">0</span>
                                     </td>
@@ -463,7 +479,8 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center">
-                                        <input type="number" name="qe[{{ $student->id }}]" class="qe-score w-20 px-3 py-2 text-center rounded-lg border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all font-semibold" min="0" onchange="calculateStudentQE({{ $student->id }})">
+                                        @php $qeKey = $student->id . '_quarterly_exam'; @endphp
+                                        <input type="number" name="qe[{{ $student->id }}]" class="qe-score w-20 px-3 py-2 text-center rounded-lg border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all font-semibold" min="0" value="{{ $existingGrades[$qeKey]['total_score'] ?? '' }}" onchange="calculateStudentQE({{ $student->id }})">
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <span class="qe-ps px-2 py-1 rounded bg-amber-50 text-amber-700 font-semibold" id="qe-ps-{{ $student->id }}">0.00</span>
@@ -587,7 +604,9 @@
 <script>
     // Store existing grades data from PHP
     const existingGrades = @json($existingGrades ?? []);
-    
+    let wwColCount = Math.max(3, (existingGrades['ww_titles'] || []).length);
+    let ptColCount = Math.max(2, (existingGrades['pt_titles'] || []).length);
+
     // DepEd Transmutation Table
     const transmutationTable = [
         {range: [100, 100], grade: 100},
@@ -670,24 +689,30 @@
         calculateAllGrades();
     }
 
-    // Written Work Calculations
+    // Written Work Calculations with individual total items
     function calculateStudentWW(studentId) {
-        const row = document.querySelector(`tr[data-student-id="${studentId}"]`);
+        const row = document.querySelector(`#wwTableBody tr[data-student-id="${studentId}"]`);
         if (!row) return;
         
-        const inputs = row.querySelectorAll('.ww-score');
-        let total = 0;
+        const scoreInputs = row.querySelectorAll('.ww-score');
+        const totalItemInputs = document.querySelectorAll('#wwHeaderRow .ww-total-item');
+        
+        let totalScore = 0;
+        let totalPossible = 0;
         let count = 0;
         
-        inputs.forEach(input => {
+        scoreInputs.forEach((input, index) => {
             if (input.value && input.value !== '') {
-                total += parseFloat(input.value) || 0;
+                const score = parseFloat(input.value) || 0;
+                const totalItems = totalItemInputs[index] ? (parseFloat(totalItemInputs[index].value) || 100) : 100;
+                
+                totalScore += score;
+                totalPossible += totalItems;
                 count++;
             }
         });
         
-        const totalItems = parseFloat(document.getElementById('wwTotal').value) || 100;
-        const ps = count > 0 ? (total / (totalItems * count)) * 100 : 0;
+        const ps = totalPossible > 0 ? (totalScore / totalPossible) * 100 : 0;
         const wwWeight = parseFloat(document.getElementById('wwWeight').value) || 40;
         const ws = (ps * (wwWeight / 100)).toFixed(2);
         
@@ -695,7 +720,7 @@
         const psEl = document.getElementById(`ww-ps-${studentId}`);
         const wsEl = document.getElementById(`ww-ws-${studentId}`);
         
-        if (totalEl) totalEl.textContent = total.toFixed(0);
+        if (totalEl) totalEl.textContent = totalScore.toFixed(0) + ' / ' + totalPossible;
         if (psEl) psEl.textContent = ps.toFixed(2);
         if (wsEl) wsEl.textContent = ws;
         
@@ -709,24 +734,30 @@
         });
     }
 
-    // Performance Task Calculations
+    // Performance Task Calculations with individual total items
     function calculateStudentPT(studentId) {
         const row = document.querySelector(`#ptTableBody tr[data-student-id="${studentId}"]`);
         if (!row) return;
         
-        const inputs = row.querySelectorAll('.pt-score');
-        let total = 0;
+        const scoreInputs = row.querySelectorAll('.pt-score');
+        const totalItemInputs = document.querySelectorAll('#ptHeaderRow .pt-total-item');
+        
+        let totalScore = 0;
+        let totalPossible = 0;
         let count = 0;
         
-        inputs.forEach(input => {
+        scoreInputs.forEach((input, index) => {
             if (input.value && input.value !== '') {
-                total += parseFloat(input.value) || 0;
+                const score = parseFloat(input.value) || 0;
+                const totalItems = totalItemInputs[index] ? (parseFloat(totalItemInputs[index].value) || 100) : 100;
+                
+                totalScore += score;
+                totalPossible += totalItems;
                 count++;
             }
         });
         
-        const totalItems = parseFloat(document.getElementById('ptTotal').value) || 100;
-        const ps = count > 0 ? (total / (totalItems * count)) * 100 : 0;
+        const ps = totalPossible > 0 ? (totalScore / totalPossible) * 100 : 0;
         const ptWeight = parseFloat(document.getElementById('ptWeight').value) || 40;
         const ws = (ps * (ptWeight / 100)).toFixed(2);
         
@@ -734,7 +765,7 @@
         const psEl = document.getElementById(`pt-ps-${studentId}`);
         const wsEl = document.getElementById(`pt-ws-${studentId}`);
         
-        if (totalEl) totalEl.textContent = total.toFixed(0);
+        if (totalEl) totalEl.textContent = totalScore.toFixed(0) + ' / ' + totalPossible;
         if (psEl) psEl.textContent = ps.toFixed(2);
         if (wsEl) wsEl.textContent = ws;
         
@@ -829,18 +860,20 @@
         });
     }
 
-    // Dynamic Column Management for Written Work
-    let wwColCount = 3;
-
-    function addWWColumn() {
+    // Dynamic Column Management for Written Work with total items
+    function addWWColumn(title = '', totalItems = 100) {
         wwColCount++;
         const headerRow = document.getElementById('wwHeaderRow');
         
-        // Add header
+        // Add header with title and total items inputs
         const newTh = document.createElement('th');
         newTh.className = 'px-2 py-3 text-center font-semibold text-slate-700 ww-col-header';
         newTh.setAttribute('data-col', wwColCount);
-        newTh.innerHTML = `WW ${wwColCount}<br><input type="text" class="w-16 text-center bg-transparent border-b border-slate-300 text-xs mt-1" placeholder="Title">`;
+        newTh.innerHTML = `
+            <div class="mb-1">WW ${wwColCount}</div>
+            <input type="text" name="ww_titles[]" class="ww-title w-16 text-center bg-transparent border-b border-slate-300 text-xs mb-1" placeholder="Title" value="${title}">
+            <input type="number" name="ww_total_items[]" class="ww-total-item w-16 text-center bg-blue-50 border border-blue-200 rounded text-xs py-1" placeholder="Items" value="${totalItems}" min="1" onchange="calculateAllWW()">
+        `;
         
         const totalTh = headerRow.querySelector('th:nth-last-child(3)');
         headerRow.insertBefore(newTh, totalTh);
@@ -868,17 +901,19 @@
         calculateAllWW();
     }
 
-    // Dynamic Column Management for Performance Tasks
-    let ptColCount = 2;
-
-    function addPTColumn() {
+    // Dynamic Column Management for Performance Tasks with total items
+    function addPTColumn(title = '', totalItems = 100) {
         ptColCount++;
         const headerRow = document.getElementById('ptHeaderRow');
         
         const newTh = document.createElement('th');
         newTh.className = 'px-2 py-3 text-center font-semibold text-slate-700 pt-col-header';
         newTh.setAttribute('data-col', ptColCount);
-        newTh.innerHTML = `PT ${ptColCount}<br><input type="text" class="w-16 text-center bg-transparent border-b border-slate-300 text-xs mt-1" placeholder="Title">`;
+        newTh.innerHTML = `
+            <div class="mb-1">PT ${ptColCount}</div>
+            <input type="text" name="pt_titles[]" class="pt-title w-16 text-center bg-transparent border-b border-slate-300 text-xs mb-1" placeholder="Title" value="${title}">
+            <input type="number" name="pt_total_items[]" class="pt-total-item w-16 text-center bg-purple-50 border border-purple-200 rounded text-xs py-1" placeholder="Items" value="${totalItems}" min="1" onchange="calculateAllPT()">
+        `;
         
         const totalTh = headerRow.querySelector('th:nth-last-child(3)');
         headerRow.insertBefore(newTh, totalTh);
@@ -909,6 +944,44 @@
     function populateExistingGrades() {
         if (!existingGrades || Object.keys(existingGrades).length === 0) return;
         
+        // Populate Written Work titles and total items
+        if (existingGrades['ww_titles'] && existingGrades['ww_titles'].length > 3) {
+            const titles = existingGrades['ww_titles'];
+            const totalItems = existingGrades['ww_total_items'] || [];
+            for (let i = 3; i < titles.length; i++) {
+                addWWColumn(titles[i], totalItems[i] || 100);
+            }
+        }
+        
+        // Set titles and total items for existing WW columns
+        if (existingGrades['ww_titles']) {
+            const titleInputs = document.querySelectorAll('#wwHeaderRow .ww-title');
+            const totalItemInputs = document.querySelectorAll('#wwHeaderRow .ww-total-item');
+            existingGrades['ww_titles'].forEach((title, index) => {
+                if (titleInputs[index]) titleInputs[index].value = title;
+                if (totalItemInputs[index]) totalItemInputs[index].value = existingGrades['ww_total_items']?.[index] || 100;
+            });
+        }
+        
+        // Populate Performance Task titles and total items
+        if (existingGrades['pt_titles'] && existingGrades['pt_titles'].length > 2) {
+            const titles = existingGrades['pt_titles'];
+            const totalItems = existingGrades['pt_total_items'] || [];
+            for (let i = 2; i < titles.length; i++) {
+                addPTColumn(titles[i], totalItems[i] || 100);
+            }
+        }
+        
+        // Set titles and total items for existing PT columns
+        if (existingGrades['pt_titles']) {
+            const titleInputs = document.querySelectorAll('#ptHeaderRow .pt-title');
+            const totalItemInputs = document.querySelectorAll('#ptHeaderRow .pt-total-item');
+            existingGrades['pt_titles'].forEach((title, index) => {
+                if (titleInputs[index]) titleInputs[index].value = title;
+                if (totalItemInputs[index]) totalItemInputs[index].value = existingGrades['pt_total_items']?.[index] || 100;
+            });
+        }
+        
         // Populate Written Work grades
         document.querySelectorAll('#wwTableBody tr').forEach(row => {
             const studentId = row.getAttribute('data-student-id');
@@ -922,9 +995,10 @@
                     if (inputs[index]) {
                         inputs[index].value = score;
                     } else if (index >= inputs.length) {
-                        // Add more columns if needed
                         while (inputs.length <= index) {
-                            addWWColumn();
+                            const titles = existingGrades['ww_titles'] || [];
+                            const totalItems = existingGrades['ww_total_items'] || [];
+                            addWWColumn(titles[inputs.length] || '', totalItems[inputs.length] || 100);
                         }
                         const newInputs = row.querySelectorAll('.ww-score');
                         if (newInputs[index]) newInputs[index].value = score;
@@ -947,7 +1021,9 @@
                         inputs[index].value = score;
                     } else if (index >= inputs.length) {
                         while (inputs.length <= index) {
-                            addPTColumn();
+                            const titles = existingGrades['pt_titles'] || [];
+                            const totalItems = existingGrades['pt_total_items'] || [];
+                            addPTColumn(titles[inputs.length] || '', totalItems[inputs.length] || 100);
                         }
                         const newInputs = row.querySelectorAll('.pt-score');
                         if (newInputs[index]) newInputs[index].value = score;
@@ -978,7 +1054,6 @@
     // Quarter selection
     document.getElementById('quarterSelect')?.addEventListener('change', function() {
         document.getElementById('quarterInput').value = this.value;
-        // Reload page with new quarter
         const url = new URL(window.location.href);
         url.searchParams.set('quarter', this.value);
         window.location.href = url.toString();
