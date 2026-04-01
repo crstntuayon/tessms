@@ -549,7 +549,7 @@ $coreValues = CoreValue::where('student_id', $selectedStudent->id)
      */
 
 
- public function sf10(Request $request)
+public function sf10(Request $request)
 {
     // Get teacher's sections
     $sections = $this->getTeacherSections();
@@ -562,70 +562,140 @@ $coreValues = CoreValue::where('student_id', $selectedStudent->id)
     // School settings
     $schoolSettings = Setting::whereIn('group', ['school', 'general'])
         ->get()->keyBy('key')->map->value;
-    $schoolId = $schoolSettings['deped_school_id'] ?? '_______';
+    $schoolId = $schoolSettings['deped_school_id'] ?? '';
     $schoolName = $schoolSettings['school_name'] ?? 'TUGAWE ELEMENTARY SCHOOL';
-    $schoolDivision = $schoolSettings['school_division'] ?? '_______';
-    $schoolRegion = $schoolSettings['school_region'] ?? '_______';
-    $schoolDistrict = $schoolSettings['school_district'] ?? '_______';
-    $schoolHead = $schoolSettings['school_head'] ?? '_______';
+    $schoolDivision = $schoolSettings['school_division'] ?? '';
+    $schoolRegion = $schoolSettings['school_region'] ?? '';
+    $schoolDistrict = $schoolSettings['school_district'] ?? '';
+    $schoolHead = $schoolSettings['school_head'] ?? '';
 
-    // Students from teacher's sections
-    $students = Student::with('user', 'section')
-        ->whereIn('section_id', $sections->pluck('id'))
-        ->get()
-        ->sortBy('user.last_name');
+    // Get all students from teacher's sections (same pattern as SF9)
+    $students = collect();
+    foreach ($sections as $section) {
+        $sectionStudents = Student::with(['user', 'section.gradeLevel'])
+            ->whereHas('enrollments', function($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id)
+                  ->where('status', 'enrolled');
+            })
+            ->where('section_id', $section->id)
+            ->get();
+        $students = $students->merge($sectionStudents);
+    }
+    $students = $students->unique('id')->sortBy('user.last_name');
 
     // Selected student
     $selectedStudent = $request->student_id
-        ? Student::with(['user', 'section.teacher.user', 'section.gradeLevel'])->find($request->student_id)
+        ? Student::with(['user', 'section.gradeLevel.subjects', 'section.teacher.user'])->find($request->student_id)
         : null;
 
+    // Get adviser name (same pattern as SF9)
+    $adviserName = '';
+    if ($selectedStudent && $selectedStudent->section && $selectedStudent->section->teacher) {
+        $teacherUser = $selectedStudent->section->teacher->user;
+        if ($teacherUser) {
+            $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
+                          ($teacherUser->first_name ?? '') . ' ' . 
+                          ($teacherUser->middle_name ?? '');
+            $adviserName = trim($adviserName) ?: ($teacherUser->name ?? '');
+        } else {
+            $adviserName = $selectedStudent->section->teacher->name ?? '';
+        }
+    }
+
+    // Define all elementary grade levels (Kinder to Grade 6)
+    $allGradeLevels = ['Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
+    
     // Get student's current grade level
     $currentGradeLevel = null;
     if ($selectedStudent && $selectedStudent->section && $selectedStudent->section->gradeLevel) {
         $currentGradeLevel = $selectedStudent->section->gradeLevel->name;
     }
 
-    // Only get subjects for the student's current grade level
+    // Load data for all grade levels
     $subjectsByGrade = [];
     $historicalGrades = [];
     $schoolHistory = [];
 
-    if ($selectedStudent && $currentGradeLevel) {
-        // Get the grade level ID
-        $gradeLevel = $selectedStudent->section->gradeLevel;
-        
-        // Only load subjects for current grade level
-        $subjectsByGrade[$currentGradeLevel] = Subject::where('grade_level_id', $gradeLevel->id)
-            ->orderBy('name')
-            ->get();
+    if ($selectedStudent) {
+        // Get all grade levels from the database
+        $gradeLevels = \App\Models\GradeLevel::whereIn('name', $allGradeLevels)
+            ->orderByRaw("FIELD(name, 'Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6')")
+            ->get()
+            ->keyBy('name');
 
-        // Get grades for current grade level only
-        $grades = Grade::with(['subject', 'section.gradeLevel'])
-            ->where('student_id', $selectedStudent->id)
-            ->whereHas('section.gradeLevel', function ($q) use ($currentGradeLevel) {
-                $q->where('name', $currentGradeLevel);
-            })
-            ->get();
+        foreach ($allGradeLevels as $gradeLevelName) {
+            $gradeLevel = $gradeLevels[$gradeLevelName] ?? null;
+            
+            if ($gradeLevel) {
+                // Get subjects for this grade level
+                $subjectsByGrade[$gradeLevelName] = Subject::where('grade_level_id', $gradeLevel->id)
+                    ->orderBy('name')
+                    ->get();
+            } else {
+                $subjectsByGrade[$gradeLevelName] = collect();
+            }
 
-        $historicalGrades[$currentGradeLevel] = $grades;
+            // Get grades for this student in this grade level (same pattern as SF9)
+            $grades = Grade::with(['subject', 'section.gradeLevel'])
+                ->where('student_id', $selectedStudent->id)
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->whereHas('section.gradeLevel', function ($q) use ($gradeLevelName) {
+                    $q->where('name', $gradeLevelName);
+                })
+                ->where('component_type', 'final_grade')
+                ->get();
 
-        // Build school history for current grade only
-        $schoolHistory[$currentGradeLevel] = (object)[
-            'school_name' => $schoolName,
-            'school_id' => $schoolId,
-            'district' => $schoolDistrict,
-            'division' => $schoolDivision,
-            'region' => $schoolRegion,
-            'section' => $selectedStudent->section->name ?? '',
-            'school_year' => $schoolYear,
-            'adviser' => optional($selectedStudent->section->teacher->user)->full_name ?? ''
-        ];
+            // Group grades by subject_id and quarter for easy access
+            $groupedGrades = $grades->groupBy('subject_id')->map(function($subjectGrades) {
+                return $subjectGrades->keyBy('quarter');
+            });
+
+            $historicalGrades[$gradeLevelName] = $groupedGrades;
+
+            // Build school history for this grade level
+            $gradeRecord = $grades->first();
+            if ($gradeRecord && $gradeRecord->section) {
+                $sectionTeacher = $gradeRecord->section->teacher;
+                $teacherFullName = '';
+                if ($sectionTeacher && $sectionTeacher->user) {
+                    $tUser = $sectionTeacher->user;
+                    $teacherFullName = ($tUser->last_name ?? '') . ', ' . 
+                                     ($tUser->first_name ?? '') . ' ' . 
+                                     ($tUser->middle_name ?? '');
+                    $teacherFullName = trim($teacherFullName) ?: ($tUser->name ?? '');
+                }
+                
+                $schoolHistory[$gradeLevelName] = (object)[
+                    'school_name' => $schoolName,
+                    'school_id' => $schoolId,
+                    'district' => $schoolDistrict,
+                    'division' => $schoolDivision,
+                    'region' => $schoolRegion,
+                    'section' => $gradeRecord->section->name ?? '',
+                    'school_year' => $schoolYear,
+                    'adviser' => $teacherFullName
+                ];
+            } else {
+                // Use current section info if this is the current grade level
+                $isCurrentGrade = ($gradeLevelName === $currentGradeLevel);
+                $schoolHistory[$gradeLevelName] = (object)[
+                    'school_name' => $schoolName,
+                    'school_id' => $schoolId,
+                    'district' => $schoolDistrict,
+                    'division' => $schoolDivision,
+                    'region' => $schoolRegion,
+                    'section' => $isCurrentGrade ? ($selectedStudent->section->name ?? '') : '',
+                    'school_year' => $isCurrentGrade ? $schoolYear : '',
+                    'adviser' => $isCurrentGrade ? $adviserName : ''
+                ];
+            }
+        }
     }
 
     return view('teacher.school-forms.sf10', compact(
         'students',
         'selectedStudent',
+        'adviserName',
         'subjectsByGrade',
         'historicalGrades',
         'schoolHistory',
@@ -637,7 +707,8 @@ $coreValues = CoreValue::where('student_id', $selectedStudent->id)
         'schoolRegion',
         'schoolDistrict',
         'schoolHead',
-        'currentGradeLevel'
+        'currentGradeLevel',
+        'allGradeLevels'
     ));
 }
 }

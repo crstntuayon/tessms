@@ -172,7 +172,14 @@ Route::middleware(['auth', 'role:Student'])
 // OFFICIAL STUDENT ROUTE
 Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
  Route::get('/subjects', [App\Http\Controllers\Student\SubjectController::class, 'index'])->name('subjects');
+
+
  Route::get('/attendance', [App\Http\Controllers\Student\AttendanceController::class, 'index'])->name('attendance');
+   // ✅ ADD THIS
+    Route::get('/attendance/export', [App\Http\Controllers\Student\AttendanceController::class, 'export'])
+        ->name('attendance.export');
+
+
  Route::get('/grades', [App\Http\Controllers\Student\GradesController::class, 'index'])->name('grades');
  Route::get('/classmates', [App\Http\Controllers\Student\ClassmatesController::class, 'index'])->name('classmates');
  Route::get('/assignments', [App\Http\Controllers\Student\AssignmentsController::class, 'index'])->name('assignments');

@@ -6,34 +6,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Prevent flash of unstyled content */
+        [x-cloak] { display: none !important; }
+        
+        /* Custom scrollbar for sidebar */
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media print {
+            aside, .no-print, .mobile-toggle, .desktop-toggle {
+                display: none !important;
+            }
+            main {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-slate-50 font-sans antialiased">
-
-    <!-- Include Sidebar -->
-    @include('student.includes.sidebar')
-
-    <!-- Mobile Sidebar Toggle -->
-    <button id="sidebarToggle" class="lg:hidden fixed top-4 left-4 z-50 w-12 h-12 bg-white rounded-2xl shadow-lg shadow-slate-200/50 flex items-center justify-center text-slate-600 hover:text-indigo-600 hover:scale-105 transition-all duration-200 border border-slate-100">
-        <i class="fas fa-bars text-lg"></i>
-    </button>
-
-    <!-- Overlay for mobile -->
-    <div id="sidebarOverlay" class="lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden opacity-0 transition-opacity duration-300"></div>
-
-    <!-- Main Content -->
-<main class="min-h-screen transition-all duration-300 ease-out" 
-      :class="{ 
-          'lg:ml-20': collapsed, 
-          'lg:ml-72': !collapsed 
+<body class="min-h-screen bg-slate-50 font-sans antialiased"
+      x-data="{ 
+          sidebarCollapsed: false, 
+          mobileOpen: false,
+          init() {
+              // Initialize based on screen size
+              if (window.innerWidth >= 1024) {
+                  this.sidebarCollapsed = false;
+              } else {
+                  this.mobileOpen = false;
+              }
+          }
       }"
-      x-data="{ collapsed: false }"
-      x-init="
-          // Listen for sidebar state changes via custom event
-          window.addEventListener('sidebar-toggle', (e) => { collapsed = e.detail.collapsed });
+      x-init="init()"
+      @resize.window="
+          if (window.innerWidth < 1024) {
+              sidebarCollapsed = false;
+          }
       ">
 
-      
+    <!-- Mobile Overlay -->
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 lg:hidden"
+         style="display: none;">
+    </div>
+
+    <!-- Mobile Toggle Button -->
+    <button @click="mobileOpen = !mobileOpen" 
+            class="mobile-toggle fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg shadow-slate-200/50 flex items-center justify-center text-slate-600 hover:text-indigo-600 hover:scale-105 hover:shadow-xl transition-all duration-200 border border-slate-100">
+        <i class="fas fa-bars text-lg" x-show="!mobileOpen"></i>
+        <i class="fas fa-times text-lg" x-show="mobileOpen"></i>
+    </button>
+
+
+
+    <!-- Sidebar (Updated Version) -->
+    @include('student.includes.sidebar')
+
+    <!-- Main Content -->
+    <main class="min-h-screen transition-all duration-300 ease-out"
+          :class="{ 
+              'lg:ml-0': sidebarCollapsed, 
+              'lg:ml-72': !sidebarCollapsed 
+          }">
+
         <!-- Top Header -->
         <header class="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-slate-200 px-6 py-4">
             <div class="flex items-center justify-between">
@@ -76,142 +146,140 @@
             </div>
         </header>
 
-
- <!-- Dashboard Content -->
+        <!-- Dashboard Content -->
         <div class="p-6 max-w-7xl mx-auto space-y-6 animate-fade-in">
 
-<!-- Enhanced Welcome Section -->
-<div class="relative overflow-hidden bg-white rounded-3xl border border-slate-200 shadow-lg shadow-slate-200/50">
-    <!-- Background Decorative Elements -->
-    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary-100/50 to-purple-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-emerald-100/40 to-cyan-100/40 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
-    
-    <div class="relative p-8 md:p-10">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-            
-            <!-- Left: Student Info -->
-            <div class="flex-1 space-y-4">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-50 border border-primary-100 text-primary-700 text-xs font-semibold uppercase tracking-wider">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Active Student
-                </div>
+            <!-- Enhanced Welcome Section -->
+            <div class="relative overflow-hidden bg-white rounded-3xl border border-slate-200 shadow-lg shadow-slate-200/50">
+                <!-- Background Decorative Elements -->
+                <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-100/50 to-purple-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-emerald-100/40 to-cyan-100/40 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
                 
-                <div>
-                    <p class="text-slate-500 text-sm mb-1 font-medium">Welcome back,</p>
-                    <h1 class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-                        {{ $student->user->first_name ?? 'Student' }} 
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-purple-600">
-                            {{ $student->user->last_name ?? '' }}
-                        </span>
-                    </h1>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-3 text-sm">
-                    @if(isset($student->grade_level) && isset($student->section))
-                        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium">
-                            <i class="fas fa-graduation-cap text-primary-600"></i>
-                            <span>Grade {{ $student->grade_level }}</span>
-                        </div>
-                        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium">
-                            <i class="fas fa-users text-purple-600"></i>
-                            <span>{{ $student->section->name ?? 'Section' }}</span>
-                        </div>
-                    @endif
-                    
-                    @if(isset($student->lrn))
-                        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 text-xs font-mono">
-                            <i class="fas fa-id-card"></i>
-                            <span>LRN: {{ $student->lrn }}</span>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Quick Stats Row -->
-                <div class="flex flex-wrap gap-4 pt-2">
-                    @if(isset($attendanceRate))
-                        <div class="flex items-center gap-2 text-sm">
-                            <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
-                                <i class="fas fa-calendar-check"></i>
+                <div class="relative p-8 md:p-10">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                        
+                        <!-- Left: Student Info -->
+                        <div class="flex-1 space-y-4">
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold uppercase tracking-wider">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Active Student
                             </div>
+                            
                             <div>
-                                <p class="font-semibold text-slate-900">{{ number_format($attendanceRate, 1) }}%</p>
-                                <p class="text-xs text-slate-500">Attendance</p>
+                                <p class="text-slate-500 text-sm mb-1 font-medium">Welcome back,</p>
+                                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                                    {{ $student->user->first_name ?? 'Student' }} 
+                                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                                        {{ $student->user->last_name ?? '' }}
+                                    </span>
+                                </h1>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3 text-sm">
+                                @if(isset($student->grade_level) && isset($student->section))
+                                    <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium">
+                                        <i class="fas fa-graduation-cap text-indigo-600"></i>
+                                        <span>Grade {{ $student->grade_level }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-medium">
+                                        <i class="fas fa-users text-purple-600"></i>
+                                        <span>{{ $student->section->name ?? 'Section' }}</span>
+                                    </div>
+                                @endif
+                                
+                                @if(isset($student->lrn))
+                                    <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 text-xs font-mono">
+                                        <i class="fas fa-id-card"></i>
+                                        <span>LRN: {{ $student->lrn }}</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <!-- Quick Stats Row -->
+                            <div class="flex flex-wrap gap-4 pt-2">
+                                @if(isset($attendanceRate))
+                                    <div class="flex items-center gap-2 text-sm">
+                                        <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                            <i class="fas fa-calendar-check"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-slate-900">{{ number_format($attendanceRate, 1) }}%</p>
+                                            <p class="text-xs text-slate-500">Attendance</p>
+                                        </div>
+                                    </div>
+                                @endif
+                                
+                                @if(isset($generalAverage))
+                                    <div class="flex items-center gap-2 text-sm">
+                                        <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-slate-900">{{ $generalAverage }}</p>
+                                            <p class="text-xs text-slate-500">Average</p>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
-                    @endif
-                    
-                    @if(isset($generalAverage))
-                        <div class="flex items-center gap-2 text-sm">
-                            <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
-                                <i class="fas fa-star"></i>
+
+                        <!-- Right: Date & Actions -->
+                        <div class="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end gap-6">
+                            <!-- Date Display -->
+                            <div class="text-left sm:text-right lg:text-right">
+                                <p class="text-5xl md:text-6xl font-bold text-slate-900 tracking-tighter leading-none mb-1">
+                                    {{ now()->format('d') }}
+                                </p>
+                                <p class="text-lg font-semibold text-slate-700 uppercase tracking-wide">
+                                    {{ now()->format('l') }}
+                                </p>
+                                <p class="text-sm text-slate-500 font-medium">
+                                    {{ now()->format('F Y') }}
+                                </p>
                             </div>
-                            <div>
-                                <p class="font-semibold text-slate-900">{{ $generalAverage }}</p>
-                                <p class="text-xs text-slate-500">Average</p>
+
+                            <!-- Action Buttons -->
+                            <div class="flex gap-3">
+                                <button class="group relative px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-all duration-200 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30 hover:-translate-y-0.5">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fas fa-qrcode"></i>
+                                        ID Card
+                                    </span>
+                                </button>
+                                <a href="{{ route('student.profile') }}"  
+                                   class="group relative px-5 py-2.5 bg-white text-slate-700 text-sm font-semibold rounded-xl border-2 border-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition-all duration-200 hover:-translate-y-0.5 inline-block">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fas fa-edit"></i>
+                                        Edit Profile
+                                    </span>
+                                </a>
                             </div>
                         </div>
-                    @endif
+                    </div>
+
+                    <!-- Bottom Info Bar -->
+                    <div class="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div class="flex items-center gap-4 text-sm text-slate-500">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-clock text-indigo-500"></i>
+                                <span>Last login: {{ now()->subHours(2)->format('M d, h:i A') }}</span>
+                            </div>
+                            <div class="hidden sm:block w-1 h-1 rounded-full bg-slate-300"></div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-shield-alt text-emerald-500"></i>
+                                <span>Account secure</span>
+                            </div>
+                        </div>
+                        
+                        @if(isset($announcements) && $announcements->count() > 0)
+                            <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-100 text-amber-700 text-xs font-semibold">
+                                <i class="fas fa-bullhorn"></i>
+                                <span>{{ $announcements->count() }} new announcement{{ $announcements->count() > 1 ? 's' : '' }}</span>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
-
-            <!-- Right: Date & Actions -->
-            <div class="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end gap-6">
-                <!-- Date Display -->
-                <div class="text-left sm:text-right lg:text-right">
-                    <p class="text-5xl md:text-6xl font-bold text-slate-900 tracking-tighter leading-none mb-1">
-                        {{ now()->format('d') }}
-                    </p>
-                    <p class="text-lg font-semibold text-slate-700 uppercase tracking-wide">
-                        {{ now()->format('l') }}
-                    </p>
-                    <p class="text-sm text-slate-500 font-medium">
-                        {{ now()->format('F Y') }}
-                    </p>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex gap-3">
-                    <button class="group relative px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-all duration-200 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30 hover:-translate-y-0.5">
-                        <span class="flex items-center gap-2">
-                            <i class="fas fa-qrcode"></i>
-                            ID Card
-                        </span>
-                    </button>
-                  <a href="{{ route('student.profile') }}"  
-   class="group relative px-5 py-2.5 bg-white text-slate-700 text-sm font-semibold rounded-xl border-2 border-slate-200 hover:border-primary-300 hover:text-primary-600 transition-all duration-200 hover:-translate-y-0.5 inline-block">
-    <span class="flex items-center gap-2">
-        <i class="fas fa-edit"></i>
-        Edit Profile
-    </span>
-</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bottom Info Bar -->
-        <div class="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div class="flex items-center gap-4 text-sm text-slate-500">
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-clock text-primary-500"></i>
-                    <span>Last login: {{ now()->subHours(2)->format('M d, h:i A') }}</span>
-                </div>
-                <div class="hidden sm:block w-1 h-1 rounded-full bg-slate-300"></div>
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-shield-alt text-emerald-500"></i>
-                    <span>Account secure</span>
-                </div>
-            </div>
-            
-            @if(isset($announcements) && $announcements->count() > 0)
-                <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-100 text-amber-700 text-xs font-semibold">
-                    <i class="fas fa-bullhorn"></i>
-                    <span>{{ $announcements->count() }} new announcement{{ $announcements->count() > 1 ? 's' : '' }}</span>
-                </div>
-            @endif
-        </div>
-    </div>
-</div>
-
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -351,9 +419,9 @@
                                 @foreach($classmates->take(8) as $mate)
                                 <div class="flex items-center gap-3 p-4 rounded-xl hover:bg-slate-50 transition-all duration-200 border border-slate-100 hover:border-indigo-200 hover:shadow-sm group">
                                     <div class="relative">
-                                        <img src="https://ui-avatars.com/api/?name={{ urlencode($mate->first_name . ' ' . $mate->last_name) }}&background=random&color=fff&size=128" 
+                                        <img src="https://ui-avatars.com/api/?name={{ urlencode($mate->user->first_name . ' ' . $mate->user->last_name) }}&background=random&color=fff&size=128" 
                                              class="w-12 h-12 rounded-full shadow-sm group-hover:scale-110 transition-transform" 
-                                             alt="{{ $mate->first_name }}">
+                                             alt="{{ $mate->user->first_name }}">
                                         @if($loop->first)
                                             <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center border-2 border-white" title="Class Topper">
                                                 <i class="fas fa-crown text-[10px] text-white"></i>
@@ -361,8 +429,8 @@
                                         @endif
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="font-semibold text-slate-800 text-sm truncate">{{ $mate->first_name }} {{ $mate->last_name }}</p>
-                                        <p class="text-xs text-slate-500">LRN: {{ $mate->lrn ?? 'N/A' }}</p>
+                                        <p class="font-semibold text-slate-800 text-sm truncate">{{ $mate->user->first_name }} {{ $mate->user->last_name }}</p>
+                                       
                                     </div>
                                     <button class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 flex items-center justify-center transition-all duration-200 hover:scale-105" title="Send Message">
                                         <i class="fas fa-envelope text-xs"></i>
@@ -590,7 +658,7 @@
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             
-            // Attendance data from backend (you'll need to pass this from controller)
+            // Attendance data from backend
             const attendanceData = @json($monthlyAttendance ?? []);
             
             let html = '';
@@ -630,27 +698,6 @@
             calendar.innerHTML = html;
         }
         generateCalendar();
-
-        // Mobile Sidebar Toggle
-        const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        
-        if(sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-                sidebarOverlay.classList.toggle('hidden');
-                setTimeout(() => sidebarOverlay.classList.toggle('opacity-0'), 10);
-            });
-        }
-        
-        if(sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', () => {
-                sidebar.classList.add('-translate-x-full');
-                sidebarOverlay.classList.add('opacity-0');
-                setTimeout(() => sidebarOverlay.classList.add('hidden'), 300);
-            });
-        }
     </script>
 </body>
 </html>

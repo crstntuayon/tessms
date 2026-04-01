@@ -51,4 +51,9 @@ class Subject extends Model
     {
         return strtoupper(substr(preg_replace('/\s+/', '', $this->name), 0, 4)) . ($this->grade_level_id ?? '');
     }
+
+    public function teacher()
+{
+    return $this->belongsTo(Teacher::class);
+}
 }

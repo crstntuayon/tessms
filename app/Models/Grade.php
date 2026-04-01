@@ -50,4 +50,9 @@ public function section()
     return $this->belongsTo(Section::class);
 }
 
+public function schoolYear()
+{
+    return $this->belongsTo(SchoolYear::class);
+}
+
 }
