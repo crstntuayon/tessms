@@ -371,6 +371,19 @@
             color: #d97706;
         }
 
+        .school-year-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #92400e;
+            font-size: 0.7rem;
+        }
+
         @media (max-width: 1024px) {
             .main-wrapper { margin-left: 0; }
         }
@@ -402,10 +415,10 @@
                         <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                             <i class="fas fa-users text-blue-600 text-lg"></i>
                         </div>
-                        <span class="text-2xl font-bold text-slate-900">{{ $totalStudents ?? $sections->sum(function($s) { return $s->students->count(); }) }}</span>
+                        <span class="text-2xl font-bold text-slate-900">{{ $totalStudents }}</span>
                     </div>
-                    <p class="text-sm font-semibold text-slate-600">Total Students</p>
-                    <p class="text-xs text-slate-400 mt-1">Across all sections</p>
+                    <p class="text-sm font-semibold text-slate-600">Active Students</p>
+                    <p class="text-xs text-slate-400 mt-1">Currently enrolled</p>
                 </div>
 
                 <div class="stat-card">
@@ -437,12 +450,17 @@
                     <div>
                         <h2 class="page-title">Sections Management</h2>
                         <p class="page-subtitle">Manage class sections, assign advisers, and monitor capacity</p>
+                        @if($activeSchoolYear)
+                            <span class="school-year-badge mt-2">
+                                <i class="fas fa-calendar-check"></i>
+                                Active: {{ $activeSchoolYear->name }}
+                            </span>
+                        @endif
                     </div>
-        
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                                       <form action="{{ route('admin.sections.index') }}" method="GET" class="relative w-full sm:w-auto">
+                    <form action="{{ route('admin.sections.index') }}" method="GET" class="relative w-full sm:w-auto">
                         <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" name="search" value="{{ request('search') }}" placeholder="Search sections..." class="search-input">
                         @if(request('search'))
@@ -469,12 +487,19 @@
                             <th>Section Details</th>
                             <th>Grade Level & Adviser</th>
                             <th>Capacity Status</th>
-                            <th>Students</th>
+                            <th>Active Students</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($sections as $section)
+                            @php
+                                // Use active_students loaded from controller
+                                $studentCount = $section->active_students->count();
+                                $capacity = $section->capacity ?? 40;
+                                $percentage = $capacity > 0 ? min(100, ($studentCount / $capacity) * 100) : 0;
+                                $statusClass = $percentage < 50 ? 'low' : ($percentage < 80 ? 'medium' : 'high');
+                            @endphp
                             <tr>
                                 <td>
                                     <div class="flex items-center gap-4">
@@ -526,12 +551,6 @@
                                     </div>
                                 </td>
                                 <td>
-                                    @php
-                                        $studentCount = $section->students->count();
-                                        $capacity = $section->capacity ?? 40;
-                                        $percentage = $capacity > 0 ? min(100, ($studentCount / $capacity) * 100) : 0;
-                                        $statusClass = $percentage < 50 ? 'low' : ($percentage < 80 ? 'medium' : 'high');
-                                    @endphp
                                     <div class="w-36">
                                         <div class="flex justify-between text-xs mb-1">
                                             <span class="font-semibold text-slate-700">{{ $studentCount }}/{{ $capacity }}</span>
@@ -556,7 +575,7 @@
                                                 </div>
                                             @endif
                                         </div>
-                                        <span class="text-sm font-semibold text-slate-700">{{ $studentCount }} enrolled</span>
+                                        <span class="text-sm font-semibold text-slate-700">{{ $studentCount }} active</span>
                                     </div>
                                 </td>
                                 <td>
@@ -608,14 +627,12 @@
     </div>
 </div>
 
+<!-- Floating Add Button -->
+<a href="{{ route('admin.sections.create') }}" 
+   class="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/40 transition-all hover:scale-110 hover:rotate-3 z-50"
+   title="Add New Section">
+    <i class="fas fa-plus text-lg"></i>
+</a>
 
-    <!-- Floating Add Button -->
-    <a href="{{ route('admin.sections.create') }}" 
-       class="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/40 transition-all hover:scale-110 hover:rotate-3 z-50"
-       title="Add New Section">
-        <i class="fas fa-plus text-lg"></i>
-    </a>
-
-</body>
 </body>
 </html>

@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\View;
 use App\Models\Section;
 use App\Models\Teacher;
    use App\Models\User;
+   use App\Models\Student;
+use Illuminate\Support\Facades\Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -49,6 +51,15 @@ public function boot()
             'sidebarUserCount' => $sidebarUserCount,
             'sidebarSectionCount' => $sidebarSectionCount,
         ]);
+    });
+
+
+        View::composer('student.*', function ($view) {
+        $student = Student::with('user')
+            ->where('user_id', Auth::id())
+            ->first();
+
+        $view->with('student', $student);
     });
 }
 }

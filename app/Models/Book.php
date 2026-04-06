@@ -3,53 +3,47 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Book extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
+        'student_id',
+        'book_inventory_id',
         'title',
-        'subject',
-        'grade_level',
-        'isbn',
-        'publisher',
-        'year_published',
-        'price',
-        'total_copies',
-        'available_copies',
-        'type',
-        'is_active'
+        'subject_area',
+        'book_code',
+        'reference_code',
+        'date_issued',
+        'date_returned',
+        'status',
+        'condition',
+        'damage_details',
+        'loss_code',
+        'action_taken',
+        'remarks',
+        'book_inventory_id',
+        'school_year_id',
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
-        'year_published' => 'integer',
-        'total_copies' => 'integer',
-        'available_copies' => 'integer',
-        'is_active' => 'boolean'
+        'date_issued' => 'date',
+        'date_returned' => 'date',
     ];
 
-    public function issuances(): HasMany
+    /**
+     * Book belongs to student
+     */
+    public function student()
     {
-        return $this->hasMany(BookIssuance::class);
+        return $this->belongsTo(Student::class);
     }
 
-    public function activeIssuances(): HasMany
+    /**
+     * Book belongs to inventory
+     */
+    public function inventory()
     {
-        return $this->hasMany(BookIssuance::class)->where('status', 'issued');
-    }
-
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
-
-    public function scopeForGradeLevel($query, $gradeLevel)
-    {
-        return $query->where('grade_level', $gradeLevel);
+        return $this->belongsTo(BookInventory::class, 'book_inventory_id');
     }
 }

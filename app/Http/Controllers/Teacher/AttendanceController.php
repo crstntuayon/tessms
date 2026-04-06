@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Section;
 use App\Models\Attendance;
 use App\Models\Setting;
+use App\Models\SchoolYear;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -21,7 +22,10 @@ class AttendanceController extends Controller
             abort(403);
         }
 
-        $students = $section->students()->with('user')->get();
+        $students = $section->students()
+            ->whereNotIn('status', ['completed', 'inactive'])
+            ->with('user')
+            ->get();
 
         $date = request('date', now()->toDateString());
 
@@ -43,7 +47,9 @@ class AttendanceController extends Controller
      */
     public function create(Section $section)
     {
-        $students = $section->students()->get();
+        $students = $section->students()
+            ->whereNotIn('status', ['completed', 'inactive'])
+            ->get();
 
         return view('teacher.attendance.create', compact('section', 'students'));
     }
@@ -63,8 +69,12 @@ class AttendanceController extends Controller
             'attendance.*' => 'required|in:present,absent,late',
         ]);
 
-        // Get active school year
-        $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
+        // Get active school year from is_active flag
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        if (!$activeSchoolYear) {
+            return back()->with('error', 'No active school year found.');
+        }
 
         foreach ($request->attendance as $student_id => $status) {
             Attendance::updateOrCreate(
@@ -74,9 +84,9 @@ class AttendanceController extends Controller
                     'date' => $request->date,
                 ],
                 [
-                    'school_year_id' => $activeSchoolYearId, // ADD THIS
+                    'school_year_id' => $activeSchoolYear->id,
                     'status' => $status,
-                    'teacher_id' => auth()->user()->teacher->id, // Optional: track who recorded
+                    'teacher_id' => auth()->user()->teacher->id,
                 ]
             );
         }
@@ -93,11 +103,17 @@ class AttendanceController extends Controller
         $sectionId = $request->input('section_id');
         $date = $request->input('date', now()->toDateString());
 
-        // Get active school year
-        $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
+        // Get active school year from is_active flag
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        if (!$activeSchoolYear) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No active school year found'
+            ], 400);
+        }
 
         foreach ($attendances as $studentId => $data) {
-            // Handle both formats: string status or array with status key
             $status = is_array($data) ? ($data['status'] ?? null) : $data;
             $remarks = is_array($data) ? ($data['remarks'] ?? null) : null;
             
@@ -110,7 +126,7 @@ class AttendanceController extends Controller
                 ],
                 [
                     'section_id' => $sectionId,
-                    'school_year_id' => $activeSchoolYearId,
+                    'school_year_id' => $activeSchoolYear->id,
                     'status' => $status,
                     'remarks' => $remarks,
                     'teacher_id' => auth()->user()->teacher->id,

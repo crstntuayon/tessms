@@ -12,9 +12,9 @@ use App\Models\GradeLevel;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Display the login view (for Admin and Teachers).
      */
-     public function create(): View
+    public function create(): View
     {
         $announcements = \App\Models\Announcement::latest()->take(6)->get();
         $teachers = \App\Models\Teacher::all();
@@ -28,25 +28,91 @@ class AuthenticatedSessionController extends Controller
 
         return view('auth.login', compact('announcements', 'teachers', 'students', 'sections', 'gradeLevels'));
     }
+    
+    /**
+     * Display the student login view.
+     */
+    public function createStudent(): View
+    {
+        return view('auth.student-login');
+    }
 
     /**
      * Handle an incoming authentication request using username.
+     * This is for Admin/Teacher portal.
      */
-  public function store(Request $request)
-{
-    $request->validate([
-        'username' => 'required|string',
-        'password' => 'required|string',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-    $credentials = $request->only('username', 'password');
+        $credentials = $request->only('username', 'password');
 
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
-        $user = Auth::user();
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            $user = Auth::user();
 
-        // Prevent login if student is not approved
-        if ($user->role->name === 'student') {
+            // BLOCK students from logging in via admin/teacher portal
+            if ($user->role->name === 'Student' || $user->role->name === 'student') {
+                Auth::logout();
+                return redirect()->route('student.login')
+                    ->withErrors([
+                        'login' => 'Please use the Student Login portal.'
+                    ]);
+            }
+
+            // Role-based redirect for Admin/Teacher/Registrar
+            switch ($user->role->name) {
+                case 'System Admin':
+                case 'admin':
+                    return redirect()->route('admin.dashboard');
+                case 'Registrar':
+                case 'registrar':
+                    return redirect()->route('registrar.dashboard');
+                case 'Teacher':
+                case 'teacher':
+                    return redirect()->route('teacher.dashboard');
+                default:
+                    Auth::logout();
+                    return redirect('/login')->withErrors([
+                        'login' => 'Access denied. This portal is for Staff only.',
+                    ]);
+            }
+        }
+
+        return back()->withErrors([
+            'login' => 'The provided credentials do not match our records.',
+        ]);
+    }
+    
+    /**
+     * Handle student login request.
+     */
+    public function storeStudent(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $credentials = $request->only('username', 'password');
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            $user = Auth::user();
+
+            // BLOCK non-students from logging in via student portal
+            if ($user->role->name !== 'Student' && $user->role->name !== 'student') {
+                Auth::logout();
+                return redirect()->route('login')
+                    ->withErrors([
+                        'login' => 'Please use the Staff Login portal.'
+                    ]);
+            }
+
+            // Check if student is approved
             $student = $user->student;
             if (!$student || $student->status !== 'active') {
                 Auth::logout();
@@ -55,34 +121,14 @@ class AuthenticatedSessionController extends Controller
                         'login' => 'Your registration is pending admin approval. You cannot log in yet.'
                     ]);
             }
+
+            return redirect()->route('student.dashboard');
         }
 
-        // Role-based redirect
-        switch ($user->role->name) {
-            case 'System Admin':
-            case 'admin':
-                return redirect()->route('admin.dashboard');
-            case 'Registrar':
-            case 'registrar':
-                return redirect()->route('registrar.dashboard');
-            case 'Teacher':
-            case 'teacher':
-                return redirect()->route('teacher.dashboard');
-            case 'Student':
-            case 'student':
-                return redirect()->route('student.dashboard');
-            default:
-                Auth::logout();
-                return redirect('/login')->withErrors([
-                    'login' => 'Role not assigned. Contact administrator.',
-                ]);
-        }
+        return back()->withErrors([
+            'login' => 'The provided credentials do not match our records.',
+        ]);
     }
-
-    return back()->withErrors([
-        'login' => 'The provided credentials do not match our records.',
-    ]);
-}
 
     /**
      * Destroy an authenticated session.

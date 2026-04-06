@@ -476,9 +476,10 @@
                 @php
                     $enrollment = $student->enrollments->first();
                 @endphp
-                <span class="inline-flex items-center px-3 py-1 rounded-lg bg-blue-50 text-blue-700 font-semibold text-xs w-fit">
-                    Grade {{ $enrollment?->grade_level_id ?? $student->grade_level ?? 'N/A' }}
-                </span>
+                   <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-sm font-semibold">
+        <i class="fas fa-graduation-cap text-xs"></i>
+        {{ $student->gradeLevel?->name ?? 'N/A' }}
+    </span>
                 <span class="text-xs text-slate-500 font-medium">
                     <i class="fas fa-door-open mr-1 text-slate-400"></i>
                     {{ $enrollment?->section?->name ?? $student->section?->name ?? 'No Section Assigned' }}

@@ -22,7 +22,7 @@ class DashboardController extends Controller
         $user = Auth::user();
         $student = $user->student;
 
-        if (!$student || $student->status !== 'enrolled') {
+        if (!$student || $student->status !== 'active') {
             Auth::logout();
             return redirect()->route('auth.pending')
                 ->withErrors([

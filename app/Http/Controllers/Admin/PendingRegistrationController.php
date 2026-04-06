@@ -4,114 +4,143 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
+use App\Models\Section;
+use App\Models\Enrollment;
+use App\Models\SchoolYear;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
-use App\Models\Section;
+use Illuminate\Support\Facades\Storage;
 
 class PendingRegistrationController extends Controller
 {
-public function index()
-{
-    $students = Student::with(['user', 'gradeLevel', 'enrollments'])
-        ->where('status', 'pending')
-        ->latest()
-        ->paginate(10);
+       public function index(Request $request)
+    {
+        $selectedSchoolYearId = $request->get('school_year');
+        $currentSchoolYear = SchoolYear::where('is_active', true)->first();
+        $schoolYearId = $selectedSchoolYearId ?? $currentSchoolYear?->id;
+        $schoolYear = SchoolYear::find($schoolYearId);
 
-    // Load sections with enrolled student count
-$sections = Section::with('gradeLevel') // get the grade level of the section
-                   ->withCount('students') // get total students in section
-                   ->get();
+        // Get pending students for selected school year
+        $students = Student::with(['user', 'gradeLevel', 'enrollments'])
+            ->whereHas('enrollments', function ($query) use ($schoolYearId) {
+                $query->where('school_year_id', $schoolYearId)
+                      ->where('status', 'pending');
+            })
+            ->where('status', 'inactive')
+            ->latest()
+            ->paginate(10);
 
-    $sidebarStudentCount = \App\Models\Student::count();
-    $sidebarTeacherCount = \App\Models\Teacher::count();
-    $sidebarSectionCount = \App\Models\Section::count();
+        // Get ALL active sections (reused across years) with enrollment count for selected year
+        // REMOVED: The grade level filtering that was causing the issue
+        $sections = Section::with(['gradeLevel', 'teacher.user'])
+            ->withCount(['enrollments' => function ($query) use ($schoolYearId) {
+                $query->where('school_year_id', $schoolYearId)
+                      ->where('status', 'enrolled');
+            }])
+            ->where('is_active', true)
+            ->orderBy('grade_level_id')
+            ->orderBy('name')
+            ->get();
 
-    $enrolledTodayCount = \App\Models\Student::where('status', 'enrolled')
-        ->whereDate('updated_at', today())
-        ->count();
+        $schoolYears = SchoolYear::orderBy('name', 'desc')->get();
 
-    return view('admin.pending-registrations.index', compact(
-        'students',
-        'sections',
-        'sidebarStudentCount',
-        'sidebarTeacherCount',
-        'sidebarSectionCount',
-        'enrolledTodayCount'
-    ));
-}
-    /**
-     * AJAX: Get student details
-     */
-    public function details(Student $student)
+        // Stats
+        $sidebarStudentCount = Student::whereHas('enrollments', function ($q) use ($schoolYearId) {
+            $q->where('school_year_id', $schoolYearId)
+              ->where('status', 'enrolled'); // Only count enrolled, not pending
+        })->count();
+        
+        $sidebarTeacherCount = \App\Models\Teacher::count();
+        $sidebarSectionCount = Section::where('is_active', true)->count(); // All active sections
+        
+        $enrolledTodayCount = Enrollment::where('school_year_id', $schoolYearId)
+            ->where('status', 'enrolled')
+            ->whereDate('updated_at', today())
+            ->count();
+
+        return view('admin.pending-registrations.index', compact(
+            'students',
+            'sections',
+            'schoolYears',
+            'schoolYear',
+            'selectedSchoolYearId',
+            'sidebarStudentCount',
+            'sidebarTeacherCount',
+            'sidebarSectionCount',
+            'enrolledTodayCount'
+        ));
+    }
+
+    public function details(Request $request, $student)
     {
         try {
-            if ($student->status !== 'pending') {
-                return response()->json([
-                    'error' => 'Student is not in pending status',
-                    'status' => $student->status
-                ], 400);
+            $studentModel = Student::with(['user', 'gradeLevel'])->find($student);
+            
+            if (!$studentModel) {
+                return response()->json(['error' => 'Student not found'], 404);
             }
 
-            // Load relationships
-            $student->loadMissing(['user', 'gradeLevel', 'enrollments']);
-
-            if (!$student->user) {
-                return response()->json([
-                    'error' => 'Student user account not found'
-                ], 404);
+            $schoolYearId = $request->get('school_year_id') ?? SchoolYear::where('is_active', true)->first()?->id;
+            
+            if (!$schoolYearId) {
+                return response()->json(['error' => 'No school year specified'], 400);
             }
 
-            $user = $student->user;
+            $enrollment = Enrollment::where('student_id', $studentModel->id)
+                ->where('school_year_id', $schoolYearId)
+                ->where('status', 'pending')
+                ->first();
 
-            // ✅ Get latest enrollment safely
-            $enrollment = $student->enrollments->sortByDesc('created_at')->first();
+            if (!$enrollment) {
+                return response()->json(['error' => 'No pending enrollment found'], 404);
+            }
+
+            if (!$studentModel->user) {
+                return response()->json(['error' => 'User not found'], 404);
+            }
+
+            $user = $studentModel->user;
+
+            // Helper function to safely format dates
+            $formatDate = function($date, $format = 'Y-m-d') {
+                if (!$date) return null;
+                if ($date instanceof \Carbon\Carbon) {
+                    return $date->format($format);
+                }
+                try {
+                    return \Carbon\Carbon::parse($date)->format($format);
+                } catch (\Exception $e) {
+                    return $date;
+                }
+            };
 
             $data = [
                 'student' => [
-                    'id' => $student->id,
-                    'lrn' => $student->lrn,
-                    'gender' => $student->gender,
-
-                    // ✅ SAFE DATE HANDLING
-                    'birthdate' => $student->birthdate
-                        ? Carbon::parse($student->birthdate)->format('Y-m-d')
-                        : null,
-
-                    'birth_place' => $student->birth_place,
-                    'nationality' => $student->nationality,
-
-                            // ✅ ADD THESE NEW FIELDS
-        'ethnicity' => $student->ethnicity,
-        'mother_tongue' => $student->mother_tongue,
-        'remarks' => $student->remarks,
-
-                    'religion' => $student->religion,
-                    'street_address' => $student->street_address,
-                    'barangay' => $student->barangay,
-                    'city' => $student->city,
-                    'province' => $student->province,
-                    'zip_code' => $student->zip_code,
-
-                    'guardian_name' => $student->guardian_name,
-                    'guardian_relationship' => $student->guardian_relationship,
-                    'guardian_contact' => $student->guardian_contact,
-
-                    'father_name' => $student->father_name,
-                    'father_occupation' => $student->father_occupation,
-                    'mother_name' => $student->mother_name,
-                    'mother_occupation' => $student->mother_occupation,
-
-                    // ✅ From enrollment
-                    'type' => $enrollment?->type ?? 'N/A',
-                    'enrollment_date' => $enrollment && $enrollment->enrollment_date
-                        ? Carbon::parse($enrollment->enrollment_date)->format('Y-m-d')
-                        : null,
-
-                    'created_at' => $student->created_at
-                        ? $student->created_at->format('Y-m-d H:i:s')
-                        : null,
-
+                    'id' => $studentModel->id,
+                    'lrn' => $studentModel->lrn,
+                    'gender' => $studentModel->gender,
+                    'birthdate' => $formatDate($studentModel->birthdate),
+                    'birth_place' => $studentModel->birth_place,
+                    'nationality' => $studentModel->nationality,
+                    'ethnicity' => $studentModel->ethnicity,
+                    'mother_tongue' => $studentModel->mother_tongue,
+                    'remarks' => $studentModel->remarks,
+                    'religion' => $studentModel->religion,
+                    'street_address' => $studentModel->street_address,
+                    'barangay' => $studentModel->barangay,
+                    'city' => $studentModel->city,
+                    'province' => $studentModel->province,
+                    'zip_code' => $studentModel->zip_code,
+                    'guardian_name' => $studentModel->guardian_name,
+                    'guardian_relationship' => $studentModel->guardian_relationship,
+                    'guardian_contact' => $studentModel->guardian_contact,
+                    'father_name' => $studentModel->father_name,
+                    'father_occupation' => $studentModel->father_occupation,
+                    'mother_name' => $studentModel->mother_name,
+                    'mother_occupation' => $studentModel->mother_occupation,
+                    'type' => $enrollment->type ?? 'N/A',
+                    'enrollment_date' => $formatDate($enrollment->enrollment_date),
+                    'created_at' => $formatDate($studentModel->created_at, 'Y-m-d H:i:s'),
                     'user' => [
                         'first_name' => $user->first_name,
                         'last_name' => $user->last_name,
@@ -119,140 +148,191 @@ $sections = Section::with('gradeLevel') // get the grade level of the section
                         'email' => $user->email,
                         'username' => $user->username,
                     ],
-
-                    'grade_level' => $student->gradeLevel ? [
-                        'id' => $student->gradeLevel->id,
-                        'name' => $student->gradeLevel->name,
-                    ] : null,
+                    'grade_level' => $studentModel->gradeLevel ? ['id' => $studentModel->gradeLevel->id, 'name' => $studentModel->gradeLevel->name] : null,
                 ],
-
-                'full_name' => trim(
-                    "{$user->last_name}, {$user->first_name} " .
-                    ($user->middle_name ? substr($user->middle_name, 0, 1) . '.' : '')
-                ),
-
-                // ✅ SAFE AGE CALCULATION
-                'age' => $student->birthdate
-                    ? Carbon::parse($student->birthdate)->age
-                    : null,
-
-                'photo_url' => $user->photo
-                    ? asset('storage/' . $user->photo)
-                    : null,
+                'full_name' => trim("{$user->last_name}, {$user->first_name} " . ($user->middle_name ? substr($user->middle_name, 0, 1) . '.' : '')),
+                'age' => $studentModel->birthdate ? \Carbon\Carbon::parse($studentModel->birthdate)->age : null,
+                'photo_url' => $user->photo ? asset('storage/' . $user->photo) : null,
             ];
-
-            Log::info('Student details loaded', ['student_id' => $student->id]);
 
             return response()->json($data);
 
         } catch (\Exception $e) {
-            Log::error('Error loading student details', [
-                'student_id' => $student->id ?? 'unknown',
-                'error' => $e->getMessage(),
+            Log::error('Exception in details method', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
-
+            
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => 'Server error: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Approve
-     */
-   /**
- * Approve
- */
-/**
- * Approve (Enroll)
- */
-/**
- * Approve (Enroll)
- */
-public function approve(Student $student, Request $request)
-{
-    try {
-        // Validate section and remarks
+    public function approve(Request $request, Student $student)
+    {
         $validated = $request->validate([
             'section_id' => 'required|exists:sections,id',
-            'remarks' => 'nullable|in:' . implode(',', array_keys(Student::$remarksLegend)), // ✅ Validate remarks
+            'remarks' => 'nullable|string|max:50',
+            'school_year_id' => 'required|exists:school_years,id',
         ]);
-        
-        $section = Section::find($validated['section_id']);
-        
-        // Check section capacity
-        $currentCount = \App\Models\Student::where('section_id', $section->id)
-            ->where('status', 'enrolled')
-            ->count();
+
+        try {
+            $schoolYearId = $validated['school_year_id'];
             
-        if ($currentCount >= $section->capacity) {
-            return redirect()->back()->with('error', 'Selected section is already full.');
-        }
+            $section = Section::find($validated['section_id']);
 
-        // Update student with enrolled status, section, and remarks
-        $student->update([
-            'status' => 'enrolled',
-            'section_id' => $validated['section_id'],
-            'remarks' => $validated['remarks'] ?? null, // ✅ Save remarks
-        ]);
+            if (!$section || !$section->is_active) {
+                return redirect()->back()->with('error', 'Selected section is not available.');
+            }
 
-        // Update latest enrollment
-        $enrollment = $student->enrollments()->latest()->first();
+            // Check capacity for THIS school year only
+            $currentCount = Enrollment::where('section_id', $section->id)
+                ->where('school_year_id', $schoolYearId)
+                ->where('status', 'enrolled')
+                ->count();
 
-        if ($enrollment) {
+            if ($currentCount >= $section->capacity) {
+                return redirect()->back()->with('error', 'Selected section is already full for this school year.');
+            }
+
+            $enrollment = $student->enrollments()
+                ->where('school_year_id', $schoolYearId)
+                ->where('status', 'pending')
+                ->first();
+
+            if (!$enrollment) {
+                return redirect()->back()->with('error', 'No pending enrollment found for this school year.');
+            }
+
+            // Update student status and current section
+            $student->update([
+                'status' => 'active',
+                'section_id' => $validated['section_id'],
+                'remarks' => $validated['remarks'] ?? null,
+            ]);
+
+            // Update enrollment record
             $enrollment->update([
                 'status' => 'enrolled',
                 'section_id' => $validated['section_id'],
-                'remarks' => $validated['remarks'] ?? null, // ✅ Also save to enrollment if you have this column
+                'enrollment_date' => now(),
+                'remarks' => $validated['remarks'] ?? null,
             ]);
+
+            $schoolYear = SchoolYear::find($schoolYearId);
+            return redirect()->back()->with('success', "Student {$student->user->last_name} enrolled in {$section->name} for {$schoolYear->name}.");
+
+        } catch (\Exception $e) {
+            Log::error('Enrollment failed', ['student_id' => $student->id, 'error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to enroll student.');
+        }
+    }
+
+    public function reject(Request $request, Student $student)
+    {
+        $schoolYearId = $request->input('school_year_id') ?? SchoolYear::where('is_active', true)->first()?->id;
+
+        try {
+            $enrollment = $student->enrollments()
+                ->where('school_year_id', $schoolYearId)
+                ->where('status', 'pending')
+                ->first();
+
+            if ($enrollment) $enrollment->update(['status'=>'rejected']);
+
+            // Only reject student if no pending enrollments in ANY school year
+            if (!$student->enrollments()->where('status','pending')->exists()) {
+                $student->update(['status'=>'rejected']);
+            }
+
+            return redirect()->back()->with('success', "Student {$student->user->last_name} rejected.");
+
+        } catch (\Exception $e) {
+            Log::error('Rejection failed', ['student_id'=>$student->id,'error'=>$e->getMessage()]);
+            return redirect()->back()->with('error','Failed to reject student.');
+        }
+    }
+
+    public function destroy(Student $student)
+    {
+        if ($student->status !== 'inactive') {
+            return redirect()->route('admin.pending-registrations.index')->with('error','Only inactive registrations can be deleted.');
         }
 
-        // Build success message with remarks if provided
-        $successMsg = "Student {$student->user->last_name} enrolled and assigned to {$section->name}.";
-        if (!empty($validated['remarks'])) {
-            $remarkLabel = Student::$remarksLegend[$validated['remarks']] ?? $validated['remarks'];
-            $successMsg .= " Remark: {$remarkLabel}.";
+        try {
+            if ($student->user) {
+                if ($student->user->photo) Storage::disk('public')->delete($student->user->photo);
+                $student->user->delete();
+            }
+            $student->delete();
+
+            return redirect()->route('admin.pending-registrations.index')->with('success','Registration deleted successfully.');
+
+        } catch (\Exception $e) {
+            return redirect()->route('admin.pending-registrations.index')->with('error','Failed to delete registration.');
         }
+    }
 
-        return redirect()->back()->with('success', $successMsg);
-
-    } catch (\Exception $e) {
-        Log::error('Enrollment failed', [
-            'student_id' => $student->id,
-            'error' => $e->getMessage()
+    public function bulkApprove(Request $request)
+    {
+        $request->validate([
+            'school_year_id' => 'required|exists:school_years,id',
         ]);
 
-        return redirect()->back()->with('error', 'Failed to enroll student.');
-    }
-}
-    /**
-     * Reject
-     */
-   /**
- * Reject
- */
-public function reject(Student $student)
-{
-    try {
-        $student->update(['status' => 'rejected']);
+        $schoolYearId = $request->school_year_id;
+        $schoolYear = SchoolYear::find($schoolYearId);
+        
+        // Get pending enrollments that have a section already assigned
+        $pendingEnrollments = Enrollment::where('school_year_id', $schoolYearId)
+            ->where('status', 'pending')
+            ->whereNotNull('section_id')
+            ->with(['student', 'section'])
+            ->get();
+            
+        $approved = 0;
+        $skipped = 0;
 
-        // Update latest enrollment
-        $enrollment = $student->enrollments()->latest()->first();
+        foreach ($pendingEnrollments as $enrollment) {
+            if (!$enrollment->section || !$enrollment->section->is_active) {
+                $skipped++;
+                continue;
+            }
 
-        if ($enrollment) {
-            $enrollment->update(['status' => 'rejected']);
+            // Check current capacity for this year
+            $currentCount = Enrollment::where('section_id', $enrollment->section_id)
+                ->where('school_year_id', $schoolYearId)
+                ->where('status', 'enrolled')
+                ->count();
+
+            if ($currentCount >= $enrollment->section->capacity) {
+                $skipped++;
+                continue;
+            }
+
+            // Approve enrollment
+            $enrollment->update([
+                'status' => 'enrolled',
+                'enrollment_date' => now(),
+            ]);
+
+            // Update student
+            if ($enrollment->student) {
+                $enrollment->student->update([
+                    'status' => 'active',
+                    'section_id' => $enrollment->section_id,
+                ]);
+            }
+            
+            $approved++;
         }
 
-        return redirect()->back()
-            ->with('success', "Student {$student->user->last_name} rejected.");
+        $message = "{$approved} students approved successfully for {$schoolYear->name}.";
+        if ($skipped > 0) {
+            $message .= " {$skipped} skipped (section unavailable or full).";
+        }
 
-    } catch (\Exception $e) {
-        Log::error('Rejection failed', [
-            'student_id' => $student->id,
-            'error' => $e->getMessage()
-        ]);
-
-        return redirect()->back()->with('error', 'Failed to reject student.');
+        return back()->with('success', $message);
     }
-}
 }

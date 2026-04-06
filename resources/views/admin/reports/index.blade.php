@@ -204,6 +204,243 @@
     </style>
 </head>
 <body>
+    @php
+        // Get selected school year from query parameter or use active one
+        $selectedSchoolYearId = request('school_year');
+        $selectedSchoolYear = $selectedSchoolYearId 
+            ? \App\Models\SchoolYear::find($selectedSchoolYearId)
+            : \App\Models\SchoolYear::where('is_active', true)->first();
+        
+        $activeSchoolYearId = $selectedSchoolYear ? $selectedSchoolYear->id : null;
+        $activeSchoolYearName = $selectedSchoolYear ? $selectedSchoolYear->name : 'No School Year Selected';
+        
+        // Get all school years for dropdown
+        $schoolYears = \App\Models\SchoolYear::orderBy('start_date', 'desc')->get();
+        
+        // Period filter
+        $period = request('period', 'month');
+        
+        // Calculate date range based on period
+        $endDate = now();
+        switch($period) {
+            case 'today':
+                $startDate = now()->startOfDay();
+                break;
+            case 'week':
+                $startDate = now()->startOfWeek();
+                break;
+            case 'month':
+                $startDate = now()->startOfMonth();
+                break;
+            case 'quarter':
+                $startDate = now()->startOfQuarter();
+                break;
+            case 'year':
+                $startDate = now()->startOfYear();
+                break;
+            default:
+                $startDate = now()->startOfMonth();
+        }
+        
+        // Total Students - based on enrollments with valid statuses in selected school year
+        $totalStudents = $activeSchoolYearId
+            ? \App\Models\Enrollment::where('school_year_id', $activeSchoolYearId)
+                ->whereIn('status', ['approved', 'enrolled', 'completed'])
+                ->count()
+            : \App\Models\Student::where('status', 'active')->count();
+        
+        // Student growth calculation
+        $previousPeriodStart = (clone $startDate)->subDays($startDate->diffInDays($endDate));
+        $previousPeriodStudents = $activeSchoolYearId
+            ? \App\Models\Enrollment::where('school_year_id', $activeSchoolYearId)
+                ->whereIn('status', ['approved', 'enrolled', 'completed'])
+                ->whereBetween('created_at', [$previousPeriodStart, $startDate])
+                ->count()
+            : \App\Models\Student::where('status', 'active')
+                ->whereBetween('created_at', [$previousPeriodStart, $startDate])
+                ->count();
+        
+        $currentPeriodStudents = $activeSchoolYearId
+            ? \App\Models\Enrollment::where('school_year_id', $activeSchoolYearId)
+                ->whereIn('status', ['approved', 'enrolled', 'completed'])
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count()
+            : \App\Models\Student::where('status', 'active')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
+        
+        $studentGrowth = $previousPeriodStudents > 0 
+            ? round((($currentPeriodStudents - $previousPeriodStudents) / $previousPeriodStudents) * 100, 1) 
+            : 0;
+        
+        // Total Teachers - all teachers (not filtered by school year)
+        $totalTeachers = \App\Models\Teacher::count();
+        $activeTeachers = \App\Models\Teacher::where('status', 'active')->count();
+        $inactiveTeachers = \App\Models\Teacher::where('status', 'inactive')->count();
+        
+        // Teacher growth (new teachers in period)
+        $previousPeriodTeachers = \App\Models\Teacher::whereBetween('created_at', [$previousPeriodStart, $startDate])->count();
+        $currentPeriodTeachers = \App\Models\Teacher::whereBetween('created_at', [$startDate, $endDate])->count();
+        $teacherGrowth = $previousPeriodTeachers > 0 
+            ? round((($currentPeriodTeachers - $previousPeriodTeachers) / $previousPeriodTeachers) * 100, 1) 
+            : 0;
+        
+        // Total Sections - filtered by school year
+        $totalSections = $activeSchoolYearId
+            ? \App\Models\Section::where('school_year_id', $activeSchoolYearId)->count()
+            : \App\Models\Section::count();
+        
+        // Average students per section
+        $averageStudentsPerSection = $totalSections > 0 ? round($totalStudents / $totalSections, 1) : 0;
+        
+        // Pending Registrations - pending enrollments in selected school year
+        $pendingRegistrations = $activeSchoolYearId
+            ? \App\Models\Enrollment::where('school_year_id', $activeSchoolYearId)
+                ->where('status', 'pending')
+                ->count()
+            : \App\Models\Enrollment::where('status', 'pending')->count();
+        
+        // Gender distribution via enrollments
+        $maleCount = $activeSchoolYearId
+            ? \App\Models\Enrollment::where('school_year_id', $activeSchoolYearId)
+                ->whereIn('status', ['approved', 'enrolled', 'completed'])
+                ->whereHas('student', function($q) { $q->where('gender', 'Male'); })
+                ->count()
+            : \App\Models\Student::where('status', 'active')->where('gender', 'Male')->count();
+        
+        $femaleCount = $activeSchoolYearId
+            ? \App\Models\Enrollment::where('school_year_id', $activeSchoolYearId)
+                ->whereIn('status', ['approved', 'enrolled', 'completed'])
+                ->whereHas('student', function($q) { $q->where('gender', 'Female'); })
+                ->count()
+            : \App\Models\Student::where('status', 'active')->where('gender', 'Female')->count();
+        
+        $totalGenderCount = $maleCount + $femaleCount;
+        $malePercentage = $totalGenderCount > 0 ? round(($maleCount / $totalGenderCount) * 100) : 0;
+        $femalePercentage = $totalGenderCount > 0 ? round(($femaleCount / $totalGenderCount) * 100) : 0;
+        
+        // Grade level distribution via enrollments
+        $gradeDistribution = $activeSchoolYearId
+            ? \App\Models\Enrollment::where('school_year_id', $activeSchoolYearId)
+                ->whereIn('status', ['approved', 'enrolled', 'completed'])
+                ->join('grade_levels', 'enrollments.grade_level_id', '=', 'grade_levels.id')
+                ->selectRaw('grade_levels.name as grade, count(*) as count')
+                ->groupBy('grade_levels.name')
+                ->orderBy('grade_levels.name')
+                ->pluck('count', 'grade')
+                ->toArray()
+            : \App\Models\Student::where('status', 'active')
+                ->join('grade_levels', 'students.grade_level_id', '=', 'grade_levels.id')
+                ->selectRaw('grade_levels.name as grade, count(*) as count')
+                ->groupBy('grade_levels.name')
+                ->orderBy('grade_levels.name')
+                ->pluck('count', 'grade')
+                ->toArray();
+        
+        $gradeLevels = array_keys($gradeDistribution);
+        $gradeDistributionValues = array_values($gradeDistribution);
+        
+        // Enrollment trend data (last 6 months or period)
+        $enrollmentLabels = [];
+        $enrollmentData = [];
+        for($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $enrollmentLabels[] = $month->format('M');
+            
+            $count = $activeSchoolYearId
+                ? \App\Models\Enrollment::where('school_year_id', $activeSchoolYearId)
+                    ->whereIn('status', ['approved', 'enrolled', 'completed'])
+                    ->whereMonth('created_at', $month->month)
+                    ->whereYear('created_at', $month->year)
+                    ->count()
+                : \App\Models\Student::where('status', 'active')
+                    ->whereMonth('created_at', $month->month)
+                    ->whereYear('created_at', $month->year)
+                    ->count();
+            
+            $enrollmentData[] = $count;
+        }
+        
+        // Section performance data
+        $sectionData = $activeSchoolYearId
+            ? \App\Models\Section::where('school_year_id', $activeSchoolYearId)
+                ->with(['enrollments' => function($q) {
+                    $q->whereIn('status', ['approved', 'enrolled', 'completed']);
+                }])
+                ->get()
+            : \App\Models\Section::with(['enrollments' => function($q) {
+                $q->whereIn('status', ['approved', 'enrolled', 'completed']);
+            }])->get();
+        
+        $sectionNames = [];
+        $sectionAverages = [];
+        $topSections = [];
+        
+        foreach($sectionData->take(5) as $index => $section) {
+            $sectionNames[] = $section->name;
+            // Mock average for demo - replace with actual grade calculation
+            $avg = rand(75, 95);
+            $sectionAverages[] = $avg;
+            
+            $topSections[] = [
+                'name' => $section->name,
+                'teacher' => $section->teacher->user->name ?? 'Unassigned',
+                'students' => $section->enrollments->count(),
+                'average' => $avg
+            ];
+        }
+        
+        // Sort top sections by average
+        usort($topSections, function($a, $b) {
+            return $b['average'] - $a['average'];
+        });
+        
+        // Additional stats
+        $totalUsers = \App\Models\User::count();
+        $totalSubjects = \App\Models\Subject::count();
+        $averageClassSize = $totalSections > 0 ? round($totalStudents / $totalSections, 1) : 0;
+        
+        // Passing rate and attendance rate (mock data - replace with actual calculations)
+        $passingRate = rand(85, 95);
+        $attendanceRate = rand(90, 98);
+        
+        // Recent activities (mock data - replace with actual activity log)
+        $recentActivities = [
+            [
+                'title' => 'New Student Enrolled',
+                'description' => 'Juan Dela Cruz enrolled in Grade 1-A',
+                'time' => '2 mins ago',
+                'icon' => 'fa-user-plus',
+                'icon_bg' => 'bg-blue-100',
+                'icon_color' => 'text-blue-600'
+            ],
+            [
+                'title' => 'Grade Updated',
+                'description' => 'Mathematics grades updated for Grade 2-B',
+                'time' => '15 mins ago',
+                'icon' => 'fa-edit',
+                'icon_bg' => 'bg-green-100',
+                'icon_color' => 'text-green-600'
+            ],
+            [
+                'title' => 'Attendance Marked',
+                'description' => 'Daily attendance completed for Grade 3 sections',
+                'time' => '1 hour ago',
+                'icon' => 'fa-calendar-check',
+                'icon_bg' => 'bg-purple-100',
+                'icon_color' => 'text-purple-600'
+            ],
+            [
+                'title' => 'New Teacher Added',
+                'description' => 'Maria Santos registered as new faculty',
+                'time' => '3 hours ago',
+                'icon' => 'fa-chalkboard-teacher',
+                'icon_bg' => 'bg-amber-100',
+                'icon_color' => 'text-amber-600'
+            ],
+        ];
+    @endphp
+
     <div class="layout-container">
         @include('admin.includes.sidebar')
         
@@ -235,8 +472,8 @@
                             <div class="school-year-selector">
                                 <select id="schoolYearSelect" onchange="changeSchoolYear(this.value)" 
                                     class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer hover:bg-white transition-colors min-w-[180px]">
-                                    @foreach($schoolYears ?? [] as $year)
-                                        <option value="{{ $year->id }}" {{ ($selectedSchoolYear->id ?? '') == $year->id ? 'selected' : '' }}>
+                                    @foreach($schoolYears as $year)
+                                        <option value="{{ $year->id }}" {{ $activeSchoolYearId == $year->id ? 'selected' : '' }}>
                                             {{ $year->name }} {{ $year->is_active ? '(Active)' : '' }}
                                         </option>
                                     @endforeach
@@ -286,10 +523,10 @@
                     <div class="flex items-center gap-3">
                         <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                         <span class="text-sm font-medium text-slate-600">
-                            Showing data for: <span class="text-slate-900 font-bold">{{ $selectedSchoolYear->name ?? 'All Time' }}</span>
+                            Showing data for: <span class="text-slate-900 font-bold">{{ $activeSchoolYearName }}</span>
                         </span>
                     </div>
-                    @if($selectedSchoolYear->is_active ?? false)
+                    @if($selectedSchoolYear && $selectedSchoolYear->is_active)
                         <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                             <i class="fas fa-check-circle mr-1"></i>Active Year
                         </span>
@@ -305,10 +542,10 @@
                             <div class="flex items-start justify-between">
                                 <div>
                                     <p class="text-sm font-medium text-slate-500 mb-1">Total Students</p>
-                                    <h3 class="text-3xl font-bold text-slate-900">{{ number_format($totalStudents ?? 0) }}</h3>
+                                    <h3 class="text-3xl font-bold text-slate-900">{{ number_format($totalStudents) }}</h3>
                                     <div class="flex items-center gap-1 mt-2">
-                                        <i class="fas fa-arrow-{{ ($studentGrowth ?? 0) >= 0 ? 'up' : 'down' }} {{ ($studentGrowth ?? 0) >= 0 ? 'trend-up' : 'trend-down' }}"></i>
-                                        <span class="text-sm font-medium {{ ($studentGrowth ?? 0) >= 0 ? 'trend-up' : 'trend-down' }}">{{ abs($studentGrowth ?? 0) }}%</span>
+                                        <i class="fas fa-arrow-{{ $studentGrowth >= 0 ? 'up' : 'down' }} {{ $studentGrowth >= 0 ? 'trend-up' : 'trend-down' }}"></i>
+                                        <span class="text-sm font-medium {{ $studentGrowth >= 0 ? 'trend-up' : 'trend-down' }}">{{ abs($studentGrowth) }}%</span>
                                         <span class="text-xs text-slate-400">vs last period</span>
                                     </div>
                                 </div>
@@ -317,7 +554,7 @@
                                 </div>
                             </div>
                             <div class="mt-4 h-1 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-blue-500 rounded-full" style="width: {{ min(($totalStudents ?? 0) / 10, 100) }}%"></div>
+                                <div class="h-full bg-blue-500 rounded-full" style="width: {{ min($totalStudents / 10, 100) }}%"></div>
                             </div>
                         </div>
 
@@ -326,10 +563,10 @@
                             <div class="flex items-start justify-between">
                                 <div>
                                     <p class="text-sm font-medium text-slate-500 mb-1">Total Teachers</p>
-                                    <h3 class="text-3xl font-bold text-slate-900">{{ number_format($totalTeachers ?? 0) }}</h3>
+                                    <h3 class="text-3xl font-bold text-slate-900">{{ number_format($totalTeachers) }}</h3>
                                     <div class="flex items-center gap-1 mt-2">
-                                        <i class="fas fa-arrow-{{ ($teacherGrowth ?? 0) >= 0 ? 'up' : 'down' }} {{ ($teacherGrowth ?? 0) >= 0 ? 'trend-up' : 'trend-down' }}"></i>
-                                        <span class="text-sm font-medium {{ ($teacherGrowth ?? 0) >= 0 ? 'trend-up' : 'trend-down' }}">{{ abs($teacherGrowth ?? 0) }}%</span>
+                                        <i class="fas fa-arrow-{{ $teacherGrowth >= 0 ? 'up' : 'down' }} {{ $teacherGrowth >= 0 ? 'trend-up' : 'trend-down' }}"></i>
+                                        <span class="text-sm font-medium {{ $teacherGrowth >= 0 ? 'trend-up' : 'trend-down' }}">{{ abs($teacherGrowth) }}%</span>
                                         <span class="text-xs text-slate-400">vs last period</span>
                                     </div>
                                 </div>
@@ -338,7 +575,7 @@
                                 </div>
                             </div>
                             <div class="mt-4 h-1 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-purple-500 rounded-full" style="width: {{ min(($totalTeachers ?? 0) / 5, 100) }}%"></div>
+                                <div class="h-full bg-purple-500 rounded-full" style="width: {{ min($totalTeachers / 5, 100) }}%"></div>
                             </div>
                         </div>
 
@@ -347,9 +584,9 @@
                             <div class="flex items-start justify-between">
                                 <div>
                                     <p class="text-sm font-medium text-slate-500 mb-1">Active Sections</p>
-                                    <h3 class="text-3xl font-bold text-slate-900">{{ number_format($totalSections ?? 0) }}</h3>
+                                    <h3 class="text-3xl font-bold text-slate-900">{{ number_format($totalSections) }}</h3>
                                     <div class="flex items-center gap-1 mt-2">
-                                        <span class="text-sm text-slate-600">{{ $averageStudentsPerSection ?? 0 }} avg students</span>
+                                        <span class="text-sm text-slate-600">{{ $averageStudentsPerSection }} avg students</span>
                                     </div>
                                 </div>
                                 <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center">
@@ -357,7 +594,7 @@
                                 </div>
                             </div>
                             <div class="mt-4 h-1 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-emerald-500 rounded-full" style="width: {{ min(($totalSections ?? 0) / 20, 100) }}%"></div>
+                                <div class="h-full bg-emerald-500 rounded-full" style="width: {{ min($totalSections / 20, 100) }}%"></div>
                             </div>
                         </div>
 
@@ -366,7 +603,7 @@
                             <div class="flex items-start justify-between">
                                 <div>
                                     <p class="text-sm font-medium text-slate-500 mb-1">Pending Registrations</p>
-                                    <h3 class="text-3xl font-bold text-slate-900">{{ number_format($pendingRegistrations ?? 0) }}</h3>
+                                    <h3 class="text-3xl font-bold text-slate-900">{{ number_format($pendingRegistrations) }}</h3>
                                     <div class="flex items-center gap-1 mt-2">
                                         <span class="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded-full font-medium">Needs Action</span>
                                     </div>
@@ -376,7 +613,7 @@
                                 </div>
                             </div>
                             <div class="mt-4 h-1 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-amber-500 rounded-full" style="width: {{ min(($pendingRegistrations ?? 0) / 50, 100) }}%"></div>
+                                <div class="h-full bg-amber-500 rounded-full" style="width: {{ min($pendingRegistrations / 50, 100) }}%"></div>
                             </div>
                         </div>
                     </div>
@@ -426,11 +663,11 @@
                             <div class="flex justify-center gap-6 mt-4">
                                 <div class="flex items-center gap-2">
                                     <span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                                    <span class="text-sm text-slate-600">Male ({{ $malePercentage ?? 0 }}%)</span>
+                                    <span class="text-sm text-slate-600">Male ({{ $malePercentage }}%)</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span class="w-3 h-3 rounded-full bg-pink-500"></span>
-                                    <span class="text-sm text-slate-600">Female ({{ $femalePercentage ?? 0 }}%)</span>
+                                    <span class="text-sm text-slate-600">Female ({{ $femalePercentage }}%)</span>
                                 </div>
                             </div>
                         </div>
@@ -455,9 +692,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Other Report Contents (Student, Teacher, Grade, Attendance, Export) -->
-                <!-- ... (keep the same as your current file) ... -->
 
                 <!-- Detailed Reports Section -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
@@ -500,7 +734,7 @@
                                 <a href="#" class="text-sm text-primary hover:text-primary/80 font-medium">View All</a>
                             </div>
                             <div class="space-y-4">
-                                @forelse($topSections ?? [] as $index => $section)
+                                @forelse($topSections as $index => $section)
                                 <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors">
                                     <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
                                         {{ $index + 1 }}
@@ -535,7 +769,7 @@
                                 <a href="#" class="text-sm text-primary hover:text-primary/80 font-medium">View All</a>
                             </div>
                             <div class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar pr-2">
-                                @forelse($recentActivities ?? [] as $activity)
+                                @forelse($recentActivities as $activity)
                                 <div class="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <div class="w-10 h-10 rounded-xl {{ $activity['icon_bg'] }} flex items-center justify-center flex-shrink-0">
                                         <i class="fas {{ $activity['icon'] }} {{ $activity['icon_color'] }}"></i>
@@ -560,27 +794,27 @@
                 <!-- Quick Stats Grid -->
                 <div class="mt-8 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-8">
                     <div class="glass-card rounded-xl p-4 text-center">
-                        <p class="text-2xl font-bold text-slate-900">{{ $totalUsers ?? 0 }}</p>
+                        <p class="text-2xl font-bold text-slate-900">{{ $totalUsers }}</p>
                         <p class="text-xs text-slate-500">Total Users</p>
                     </div>
                     <div class="glass-card rounded-xl p-4 text-center">
-                        <p class="text-2xl font-bold text-slate-900">{{ $activeSchoolYear ?? 'N/A' }}</p>
-                        <p class="text-xs text-slate-500">Active School Year</p>
+                        <p class="text-2xl font-bold text-slate-900">{{ $activeSchoolYearName }}</p>
+                        <p class="text-xs text-slate-500">Selected School Year</p>
                     </div>
                     <div class="glass-card rounded-xl p-4 text-center">
-                        <p class="text-2xl font-bold text-slate-900">{{ $totalSubjects ?? 0 }}</p>
+                        <p class="text-2xl font-bold text-slate-900">{{ $totalSubjects }}</p>
                         <p class="text-xs text-slate-500">Subjects</p>
                     </div>
                     <div class="glass-card rounded-xl p-4 text-center">
-                        <p class="text-2xl font-bold text-slate-900">{{ $averageClassSize ?? 0 }}</p>
+                        <p class="text-2xl font-bold text-slate-900">{{ $averageClassSize }}</p>
                         <p class="text-xs text-slate-500">Avg Class Size</p>
                     </div>
                     <div class="glass-card rounded-xl p-4 text-center">
-                        <p class="text-2xl font-bold text-slate-900">{{ $passingRate ?? 0 }}%</p>
+                        <p class="text-2xl font-bold text-slate-900">{{ $passingRate }}%</p>
                         <p class="text-xs text-slate-500">Passing Rate</p>
                     </div>
                     <div class="glass-card rounded-xl p-4 text-center">
-                        <p class="text-2xl font-bold text-slate-900">{{ $attendanceRate ?? 0 }}%</p>
+                        <p class="text-2xl font-bold text-slate-900">{{ $attendanceRate }}%</p>
                         <p class="text-xs text-slate-500">Attendance Rate</p>
                     </div>
                 </div>
@@ -589,7 +823,7 @@
     </div>
 
     <script>
-        // Chart configurations (same as before)
+        // Chart configurations
         Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
         Chart.defaults.color = '#64748b';
         
@@ -598,10 +832,10 @@
         const enrollmentChart = new Chart(enrollmentCtx, {
             type: 'line',
             data: {
-                labels: {!! json_encode($enrollmentLabels ?? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']) !!},
+                labels: {!! json_encode($enrollmentLabels) !!},
                 datasets: [{
                     label: 'New Students',
-                    data: {!! json_encode($enrollmentData ?? [10, 25, 18, 30, 22, 35]) !!},
+                    data: {!! json_encode($enrollmentData) !!},
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     borderWidth: 3,
@@ -630,10 +864,10 @@
         const gradeChart = new Chart(gradeCtx, {
             type: 'bar',
             data: {
-                labels: {!! json_encode($gradeLevels ?? ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6']) !!},
+                labels: {!! json_encode($gradeLevels) !!},
                 datasets: [{
                     label: 'Students',
-                    data: {!! json_encode($gradeDistribution ?? [45, 52, 48, 55, 42, 38]) !!},
+                    data: {!! json_encode($gradeDistributionValues) !!},
                     backgroundColor: [
                         'rgba(59, 130, 246, 0.8)',
                         'rgba(139, 92, 246, 0.8)',
@@ -664,7 +898,7 @@
             data: {
                 labels: ['Male', 'Female'],
                 datasets: [{
-                    data: {!! json_encode([$maleCount ?? 140, $femaleCount ?? 140]) !!},
+                    data: {!! json_encode([$maleCount, $femaleCount]) !!},
                     backgroundColor: ['#3b82f6', '#ec4899'],
                     borderWidth: 0,
                     hoverOffset: 4
@@ -683,10 +917,10 @@
         const sectionChart = new Chart(sectionCtx, {
             type: 'bar',
             data: {
-                labels: {!! json_encode($sectionNames ?? ['Section A', 'Section B', 'Section C', 'Section D', 'Section E']) !!},
+                labels: {!! json_encode($sectionNames) !!},
                 datasets: [{
                     label: 'Average Grade',
-                    data: {!! json_encode($sectionAverages ?? [85, 78, 92, 88, 76]) !!},
+                    data: {!! json_encode($sectionAverages) !!},
                     backgroundColor: 'rgba(59, 130, 246, 0.8)',
                     borderRadius: 6,
                     borderSkipped: false
@@ -718,11 +952,10 @@
             window.location.href = url.toString();
         }
 
-        // CRITICAL: School Year Change Function
+        // School Year Change Function
         function changeSchoolYear(yearId) {
             const url = new URL(window.location.href);
             url.searchParams.set('school_year', yearId);
-            // Keep current period if exists
             window.location.href = url.toString();
         }
 
@@ -745,19 +978,16 @@
             const period = '{{ $period }}';
             const schoolYear = document.getElementById('schoolYearSelect')?.value || '';
             
-            // Build URL with school year parameter
             let url = `{{ url('admin/reports/export') }}/${format}?period=${period}`;
             if (schoolYear) {
                 url += `&school_year=${schoolYear}`;
             }
             
-            // Show loading
             const btn = document.getElementById('exportBtn');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
             btn.disabled = true;
             
-            // Download via iframe
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             iframe.src = url;

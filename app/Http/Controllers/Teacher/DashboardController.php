@@ -62,10 +62,17 @@ class DashboardController extends Controller
         }
 
         // -----------------------------
-        // Students
+        // Students - FILTERED to exclude completed/inactive
         // -----------------------------
         $students = $activeSection
-            ? $activeSection->students()->with('user')->get()
+            ? $activeSection->students()
+                ->whereHas('enrollment', function($query) {
+                    // Exclude students with completed or inactive enrollment status
+                    $query->whereNotIn('status', ['completed', 'inactive']);
+                })
+                ->where('students.status', '!=', 'inactive') // Also check students table status
+                ->with('user')
+                ->get()
             : collect();
 
         // -----------------------------
@@ -239,6 +246,4 @@ class DashboardController extends Controller
 
         return round(($ww * 0.3) + ($pt * 0.5) + ($qa * 0.2));
     }
-
-    
 }

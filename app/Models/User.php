@@ -78,9 +78,31 @@ public function student()
         return $this->hasOne(Teacher::class);
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->notifications()->whereNull('read_at');
+    }
+
+    public function notificationSettings()
+    {
+        return $this->hasOne(UserNotificationSetting::class);
+    }
+
+    public function getNotificationSettingsAttribute()
+    {
+        return UserNotificationSetting::forUser($this->id);
+    }
+
     
 public function getFullNameAttribute()
 {
     return "{$this->first_name} {$this->middle_name} {$this->last_name}";
 }
+
+
 }

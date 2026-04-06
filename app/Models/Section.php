@@ -12,7 +12,7 @@ class Section extends Model
     protected $fillable = [
         'name',
         'grade_level_id',
-         'school_year_id', 
+      'school_year_id', 
             'room_number',
         'teacher_id',
         'capacity',

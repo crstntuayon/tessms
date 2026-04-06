@@ -8,42 +8,82 @@ use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\GradeLevel;
 use App\Models\SchoolYear;
+use App\Models\Enrollment; // Add this import
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class SectionController extends Controller
 {
-public function index(Request $request)
-{
-    $query = Section::with(['gradeLevel', 'teacher', 'students', 'schoolYear']);
-    
-    // Search functionality
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('room_number', 'like', "%{$search}%")
-              ->orWhereHas('teacher', function($tq) use ($search) {
-                  $tq->where('first_name', 'like', "%{$search}%")
-                     ->orWhere('last_name', 'like', "%{$search}%");
-              })
-              ->orWhereHas('gradeLevel', function($gq) use ($search) {
-                  $gq->where('name', 'like', "%{$search}%");
-              });
-        });
+    public function index(Request $request)
+    {
+        $query = Section::with(['gradeLevel', 'teacher', 'schoolYear']);
+        
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('room_number', 'like', "%{$search}%")
+                  ->orWhereHas('teacher', function($tq) use ($search) {
+                      $tq->where('first_name', 'like', "%{$search}%")
+                         ->orWhere('last_name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('gradeLevel', function($gq) use ($search) {
+                      $gq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+        
+        $sections = $query->orderBy('grade_level_id')->orderBy('name')->paginate(10);
+        
+        // Get active school year
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        // Calculate total students - only active enrollments in active school year
+        $totalStudents = 0;
+        if ($activeSchoolYear) {
+            $totalStudents = Enrollment::where('school_year_id', $activeSchoolYear->id)
+                ->where('status', 'enrolled')
+                ->count();
+        }
+        
+        // Load only active students for each section
+        foreach ($sections as $section) {
+            $section->active_students = collect();
+            if ($activeSchoolYear) {
+                $section->active_students = Student::whereHas('enrollments', function($q) use ($section, $activeSchoolYear) {
+                    $q->where('section_id', $section->id)
+                      ->where('school_year_id', $activeSchoolYear->id)
+                      ->where('status', 'enrolled'); // Only enrolled, not completed
+                })->get();
+            }
+        }
+        
+        return view('admin.sections.index', compact('sections', 'totalStudents', 'activeSchoolYear'));
     }
-    
-    $sections = $query->orderBy('grade_level_id')->orderBy('name')->paginate(10);
-    
-    return view('admin.sections.index', compact('sections'));
-}
 
     public function show($id)
-{
-    $section = Section::with(['teacher', 'students', 'gradeLevel'])->findOrFail($id);
+    {
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        $section = Section::with(['teacher', 'gradeLevel'])->findOrFail($id);
+        
+        // Load only currently enrolled students in active school year
+        $students = collect();
+        if ($activeSchoolYear) {
+            $students = Student::with(['user', 'enrollments'])
+                ->whereHas('enrollments', function($q) use ($section, $activeSchoolYear) {
+                    $q->where('section_id', $section->id)
+                      ->where('school_year_id', $activeSchoolYear->id)
+                      ->where('status', 'enrolled'); // Only enrolled, not completed
+                })
+                ->get();
+        }
+        
+        $section->setRelation('active_students', $students);
 
-    return view('admin.sections.show', compact('section'));
-}
+        return view('admin.sections.show', compact('section'));
+    }
 
     public function create()
     {

@@ -142,7 +142,7 @@ class EnrollmentController extends Controller
                     'contact_number' => $request->contact_number,
                     'guardian_name' => $request->guardian_name,
                     'guardian_contact' => $request->guardian_contact,
-                    'status' => 'pending',
+                    'status' => 'inactive',
                 ]
             );
 

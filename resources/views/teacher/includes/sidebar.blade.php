@@ -1,27 +1,40 @@
 <!-- Teacher Sidebar - Light Theme with Glass Morphism -->
 
 @php
-$sections = \App\Models\Section::with('gradeLevel')
-    ->where('teacher_id', auth()->user()->teacher->id ?? null)
-    ->where('is_active', true) // only active sections
-    ->get();
+$teacher = auth()->user()->teacher;
+$sections = $teacher 
+    ? \App\Models\Section::with('gradeLevel')
+        ->where('teacher_id', $teacher->id)
+        ->where('is_active', true)
+        ->get()
+    : collect();
 @endphp
 
-<!-- Add this in the <head> section -->
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-<div class="flex flex-col w-72 h-screen bg-white/80 backdrop-blur-xl text-slate-800 fixed border-r border-white/50 shadow-2xl shadow-slate-200/50">
+<!-- Sidebar -->
+<div x-show="mobileOpen || window.innerWidth >= 1024" 
+     x-transition:enter="transition transform duration-300"
+     x-transition:enter-start="-translate-x-full"
+     x-transition:enter-end="translate-x-0"
+     x-transition:leave="transition transform duration-300"
+     x-transition:leave-start="translate-x-0"
+     x-transition:leave-end="-translate-x-full"
+     class="flex flex-col w-72 h-screen bg-white/95 backdrop-blur-xl text-slate-800 fixed border-r border-slate-200 shadow-xl z-40 lg:translate-x-0"
+     @click.away="if (window.innerWidth < 1024) mobileOpen = false">
     
     <!-- Logo/Brand Section -->
     <div class="p-6 border-b border-slate-100">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <i class="fas fa-graduation-cap text-white text-lg"></i>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fas fa-graduation-cap text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900">Teacher Portal</h1>
+                    <p class="text-xs text-slate-500">Tugawe Elementary</p>
+                </div>
             </div>
-            <div>
-                <h1 class="font-bold text-lg text-slate-900">Teacher Portal</h1>
-                <p class="text-xs text-slate-500">Tugawe Elementary</p>
-            </div>
+            <!-- Notification Bell -->
+            @include('components.notification-bell')
         </div>
     </div>
 
@@ -62,144 +75,112 @@ $sections = \App\Models\Section::with('gradeLevel')
                 </a>
             </li>
 
+            <!-- Communications / Messages -->
+            <li>
+                <a href="{{ route('teacher.communications.index') }}" 
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group
+                   {{ request()->routeIs('teacher.communications*') ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600' }}">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center transition-all relative
+                        {{ request()->routeIs('teacher.communications*') ? 'bg-white/20' : 'bg-indigo-50 group-hover:bg-indigo-100' }}">
+                        <i class="fas fa-envelope {{ request()->routeIs('teacher.communications*') ? 'text-white' : 'text-indigo-500' }}"></i>
+                        @php
+                            $unreadMessages = \App\Models\Message::receivedBy(auth()->id())->unread()->count();
+                        @endphp
+                        @if($unreadMessages > 0)
+                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                                {{ $unreadMessages > 9 ? '9+' : $unreadMessages }}
+                            </span>
+                        @endif
+                    </div>
+                    <span>Messages</span>
+                </a>
+            </li>
+
             <!-- School Forms -->
-<li x-data="{ open: {{ request()->routeIs('teacher.sf*') ? 'true' : 'false' }} }">
-    
-    <button @click="open = !open"
-        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group
-        text-slate-600 hover:bg-slate-50 hover:text-indigo-600">
-
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-indigo-50 group-hover:bg-indigo-100">
-                <i class="fas fa-folder text-indigo-500"></i>
-            </div>
-            <span>School Forms</span>
-        </div>
-
-        <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
-    </button>
-
-    <!-- Dropdown -->
-    <ul x-show="open" x-transition class="mt-2 ml-10 space-y-2">
-
-        <!-- SF1 -->
-        <li>
-            <a href="{{ route('teacher.sf1') }}" 
-               class="block px-3 py-2 rounded-lg text-sm transition
-               {{ request()->routeIs('teacher.sf1') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
-                SF1 - School Register
-            </a>
-        </li>
-
-        <!-- SF2 -->
-        <li>
-            <a href="{{ route('teacher.sf2') }}" 
-               class="block px-3 py-2 rounded-lg text-sm transition
-               {{ request()->routeIs('teacher.sf2') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
-                SF2 - Daily Attendance
-            </a>
-        </li>
-
-         <!-- SF3 -->
-        <li>
-            <a href="{{ route('teacher.sf3') }}" 
-               class="block px-3 py-2 rounded-lg text-sm transition
-               {{ request()->routeIs('teacher.sf3') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
-                SF3 - Books
-            </a>
-        </li>
-
-        <!-- SF5 -->
-        <li>
-            <a href="{{ route('teacher.sf5') }}" 
-               class="block px-3 py-2 rounded-lg text-sm transition
-               {{ request()->routeIs('teacher.sf5') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
-                SF5 - Learning Progress
-            </a>
-        </li>
-
-        <!-- SF9 -->
-        <li>
-            <a href="{{ route('teacher.sf9') }}" 
-               class="block px-3 py-2 rounded-lg text-sm transition
-               {{ request()->routeIs('teacher.sf9') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
-                SF9 - Report Card
-            </a>
-        </li>
-
-        <!-- SF10 -->
-        <li>
-            <a href="{{ route('teacher.sf10') }}" 
-               class="block px-3 py-2 rounded-lg text-sm transition
-               {{ request()->routeIs('teacher.sf10') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
-                SF10 - Permanent Record
-            </a>
-        </li>
-
-
-    </ul>
-</li>
+            <li x-data="{ open: {{ request()->routeIs('teacher.sf*') ? 'true' : 'false' }} }">
+                <button @click="open = !open"
+                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group
+                    text-slate-600 hover:bg-slate-50 hover:text-indigo-600">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-indigo-50 group-hover:bg-indigo-100">
+                            <i class="fas fa-folder text-indigo-500"></i>
+                        </div>
+                        <span>School Forms</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
+                </button>
+                <ul x-show="open" x-transition class="mt-2 ml-10 space-y-2">
+                    @foreach(['sf1' => 'SF1 - School Register', 'sf2' => 'SF2 - Daily Attendance', 'sf3' => 'SF3 - Books', 
+                              'sf4' => 'SF4 - Monthly Attendance', 'sf5' => 'SF5 - Learning Progress', 
+                              'sf6' => 'SF6 - Promotion', 'sf7' => 'SF7 - Personnel', 'sf8' => 'SF8 - Health',
+                              'sf9' => 'SF9 - Report Card', 'sf10' => 'SF10 - Records'] as $key => $label)
+                        <li>
+                            <a href="{{ route('teacher.' . $key) }}" 
+                               class="block px-3 py-2 rounded-lg text-sm transition
+                               {{ request()->routeIs('teacher.' . $key) ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
+                                {{ $label }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </li>
 
             <!-- Sections Header -->
             <li class="mt-4">
                 <p class="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">My Sections</p>
             </li>
 
-            <!-- Section Items with Accordion -->
-            @foreach($sections as $section)
-            <li class="mb-1">
-                <details class="group" {{ request()->route('section')?->id == $section->id ? 'open' : '' }}>
-                    <summary class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium cursor-pointer transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 select-none">
+            <!-- Section Items -->
+            @forelse($sections as $section)
+            <li class="mb-1" x-data="{ open: {{ request()->route('section')?->id == $section->id ? 'true' : 'false' }} }">
+                <button @click="open = !open" 
+                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600">
+                    <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center border border-emerald-100">
                             <span class="text-emerald-600 font-bold text-xs">{{ strtoupper(substr($section->name, 0, 2)) }}</span>
                         </div>
-                      <div class="flex-1 min-w-0">
-    <p class="truncate">
-        {{ $section->name }} ({{ $section->gradeLevel->name ?? 'N/A' }})
-    </p>
-</div>
-                        <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform group-open:rotate-180"></i>
-                    </summary>
-                    
-                    <ul class="mt-1 ml-4 pl-4 border-l-2 border-slate-100 space-y-1">
-                        <li>
-                            <a href="{{ route('teacher.sections.students', $section) }}" 
-                               class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-                                <i class="fas fa-users text-xs w-4"></i>
-                                <span>Students</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('teacher.sections.attendance', $section) }}" 
-                               class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-                                <i class="fas fa-clipboard-check text-xs w-4"></i>
-                                <span>Attendance</span>
-                            </a>
-                        </li>
-                       <li>
-    <a href="{{ route('teacher.sections.grades', $section) }}" 
-       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-        <i class="fas fa-chart-line text-xs w-4"></i>
-        <span>Grades</span>
-    </a>
-</li>
-<li>
-    <a href="{{ route('teacher.sections.core-values.index', $section) }}" 
-       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
-        <i class="fas fa-star text-xs w-4"></i>
-        <span>Observed Core Values</span>
-    </a>
-</li>
-                    </ul>
-                </details>
+                        <div class="flex-1 min-w-0 text-left">
+                            <p class="truncate">{{ $section->name }}</p>
+                            <p class="text-[10px] text-slate-400">{{ $section->gradeLevel->name ?? 'N/A' }}</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform" :class="{ 'rotate-180': open }"></i>
+                </button>
+                
+                <ul x-show="open" x-transition class="mt-1 ml-4 pl-4 border-l-2 border-slate-100 space-y-1">
+                    <li>
+                        <a href="{{ route('teacher.sections.students', $section) }}" 
+                           class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('teacher.sections.students') && request()->route('section')?->id == $section->id ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50' }} transition-all">
+                            <i class="fas fa-users text-xs w-4"></i>
+                            <span>Students</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('teacher.sections.attendance', $section) }}" 
+                           class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('teacher.sections.attendance') && request()->route('section')?->id == $section->id ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50' }} transition-all">
+                            <i class="fas fa-clipboard-check text-xs w-4"></i>
+                            <span>Attendance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('teacher.sections.grades', $section) }}" 
+                           class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('teacher.sections.grades') && request()->route('section')?->id == $section->id ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50' }} transition-all">
+                            <i class="fas fa-chart-line text-xs w-4"></i>
+                            <span>Grades</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
-            @endforeach
+            @empty
+                <li class="px-4 py-3 text-sm text-slate-400">
+                    No sections assigned
+                </li>
+            @endforelse
         </ul>
     </nav>
 
     <!-- Bottom Actions -->
     <div class="p-4 border-t border-slate-100 bg-white/50">
-        <!-- Quick Actions -->
         <div class="grid grid-cols-2 gap-2 mb-4">
             <a href="{{ route('teacher.profile') }}" class="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition-all text-xs font-medium">
                 <i class="fas fa-user-circle"></i>
@@ -211,7 +192,6 @@ $sections = \App\Models\Section::with('gradeLevel')
             </a>
         </div>
 
-        <!-- Logout -->
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 transition-all shadow-lg shadow-red-500/30 hover:shadow-red-500/40 text-sm font-medium">
@@ -224,32 +204,8 @@ $sections = \App\Models\Section::with('gradeLevel')
 
 <!-- Custom Scrollbar Styles -->
 <style>
-.custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 2px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-/* Smooth details animation */
-details > summary {
-    list-style: none;
-}
-details > summary::-webkit-details-marker {
-    display: none;
-}
-details[open] summary ~ * {
-    animation: sweep 0.3s ease-in-out;
-}
-@keyframes sweep {
-    0%    {opacity: 0; transform: translateY(-10px)}
-    100%  {opacity: 1; transform: translateY(0)}
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 </style>

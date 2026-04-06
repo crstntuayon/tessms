@@ -228,6 +228,15 @@ class SettingsSeeder extends Seeder
                 'description' => 'Enable UI animations'
             ],
 
+            // Enrollment Settings
+            [
+                'key' => 'enrollment_enabled',
+                'value' => '0',
+                'type' => 'boolean',
+                'group' => 'enrollment',
+                'description' => 'Allow students to submit enrollment requests'
+            ],
+
             // Backup Settings
             [
                 'key' => 'auto_backup',

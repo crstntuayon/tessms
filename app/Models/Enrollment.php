@@ -15,6 +15,7 @@ protected $fillable = [
     'status',
     'previous_school',
     'enrollment_date',
+    'remarks',
 
      // Store current school info at time of enrollment
     'school_name',
@@ -24,9 +25,9 @@ protected $fillable = [
     'school_region',
 ];
 
-    protected $casts = [
-        'date_enrolled' => 'date',
-    ];
+protected $casts = [
+    'enrollment_date' => 'datetime', // or 'date'
+];
 
     /*
     |--------------------------------------------------------------------------
@@ -53,6 +54,11 @@ protected $fillable = [
     {
         return $this->belongsTo(Section::class);
     }
+
+    public function grades()
+{
+    return $this->hasMany(Grade::class); // or whatever table/model you want
+}
 
     /*
     |--------------------------------------------------------------------------

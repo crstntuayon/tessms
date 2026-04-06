@@ -52,7 +52,7 @@
 
 
     <!-- Header Section -->
-    <div class="flex items-center h-16 border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-white px-5 shrink-0">
+    <div class="flex items-center justify-between h-16 border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-white px-5 shrink-0">
         <!-- Logo -->
         <div class="flex items-center gap-3 overflow-hidden">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0">
@@ -77,6 +77,7 @@
     <div class="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
         
         <!-- Student Profile Card -->
+        @if(isset($student) && $student)
         <div x-show="(!sidebarCollapsed && window.innerWidth >= 1024) || mobileOpen" 
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 scale-95"
@@ -92,7 +93,7 @@
                     @if($student->profile_photo)
                         <img src="{{ asset('storage/' . $student->profile_photo) }}" 
                              class="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-md group-hover:ring-indigo-200 transition-all" 
-                             alt="{{ $student->user->first_name }}">
+                             alt="{{ $student->user->first_name ?? 'Student' }}">
                     @else
                         <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white">
                             {{ substr($student->user->first_name ?? 'S', 0, 1) }}{{ substr($student->user->last_name ?? 'T', 0, 1) }}
@@ -106,7 +107,7 @@
                         <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full">
                             {{ $student->gradeLevel->name ?? 'N/A' }}
                         </span>
-                        @if(isset($section))
+                        @if(isset($section) && $section)
                             <span class="text-[10px] text-slate-500 font-medium truncate">{{ $section->name ?? '' }}</span>
                         @endif
                     </div>
@@ -130,7 +131,10 @@
             </div>
         </div>
 
+        @endif
+        
         <!-- Collapsed Profile Icon (shown when collapsed on desktop) -->
+        @if(isset($student) && $student)
         <div x-show="sidebarCollapsed && window.innerWidth >= 1024 && !mobileOpen" 
              x-transition
              class="flex justify-center mt-4 mb-2">
@@ -138,7 +142,7 @@
                 @if($student->profile_photo)
                     <img src="{{ asset('storage/' . $student->profile_photo) }}" 
                          class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-md" 
-                         alt="{{ $student->user->first_name }}">
+                         alt="{{ $student->user->first_name ?? 'Student' }}">
                 @else
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white font-bold text-xs shadow-md ring-2 ring-white">
                         {{ substr($student->user->first_name ?? 'S', 0, 1) }}
@@ -147,6 +151,7 @@
                 <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></div>
             </div>
         </div>
+        @endif
 
         <!-- Navigation -->
         <nav class="py-4 px-3 space-y-6">
@@ -221,47 +226,26 @@
                     <div class="w-8 h-px bg-slate-200"></div>
                 </div>
                 
-                <div class="space-y-1">
-
-                    <!-- Assignments -->
-                    <a href="{{ route('student.assignments') }}" 
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group {{ request()->routeIs('student.assignments*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50' }}">
-                        <div class="relative shrink-0">
-                            <svg class="w-5 h-5 {{ request()->routeIs('student.assignments*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }} transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                            </svg>
-                            @if(isset($pendingAssignments) && $pendingAssignments > 0)
-                                <span class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm animate-pulse">
-                                    {{ $pendingAssignments }}
-                                </span>
-                            @endif
-                        </div>
-                        <span class="flex-1 whitespace-nowrap transition-all duration-300" 
-                              :class="{ 'opacity-0 w-0 hidden': sidebarCollapsed && window.innerWidth >= 1024 && !mobileOpen, 'opacity-100': (!sidebarCollapsed && window.innerWidth >= 1024) || mobileOpen }">Assignments</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Communication Section -->
-            <div>
-                <div x-show="(!sidebarCollapsed && window.innerWidth >= 1024) || mobileOpen" class="px-3 mb-2 h-5">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Communication</p>
-                </div>
-                <div x-show="sidebarCollapsed && window.innerWidth >= 1024 && !mobileOpen" class="flex justify-center mb-2">
-                    <div class="w-8 h-px bg-slate-200"></div>
-                </div>
+      
                 
                 <div class="space-y-1">
                     
+        
+
                     <!-- Messages -->
-                    <a href="{{ route('student.messages') }}" 
+                    <a href="{{ route('student.messages.index') }}" 
                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group {{ request()->routeIs('student.messages*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50' }}">
-                        <div class="relative shrink-0">
-                            <svg class="w-5 h-5 {{ request()->routeIs('student.messages*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }} transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        <div class="relative">
+                            <svg class="w-5 h-5 {{ request()->routeIs('student.messages*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }} transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                             </svg>
-                            @if(isset($unreadMessages) && $unreadMessages > 0)
-                                <span class="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
+                            @php
+                                $unreadMessages = \App\Models\Message::receivedBy(auth()->id())->unread()->count();
+                            @endphp
+                            @if($unreadMessages > 0)
+                                <span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                                    {{ $unreadMessages > 9 ? '9+' : $unreadMessages }}
+                                </span>
                             @endif
                         </div>
                         <span class="flex-1 whitespace-nowrap transition-all duration-300" 
@@ -297,6 +281,9 @@
         </a>
         
         <!-- Logout -->
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+            @csrf
+        </form>
         <button onclick="event.preventDefault(); document.getElementById('logout-form').submit()" 
                 class="w-full flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl font-medium text-sm transition-all duration-200 group">
             <svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

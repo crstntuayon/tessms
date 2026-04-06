@@ -439,7 +439,7 @@
                 </div>
             </div>
 
-            <!-- Quarterly Exam Section -->
+            <!-- Quarterly Exam Section - UPDATED -->
             <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl shadow-slate-200/50 overflow-hidden">
                 <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100 p-4">
                     <div class="flex items-center justify-between">
@@ -447,9 +447,11 @@
                             <i class="fas fa-file-alt text-amber-600"></i>
                             Quarterly Exam (QE)
                         </h3>
+                        <!-- Hidden input to save QE total items -->
+                        <input type="hidden" name="qe_total_items" id="qeTotalItemsInput" value="{{ $existingGrades['qe_total_items'] ?? 100 }}">
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-slate-600">Total Items:</span>
-                            <input type="number" id="qeTotal" value="100" class="w-20 px-3 py-1 rounded-lg border border-amber-200 text-sm font-semibold text-amber-600" onchange="calculateAllQE()">
+                            <input type="number" id="qeTotal" value="{{ $existingGrades['qe_total_items'] ?? 100 }}" class="w-20 px-3 py-1 rounded-lg border border-amber-200 text-sm font-semibold text-amber-600" onchange="updateQETotalItems(this.value)">
                         </div>
                     </div>
                 </div>
@@ -807,6 +809,12 @@
             const studentId = row.getAttribute('data-student-id');
             if (studentId) calculateStudentQE(studentId);
         });
+    }
+
+    // NEW FUNCTION: Update QE Total Items and sync with hidden input
+    function updateQETotalItems(value) {
+        document.getElementById('qeTotalItemsInput').value = value;
+        calculateAllQE();
     }
 
     // Final Grade Calculation

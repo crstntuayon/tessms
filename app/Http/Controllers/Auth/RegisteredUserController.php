@@ -85,8 +85,15 @@ class RegisteredUserController extends Controller
 
             'photo' => 'nullable|image|max:2048',
 
-            'ethnicity' => 'nullable|string|max:100',           // ADD THIS
-            'mother_tongue' => 'nullable|string|max:100',       // ADD THIS
+            'ethnicity' => 'nullable|string|max:100',
+            'mother_tongue' => 'nullable|string|max:100',
+            'remarks' => 'nullable|string|max:255',
+            
+            // Document uploads
+            'birth_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'report_card' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'good_moral' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'transfer_credential' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         DB::beginTransaction();
@@ -139,13 +146,45 @@ class RegisteredUserController extends Controller
                 'province' => $request->province,
                 'zip_code' => $request->zip_code,
 
-                'status' => 'pending',
+                'status' => 'inactive',
                 'grade_level_id' => $request->grade_level_id,
                 'section_id' => null,
 
-                'ethnicity' => $request->ethnicity,         // ADD THIS
-                'mother_tongue' => $request->mother_tongue, // ADD THIS
+                'ethnicity' => $request->ethnicity,
+                'mother_tongue' => $request->mother_tongue,
+                'remarks' => $request->remarks,
+                
+                // Document paths will be updated after upload
+                'birth_certificate_path' => null,
+                'report_card_path' => null,
+                'good_moral_path' => null,
+                'transfer_credential_path' => null,
+                'registration_status' => 'pending_documents',
             ]);
+            
+            // Handle document uploads
+            $documentPaths = [];
+            
+            if ($request->hasFile('birth_certificate')) {
+                $documentPaths['birth_certificate_path'] = $request->file('birth_certificate')->store('student-documents/' . $student->id, 'public');
+            }
+            
+            if ($request->hasFile('report_card')) {
+                $documentPaths['report_card_path'] = $request->file('report_card')->store('student-documents/' . $student->id, 'public');
+            }
+            
+            if ($request->hasFile('good_moral')) {
+                $documentPaths['good_moral_path'] = $request->file('good_moral')->store('student-documents/' . $student->id, 'public');
+            }
+            
+            if ($request->hasFile('transfer_credential')) {
+                $documentPaths['transfer_credential_path'] = $request->file('transfer_credential')->store('student-documents/' . $student->id, 'public');
+            }
+            
+            // Update student with document paths
+            if (!empty($documentPaths)) {
+                $student->update($documentPaths);
+            }
 
             // ✅ Get ACTIVE school year
             $currentYear = SchoolYear::where('is_active', 1)->first();

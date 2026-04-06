@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Student Dashboard | Tugawe Elementary School</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -249,8 +250,8 @@
                                 <a href="{{ route('student.profile') }}"  
                                    class="group relative px-5 py-2.5 bg-white text-slate-700 text-sm font-semibold rounded-xl border-2 border-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition-all duration-200 hover:-translate-y-0.5 inline-block">
                                     <span class="flex items-center gap-2">
-                                        <i class="fas fa-edit"></i>
-                                        Edit Profile
+                                        <i class="fas fa-user-edit"></i>
+                                        My Profile
                                     </span>
                                 </a>
                             </div>
@@ -576,42 +577,115 @@
                 </div>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
-                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                            <i class="fas fa-history"></i>
-                        </div>
-                        Recent Activity
-                    </h3>
-                    <a href="#" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium">View All</a>
-                </div>
-                <div class="p-6">
-                    @if(isset($recentActivities) && $recentActivities->isNotEmpty())
-                        <div class="space-y-4">
-                            @foreach($recentActivities->take(5) as $activity)
-                                <div class="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
-                                    <div class="w-10 h-10 rounded-full {{ $activity->color_class ?? 'bg-slate-100 text-slate-600' }} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                                        <i class="fas {{ $activity->icon ?? 'fa-circle' }}"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-slate-800">{{ $activity->title }}</p>
-                                        <p class="text-xs text-slate-500">{{ $activity->description }}</p>
-                                    </div>
-                                    <span class="text-xs text-slate-400 whitespace-nowrap">{{ $activity->created_at->diffForHumans() }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-8 text-slate-400">
-                            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <i class="fas fa-inbox text-2xl opacity-50"></i>
+            <!-- Notifications & Recent Activity Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Notifications Section -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center relative">
+                                <i class="fas fa-bell"></i>
+                                @if(isset($unreadNotifications) && $unreadNotifications > 0)
+                                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                                        {{ $unreadNotifications > 9 ? '9+' : $unreadNotifications }}
+                                    </span>
+                                @endif
                             </div>
-                            <p class="text-sm font-medium">No recent activities</p>
-                            <p class="text-xs mt-1">Your activities will appear here</p>
-                        </div>
-                    @endif
+                            Notifications
+                        </h3>
+                        @if(isset($notifications) && $notifications->isNotEmpty())
+                            <form action="{{ route('notifications.markAllRead') }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                                    Mark all read
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                    <div class="p-6 max-h-80 overflow-y-auto scrollbar-thin">
+                        @if(isset($notifications) && $notifications->isNotEmpty())
+                            <div class="space-y-3">
+                                @foreach($notifications->take(5) as $notification)
+                                    @php
+                                        $notifUrl = $notification->data['url'] ?? route('notifications.index');
+                                    @endphp
+                                    <div class="flex items-start gap-3 p-3 rounded-xl {{ $notification->read_at ? 'bg-white' : 'bg-indigo-50/50' }} hover:bg-slate-50 transition-colors group cursor-pointer"
+                                         onclick="handleNotificationClick(event, '{{ $notifUrl }}', {{ $notification->id }}, {{ $notification->read_at ? 'true' : 'false' }})">
+                                        <div class="w-10 h-10 rounded-full {{ $notification->data['color'] ?? 'bg-slate-100' }} {{ $notification->data['icon_color'] ?? 'text-slate-600' }} flex items-center justify-center flex-shrink-0">
+                                            <i class="fas {{ $notification->data['icon'] ?? 'fa-bell' }}"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-semibold text-slate-800">{{ $notification->data['title'] ?? 'Notification' }}</p>
+                                            <p class="text-xs text-slate-500">{{ $notification->data['body'] ?? '' }}</p>
+                                            <p class="text-[10px] text-slate-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                        </div>
+                                        @if(!$notification->read_at)
+                                            <button type="button" 
+                                                    onclick="event.stopPropagation(); markNotificationRead({{ $notification->id }}, this)"
+                                                    class="w-6 h-6 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-600 flex items-center justify-center flex-shrink-0" 
+                                                    title="Mark as read">
+                                                <i class="fas fa-check text-xs"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                            @if($notifications->count() > 5)
+                                <div class="mt-4 text-center">
+                                    <a href="{{ route('notifications.index') }}" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                                        View all {{ $notifications->count() }} notifications
+                                    </a>
+                                </div>
+                            @endif
+                        @else
+                            <div class="text-center py-8 text-slate-400">
+                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-bell-slash text-2xl opacity-50"></i>
+                                </div>
+                                <p class="text-sm font-medium">No notifications</p>
+                                <p class="text-xs mt-1">You're all caught up!</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            Recent Activity
+                        </h3>
+                        <a href="#" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium">View All</a>
+                    </div>
+                    <div class="p-6 max-h-80 overflow-y-auto scrollbar-thin">
+                        @if(isset($recentActivities) && $recentActivities->isNotEmpty())
+                            <div class="space-y-4">
+                                @foreach($recentActivities->take(5) as $activity)
+                                    <div class="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
+                                        <div class="w-10 h-10 rounded-full {{ $activity->color_class ?? 'bg-slate-100 text-slate-600' }} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                            <i class="fas {{ $activity->icon ?? 'fa-circle' }}"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-semibold text-slate-800">{{ $activity->title }}</p>
+                                            <p class="text-xs text-slate-500">{{ $activity->description }}</p>
+                                        </div>
+                                        <span class="text-xs text-slate-400 whitespace-nowrap">{{ $activity->created_at->diffForHumans() }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-8 text-slate-400">
+                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-inbox text-2xl opacity-50"></i>
+                                </div>
+                                <p class="text-sm font-medium">No recent activities</p>
+                                <p class="text-xs mt-1">Your activities will appear here</p>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -698,6 +772,49 @@
             calendar.innerHTML = html;
         }
         generateCalendar();
+
+        // Notification click handler
+        function handleNotificationClick(event, url, notificationId, isRead) {
+            // If clicking the check button, don't navigate
+            if (event.target.closest('button[title="Mark as read"]')) {
+                return;
+            }
+            
+            // Mark as read if not already read
+            if (!isRead) {
+                fetch(`/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                }).catch(err => console.error('Failed to mark as read:', err));
+            }
+            
+            // Navigate to URL
+            window.location.href = url;
+        }
+
+        // Mark single notification as read
+        function markNotificationRead(notificationId, button) {
+            fetch(`/notifications/${notificationId}/read`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Remove the button and update styling
+                    const notificationDiv = button.closest('.group');
+                    notificationDiv.classList.remove('bg-indigo-50/50');
+                    notificationDiv.classList.add('bg-white');
+                    button.remove();
+                }
+            })
+            .catch(err => console.error('Failed to mark as read:', err));
+        }
     </script>
 </body>
 </html>

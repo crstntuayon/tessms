@@ -23,6 +23,7 @@ class CoreValueController extends Controller
         $activeSchoolYear = SchoolYear::where('is_active', true)->first();
         
         $students = $section->students()
+            ->whereNotIn('status', ['completed', 'inactive'])
             ->with([
                 'user:id,first_name,last_name',
                 'coreValues' => function($query) use ($currentQuarter, $activeSchoolYear) {
@@ -68,7 +69,7 @@ class CoreValueController extends Controller
                 'ratings' => 'required|array|min:1',
                 'ratings.*.core_value' => 'required|in:Maka-Diyos,Makatao,Maka-Kalikasan,Maka-bansa',
                 'ratings.*.behavior_statement' => 'required|string|max:500',
-                'ratings.*.statement_key' => 'required|string|max:50', // e.g., "statement1", "statement2"
+                'ratings.*.statement_key' => 'required|string|max:50',
                 'ratings.*.rating' => 'required|in:AO,SO,RO,NO',
                 'ratings.*.remarks' => 'nullable|string|max:1000',
             ]);
@@ -82,17 +83,16 @@ class CoreValueController extends Controller
             foreach ($validated['ratings'] as $index => $rating) {
                 Log::info("Processing rating {$index}", $rating);
 
-                // Use statement_key for unique identification instead of full text
                 CoreValue::updateOrCreate(
                     [
                         'student_id' => $studentId,
                         'core_value' => $rating['core_value'],
-                        'statement_key' => $rating['statement_key'], // e.g., "statement1"
+                        'statement_key' => $rating['statement_key'],
                         'quarter' => $quarter,
                         'school_year_id' => $activeSchoolYear->id,
                     ],
                     [
-                        'behavior_statement' => $rating['behavior_statement'], // Full text for display
+                        'behavior_statement' => $rating['behavior_statement'],
                         'rating' => $rating['rating'],
                         'remarks' => $rating['remarks'] ?? null,
                         'recorded_by' => $teacherId,

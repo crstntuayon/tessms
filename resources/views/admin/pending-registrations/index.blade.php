@@ -27,9 +27,14 @@
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
         }
-        .btn-enroll:hover {
+        .btn-enroll:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        .btn-enroll:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
         }
         
         .btn-reject {
@@ -54,6 +59,34 @@
         .avatar-circle {
             background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
         }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .status-badge.enrolled {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .status-badge.graduated {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        .status-badge.rejected {
+            background: #fee2e2;
+            color: #dc2626;
+        }
     </style>
 </head>
 <body class="h-screen flex">
@@ -72,11 +105,32 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">Pending Registrations</h1>
-                    <p class="text-sm text-slate-500">Review and enroll new student applications</p>
+                    <p class="text-sm text-slate-500">
+                        Review and enroll new student applications 
+                        <span class="font-semibold text-blue-600">— {{ $schoolYear->name ?? 'No School Year Selected' }}</span>
+                        @if($schoolYear && $schoolYear->is_active)
+                            <span class="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full">Active</span>
+                        @endif
+                    </p>
                 </div>
             </div>
             
             <div class="flex items-center gap-4">
+                <!-- School Year Selector -->
+                <form method="GET" action="{{ route('admin.pending-registrations.index') }}" class="flex items-center gap-2" id="schoolYearForm">
+                    <div class="relative">
+                        <i class="fas fa-calendar-alt absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <select name="school_year" onchange="document.getElementById('schoolYearForm').submit()"
+                                class="pl-10 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 cursor-pointer hover:border-slate-300 transition-all min-w-[200px]">
+                            @foreach($schoolYears as $year)
+                                <option value="{{ $year->id }}" {{ $schoolYear?->id == $year->id ? 'selected' : '' }}>
+                                    {{ $year->name }} {{ $year->is_active ? '(Current)' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
+
                 <div class="relative">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input type="text" id="searchInput" placeholder="Search students..." 
@@ -93,31 +147,44 @@
             const createToast = (message, type = 'success', duration = 4) => {
                 const colors = {
                     success: { bg: 'bg-emerald-50', border: 'border-emerald-500', text: 'text-emerald-800', iconBg: 'bg-emerald-500' },
-                    error: { bg: 'bg-red-50', border: 'border-red-500', text: 'text-red-800', iconBg: 'bg-red-500' }
+                    error: { bg: 'bg-red-50', border: 'border-red-500', text: 'text-red-800', iconBg: 'bg-red-500' },
+                    warning: { bg: 'bg-amber-50', border: 'border-amber-500', text: 'text-amber-800', iconBg: 'bg-amber-500' },
+                    info: { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-800', iconBg: 'bg-blue-500' }
                 };
 
                 const toast = document.createElement('div');
-                toast.className = `flex items-center gap-3 px-4 py-2 rounded-xl shadow-lg border-l-4 ${colors[type].bg} ${colors[type].border} ${colors[type].text} relative overflow-hidden min-w-[240px] transform translate-x-20 opacity-0 transition-all duration-500 ease-out`;
+                toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border-l-4 ${colors[type].bg} ${colors[type].border} ${colors[type].text} relative overflow-hidden min-w-[300px] transform translate-x-full opacity-0 transition-all duration-500 ease-out`;
+
+                const iconMap = {
+                    success: 'check',
+                    error: 'exclamation-triangle',
+                    warning: 'exclamation-circle',
+                    info: 'info-circle'
+                };
 
                 toast.innerHTML = `
-                    <div class="flex-shrink-0 w-6 h-6 rounded-full ${colors[type].iconBg} text-white flex items-center justify-center text-xs">
-                        <i class="fas fa-${type==='success'?'check':'exclamation-triangle'}"></i>
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full ${colors[type].iconBg} text-white flex items-center justify-center text-sm">
+                        <i class="fas fa-${iconMap[type]}"></i>
                     </div>
-                    <div class="flex-1 text-sm font-medium">${message}</div>
-                    <button class="text-current hover:opacity-70 transition-opacity text-sm ml-2">
+                    <div class="flex-1 text-sm font-medium leading-relaxed">${message}</div>
+                    <button class="text-current hover:opacity-70 transition-opacity text-sm ml-2 p-1 hover:bg-white/50 rounded">
                         <i class="fas fa-times"></i>
                     </button>
-                    <div class="absolute bottom-0 left-0 h-1 ${colors[type].iconBg} rounded-b-xl" style="width:100%"></div>
+                    <div class="absolute bottom-0 left-0 h-1 ${colors[type].iconBg} rounded-b-xl transition-all duration-100" style="width:100%"></div>
                 `;
 
                 const container = document.getElementById('toast-container');
                 container.appendChild(toast);
 
                 requestAnimationFrame(() => {
-                    toast.classList.remove('translate-x-20', 'opacity-0');
+                    toast.classList.remove('translate-x-full', 'opacity-0');
                 });
 
-                toast.querySelector('button').addEventListener('click', () => toast.remove());
+                toast.querySelector('button').addEventListener('click', () => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 300);
+                });
 
                 let timeLeft = duration;
                 const progressBar = toast.querySelector('div.absolute');
@@ -125,7 +192,9 @@
                     timeLeft -= 0.05;
                     if (timeLeft <= 0) {
                         clearInterval(interval);
-                        toast.remove();
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateX(100%)';
+                        setTimeout(() => toast.remove(), 300);
                         return;
                     }
                     progressBar.style.width = (timeLeft / duration * 100) + '%';
@@ -133,11 +202,15 @@
             };
 
             @if(session('success'))
-                createToast("{{ session('success') }}", 'success', 4);
+                createToast("{{ session('success') }}", 'success', 5);
             @endif
 
             @if(session('error'))
-                createToast("{{ session('error') }}", 'error', 4);
+                createToast("{{ session('error') }}", 'error', 5);
+            @endif
+
+            @if(session('warning'))
+                createToast("{{ session('warning') }}", 'warning', 5);
             @endif
         });
         </script>
@@ -146,14 +219,14 @@
         <main class="flex-1 overflow-auto p-8 custom-scroll">
 
             <!-- Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="glass-card rounded-2xl p-6 flex items-center gap-4">
                     <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600">
                         <i class="fas fa-clock text-2xl"></i>
                     </div>
                     <div>
                         <p class="text-3xl font-bold text-slate-900">{{ $students->total() }}</p>
-                        <p class="text-sm text-slate-500 font-medium">Pending Enrollment</p>
+                        <p class="text-sm text-slate-500 font-medium">Pending in {{ $schoolYear->name ?? 'Selected Year' }}</p>
                     </div>
                 </div>
                 <div class="glass-card rounded-2xl p-6 flex items-center gap-4">
@@ -174,13 +247,59 @@
                         <p class="text-sm text-slate-500 font-medium">Enrolled Today</p>
                     </div>
                 </div>
+                <div class="glass-card rounded-2xl p-6 flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600">
+                        <i class="fas fa-graduation-cap text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-bold text-slate-900">{{ $sections->count() ?? 0 }}</p>
+                        <p class="text-sm text-slate-500 font-medium">Available Sections</p>
+                    </div>
+                </div>
             </div>
+
+            <!-- Bulk Actions Bar -->
+            @if($students->total() > 0 && $schoolYear)
+            <div class="glass-card rounded-2xl p-4 mb-6 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900">Bulk Actions</h3>
+                        <p class="text-sm text-slate-500">Auto-assign pending students to available sections</p>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('admin.pending-registrations.bulk-approve') }}" 
+                      onsubmit="return confirm('Are you sure you want to bulk approve all pending registrations for {{ $schoolYear->name }}? Students will be assigned to sections with available capacity.')">
+                    @csrf
+                    <input type="hidden" name="school_year_id" value="{{ $schoolYear->id }}">
+                    <button type="submit" class="btn-enroll px-6 py-2.5 rounded-xl text-white font-semibold flex items-center gap-2 transition-all {{ $sections->isEmpty() ? 'opacity-50 cursor-not-allowed' : '' }}" 
+                            {{ $sections->isEmpty() ? 'disabled' : '' }}>
+                        <i class="fas fa-check-double"></i>
+                        <span>Bulk Approve All</span>
+                    </button>
+                </form>
+            </div>
+            @endif
 
             <!-- Table -->
             <div class="glass-card rounded-2xl overflow-hidden">
                 <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-slate-900">Registration Requests</h2>
-                    <span class="text-sm text-slate-500">Showing <span class="font-semibold text-slate-900">{{ $students->count() }}</span> of <span class="font-semibold text-slate-900">{{ $students->total() }}</span></span>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Registration Requests</h2>
+                        <p class="text-sm text-slate-500 mt-1">
+                            Showing pending enrollments for 
+                            <span class="font-semibold text-blue-600">{{ $schoolYear->name ?? 'selected school year' }}</span>
+                            @if($students->total() > 0)
+                                <span class="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{{ $students->total() }} pending</span>
+                            @endif
+                        </p>
+                    </div>
+                    <span class="text-sm text-slate-500">
+                        Showing <span class="font-semibold text-slate-900">{{ $students->count() }}</span> of 
+                        <span class="font-semibold text-slate-900">{{ $students->total() }}</span>
+                    </span>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -197,30 +316,34 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @forelse($students as $student)
-                                <tr class="table-row animate-fade-in" style="animation-delay: {{ $loop->index * 0.05 }}s">
+                                @php
+                                    $currentEnrollment = $student->enrollments->where('school_year_id', $schoolYear?->id)->first();
+                                @endphp
+                                <tr class="table-row animate-fade-in" style="animation-delay: {{ min($loop->index * 0.05, 0.5) }}s">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-4">
                                             <div class="w-12 h-12 rounded-full avatar-circle flex items-center justify-center text-white font-bold text-lg shadow-md">
-                                                {{ strtoupper(substr($student->user->first_name ?? 'A', 0, 1)) }}
+                                                {{ strtoupper(substr($student->user->first_name ?? 'A', 0, 1)) }}{{ strtoupper(substr($student->user->last_name ?? '', 0, 1)) }}
                                             </div>
                                             <div>
                                                 <p class="font-bold text-slate-900">
                                                     {{ $student->user->last_name ?? 'N/A' }}, {{ $student->user->first_name ?? 'N/A' }} {{ $student->user->middle_name ? substr($student->user->middle_name, 0, 1) . '.' : '' }}
                                                 </p>
                                                 <p class="text-sm text-slate-500">{{ $student->user->email ?? 'No email' }}</p>
+                                                <p class="text-xs text-slate-400 font-mono mt-0.5">LRN: {{ $student->lrn ?? 'N/A' }}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-sm font-semibold">
                                             <i class="fas fa-graduation-cap text-xs"></i>
-                                            {{ $student->gradeLevel->name ?? 'N/A' }}
+                                            Grade {{ $student->gradeLevel->name ?? 'N/A' }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
-                                        @if($student->enrollment)
+                                        @if($currentEnrollment)
                                             <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-purple-50 text-purple-700 text-sm font-semibold">
-                                                {{ $student->enrollment->type }}
+                                                {{ $currentEnrollment->type }}
                                             </span>
                                         @else
                                             <span class="text-slate-400 text-sm">N/A</span>
@@ -230,9 +353,10 @@
                                         <span class="text-sm text-slate-600">
                                             {{ $student->created_at?->diffForHumans() ?? 'N/A' }}
                                         </span>
+                                        <p class="text-xs text-slate-400 mt-0.5">{{ $student->created_at?->format('M d, Y') }}</p>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <span class="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 w-fit bg-amber-100 text-amber-700">
+                                        <span class="status-badge pending">
                                             <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
                                             {{ $student->status }}
                                         </span>
@@ -245,6 +369,13 @@
                                                     title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </button>
+                                            
+                                            <button type="button"
+                                                    onclick="openDeleteModal({{ $student->id }}, '{{ $student->user->last_name ?? 'N/A' }}, {{ $student->user->first_name ?? 'N/A' }}')"
+                                                    class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 flex items-center justify-center transition-all"
+                                                    title="Delete Registration">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -256,7 +387,17 @@
                                                 <i class="fas fa-inbox text-3xl text-slate-400"></i>
                                             </div>
                                             <h3 class="text-lg font-bold text-slate-900 mb-2">No Pending Registrations</h3>
-                                            <p class="text-slate-500">All student registrations have been processed.</p>
+                                            <p class="text-slate-500 mb-4">No pending enrollment applications found for {{ $schoolYear->name ?? 'this school year' }}.</p>
+                                            @if($schoolYear && !$schoolYear->is_active)
+                                                <p class="text-sm text-amber-600 bg-amber-50 rounded-lg py-2 px-4 inline-block">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    This is a past school year. Switch to current year to see new registrations.
+                                                </p>
+                                            @elseif($schoolYear && $schoolYear->is_active)
+                                                <p class="text-sm text-slate-500">
+                                                    New student registrations will appear here when they scan the QR code or register online.
+                                                </p>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -266,8 +407,8 @@
                 </div>
 
                 @if($students->hasPages())
-                    <div class="p-4 border-t border-slate-100">
-                        {{ $students->links() }}
+                    <div class="p-4 border-t border-slate-100 bg-slate-50">
+                        {{ $students->appends(['school_year' => $schoolYear?->id])->links() }}
                     </div>
                 @endif
             </div>
@@ -276,10 +417,8 @@
 
     <!-- Student Details Slide-in Modal -->
     <div id="studentModal" class="fixed inset-0 z-50 hidden">
-        <!-- Backdrop -->
         <div id="modalBackdrop" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="closeStudentModal()"></div>
         
-        <!-- Slide-in Panel -->
         <div id="modalPanel" class="absolute right-0 top-0 h-full w-full max-w-2xl bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
             
             <!-- Header -->
@@ -293,7 +432,7 @@
                         <p class="text-sm text-slate-500">ID: <span id="modalStudentId">-</span></p>
                     </div>
                 </div>
-                <button onclick="closeStudentModal()" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all hover:rotate-90">
+                <button onclick="closeStudentModal()" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all hover:rotate-90 duration-300">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -313,7 +452,7 @@
                         <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
                     </div>
                     <h3 class="text-lg font-bold text-slate-900 mb-2">Failed to Load</h3>
-                    <p id="modalErrorMessage" class="text-red-600 text-sm mb-4 font-mono"></p>
+                    <p id="modalErrorMessage" class="text-red-600 text-sm mb-4 font-mono bg-red-50 p-3 rounded-lg"></p>
                     <button onclick="closeStudentModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 transition-colors">
                         Close
                     </button>
@@ -337,6 +476,9 @@
                                         Pending Enrollment
                                     </span>
                                     <span id="modalAge" class="px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-sm font-semibold">-</span>
+                                    <span class="px-3 py-1 rounded-lg bg-green-100 text-green-700 text-sm font-semibold">
+                                        {{ $schoolYear->name ?? '-' }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -360,26 +502,23 @@
                             <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Nationality</p>
                             <p id="modalNationality" class="font-semibold text-slate-900">-</p>
                         </div>
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Ethnicity</p>
+                            <p id="modalEthnicity" class="font-semibold text-slate-900">-</p>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Mother Tongue</p>
+                            <p id="modalMotherTongue" class="font-semibold text-slate-900">-</p>
+                        </div>
+                    </div>
 
-                        <!-- ✅ ADD THESE NEW FIELDS -->
-    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-        <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Ethnicity</p>
-        <p id="modalEthnicity" class="font-semibold text-slate-900">-</p>
-    </div>
-    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-        <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Mother Tongue</p>
-        <p id="modalMotherTongue" class="font-semibold text-slate-900">-</p>
-    </div>
-</div>
-
-<!-- ✅ DISPLAY REMARKS BADGE (if exists) -->
-<div id="modalRemarksContainer" class="mt-4 hidden">
-    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200">
-        <i class="fas fa-sticky-note text-amber-600"></i>
-        <span class="text-xs text-amber-700 font-semibold uppercase tracking-wide">Remark:</span>
-        <span id="modalRemarksBadge" class="text-sm font-bold text-amber-800">-</span>
-    </div>
-
+                    <!-- Remarks Badge -->
+                    <div id="modalRemarksContainer" class="hidden">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200">
+                            <i class="fas fa-sticky-note text-amber-600"></i>
+                            <span class="text-xs text-amber-700 font-semibold uppercase tracking-wide">Remark:</span>
+                            <span id="modalRemarksBadge" class="text-sm font-bold text-amber-800">-</span>
+                        </div>
                     </div>
 
                     <!-- Contact Info -->
@@ -387,14 +526,14 @@
                         <h5 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Contact Information</h5>
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-3">
                             <div class="flex items-start gap-3">
-                                <i class="fas fa-map-marker-alt text-slate-400 mt-1 w-5"></i>
+                                <i class="fas fa-map-marker-alt text-slate-400 mt-1 w-5 text-center"></i>
                                 <div class="flex-1">
                                     <p class="text-xs text-slate-500 mb-1">Address</p>
-                                    <p id="modalAddress" class="font-semibold text-slate-900">-</p>
+                                    <p id="modalAddress" class="font-semibold text-slate-900 text-sm leading-relaxed">-</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <i class="fas fa-phone text-slate-400 w-5"></i>
+                                <i class="fas fa-phone text-slate-400 w-5 text-center"></i>
                                 <div class="flex-1">
                                     <p class="text-xs text-slate-500 mb-1">Guardian Contact</p>
                                     <p id="modalGuardianContact" class="font-semibold text-slate-900">-</p>
@@ -435,7 +574,7 @@
                             </div>
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Student Type</p>
-                                <p id="modalStudentType" class="font-semibold text-slate-900 capitalize"></p>
+                                <p id="modalStudentType" class="font-semibold text-slate-900 capitalize">-</p>
                             </div>
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">LRN</p>
@@ -445,6 +584,10 @@
                                 <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Date Applied</p>
                                 <p id="modalDateApplied" class="font-semibold text-slate-900">-</p>
                             </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 col-span-2">
+                                <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">School Year</p>
+                                <p class="font-semibold text-green-700">{{ $schoolYear->name ?? 'Not specified' }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -453,57 +596,151 @@
             <!-- Footer Actions -->
             <div class="p-6 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-4">
                 
-              <!-- Section Selection -->
-<div>
-    <label class="block text-sm font-semibold text-slate-700 mb-2">
-        <i class="fas fa-chalkboard-teacher mr-1"></i> Assign to Section <span class="text-red-500">*</span>
-    </label>
-    <select name="section_id" form="modalApproveForm" required
-            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm">
-        <option value="">Select a section...</option>
-        @foreach($sections as $section)
-            <option value="{{ $section->id }}">
-                {{ $section->name }} 
-                (Grade Level: {{ $section->gradeLevel->name ?? 'N/A' }}) — 
-                {{ $section->students_count }}/{{ $section->capacity }}
-            </option>
-        @endforeach
-    </select>
-    <p class="text-xs text-slate-500 mt-1">Student will be enrolled and assigned to this section</p>
-</div>
+                <!-- School Year Info Display -->
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-3">
+                    <i class="fas fa-calendar-alt text-blue-600 text-lg"></i>
+                    <div>
+                        <p class="text-xs text-blue-600 font-semibold uppercase tracking-wide">Enrolling For School Year</p>
+                        <p class="text-sm font-bold text-blue-800">{{ $schoolYear->name ?? 'Current Year' }}</p>
+                    </div>
+                </div>
 
+                <!-- Section Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i class="fas fa-chalkboard-teacher mr-1"></i> Assign to Section <span class="text-red-500">*</span>
+                    </label>
+                    @if($sections->isNotEmpty())
+                        <select name="section_id" form="modalApproveForm" required
+                                class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all">
+                            <option value="">Select a section...</option>
+                            @foreach($sections as $section)
+                                <option value="{{ $section->id }}">
+                                    {{ $section->name }} 
+                                    (Grade {{ $section->gradeLevel->name ?? 'N/A' }})
+                                    @if($section->teacher) — {{ $section->teacher->user->last_name ?? 'No Adviser' }} @endif
+                                    — {{ $section->enrollments_count }}/{{ $section->capacity }} enrolled
+                                    @if($section->enrollments_count >= $section->capacity) [FULL] @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Enrolling in {{ $schoolYear->name ?? 'selected school year' }} • 
+                            <span class="text-emerald-600 font-medium">{{ $sections->count() }} section(s) available</span>
+                        </p>
+                    @else
+                        <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm flex items-center gap-2">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>No sections available for {{ $schoolYear->name ?? 'this school year' }}. Please create sections first.</span>
+                        </div>
+                    @endif
+                </div>
 
-    <!-- ✅ REMARKS SELECTION (NEW) -->
-    <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <i class="fas fa-sticky-note mr-1"></i> Remarks <span class="text-slate-400 font-normal">(Optional)</span>
-        </label>
-        <select name="remarks" form="modalApproveForm"
-                class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm">
-            <option value="">-- Select Remark --</option>
-            @foreach(\App\Models\Student::$remarksLegend as $code => $label)
-                <option value="{{ $code }}">
-                    {{ $code }} - {{ $label }}
-                </option>
-            @endforeach
-        </select>
-        <p class="text-xs text-slate-500 mt-1">Select a remark code for this student's enrollment record</p>
-    </div>
+                <!-- Remarks Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i class="fas fa-sticky-note mr-1"></i> Remarks <span class="text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <select name="remarks" form="modalApproveForm"
+                            class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all">
+                        <option value="">-- Select Remark --</option>
+                        @foreach(\App\Models\Student::$remarksLegend ?? [] as $code => $label)
+                            <option value="{{ $code }}">{{ $code }} - {{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-slate-500 mt-1">Select a remark code for this student's enrollment record</p>
+                </div>
 
-                <!-- Buttons Row -->
-                <div class="flex items-center gap-3">
-                    <form id="modalApproveForm" method="POST" class="flex-1">
+                <!-- Action Buttons Row -->
+                <div class="flex items-center gap-3 pt-2">
+                    
+                    <!-- Approve/Enroll Form -->
+                    <form id="modalApproveForm" method="POST" action="" class="flex-1">
                         @csrf
-                        <button type="submit" class="w-full btn-enroll py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2 transition-all">
+                        <input type="hidden" name="school_year_id" value="{{ $schoolYear?->id }}">
+                        <button type="submit" 
+                                class="w-full btn-enroll py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" 
+                                {{ $sections->isEmpty() ? 'disabled' : '' }}>
                             <i class="fas fa-check"></i>
-                            Enroll & Assign Section
+                            <span>Enroll in {{ $schoolYear->name ?? 'Selected Year' }}</span>
                         </button>
                     </form>
-                    <form id="modalRejectForm" method="POST">
+
+                    <!-- Reject Form -->
+                    <form id="modalRejectForm" method="POST" action="">
                         @csrf
-                        <button type="submit" class="btn-reject px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2 transition-all" onclick="return confirm('Reject this application?')">
+                        <input type="hidden" name="school_year_id" value="{{ $schoolYear?->id }}">
+                        <button type="submit" 
+                                class="btn-reject px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2 transition-all"
+                                onclick="return confirm('Are you sure you want to reject this application for {{ $schoolYear->name ?? 'this school year' }}? This action cannot be undone.')">
                             <i class="fas fa-times"></i>
-                            Reject
+                            <span>Reject</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-[60] hidden">
+        <div id="deleteModalBackdrop" class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="closeDeleteModal()"></div>
+        
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div id="deleteModalPanel" class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 opacity-0 transition-all duration-300 overflow-hidden">
+                
+                <!-- Header -->
+                <div class="p-6 bg-gradient-to-r from-red-50 to-red-100 border-b border-red-200">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-full bg-red-500 flex items-center justify-center text-white shadow-lg shadow-red-500/30">
+                            <i class="fas fa-exclamation-triangle text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-red-900">Delete Registration</h3>
+                            <p class="text-sm text-red-600 mt-1">This action cannot be undone</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Body -->
+                <div class="p-6">
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-user text-amber-600 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-amber-700 font-semibold uppercase tracking-wide mb-1">Student to Delete</p>
+                                <p id="deleteStudentName" class="text-lg font-bold text-amber-900">-</p>
+                                <p class="text-xs text-amber-600 mt-1">From: {{ $schoolYear->name ?? 'Unknown School Year' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                        Are you sure you want to permanently delete this registration for <strong>{{ $schoolYear->name ?? 'this school year' }}</strong>? All associated data including personal information, documents, and application history will be removed from the system.
+                    </p>
+                    
+                    <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <i class="fas fa-info-circle text-slate-400 text-xl"></i>
+                        <p class="text-xs text-slate-500">
+                            <span class="font-semibold text-slate-700">Tip:</span> Consider rejecting instead if you want to keep a record of this application.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="p-6 border-t border-slate-100 bg-slate-50 flex items-center gap-3">
+                    <button type="button" onclick="closeDeleteModal()" 
+                            class="flex-1 px-6 py-3 rounded-xl bg-white border-2 border-slate-200 text-slate-700 font-semibold hover:border-slate-300 hover:bg-slate-50 transition-all">
+                        Cancel
+                    </button>
+                    
+                    <form id="deleteConfirmForm" method="POST" class="flex-1">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" 
+                                class="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold shadow-lg shadow-red-500/30 hover:shadow-red-500/40 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-trash-alt"></i>
+                            Yes, Delete
                         </button>
                     </form>
                 </div>
@@ -525,8 +762,6 @@
 
         // Modal functions
         async function openStudentModal(studentId) {
-            console.log('Opening modal for student:', studentId);
-            
             const modal = document.getElementById('studentModal');
             const backdrop = document.getElementById('modalBackdrop');
             const panel = document.getElementById('modalPanel');
@@ -537,6 +772,10 @@
             // Reset section dropdown
             const sectionSelect = document.querySelector('select[name="section_id"]');
             if (sectionSelect) sectionSelect.value = '';
+            
+            // Reset remarks dropdown
+            const remarksSelect = document.querySelector('select[name="remarks"]');
+            if (remarksSelect) remarksSelect.value = '';
             
             // Show modal
             modal.classList.remove('hidden');
@@ -554,8 +793,14 @@
             content.classList.add('hidden');
             
             try {
-                const url = `{{ url('/admin/pending-registrations') }}/${studentId}/details`;
-                console.log('Fetching:', url);
+                // Build URL properly with school_year_id parameter
+                const schoolYearId = {{ $schoolYear?->id ?? 'null' }};
+                let url = `/admin/pending-registrations/${studentId}/details`;
+                if (schoolYearId) {
+                    url += `?school_year_id=${schoolYearId}`;
+                }
+                
+                console.log('Fetching URL:', url); // Debug log
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -566,17 +811,15 @@
                     }
                 });
                 
-                console.log('Response status:', response.status);
-                
                 const responseText = await response.text();
-                console.log('Raw response:', responseText.substring(0, 500));
+                console.log('Response:', responseText); // Debug log
                 
                 let data;
                 try {
                     data = JSON.parse(responseText);
                 } catch (e) {
                     console.error('JSON parse error:', e);
-                    throw new Error('Invalid server response. Check console for details.');
+                    throw new Error('Invalid server response: ' + responseText.substring(0, 100));
                 }
                 
                 if (!response.ok) {
@@ -611,31 +854,30 @@
                 const initials = ((u.first_name?.[0] || '') + (u.last_name?.[0] || '')).toUpperCase();
                 photoEl.textContent = initials || '?';
             }
-            
 
-                // ✅ SHOW REMARKS IF EXISTS
-    const remarksContainer = document.getElementById('modalRemarksContainer');
-    const remarksBadge = document.getElementById('modalRemarksBadge');
-    
-    if (s.remarks && s.remarks !== 'No remarks') {
-        const legend = {
-            'TI': 'Transferred In',
-            'TO': 'Transferred Out',
-            'DO': 'Dropped Out',
-            'LE': 'Late Enrollee',
-            'CCT': 'CCT Recipient',
-            'BA': 'Balik Aral',
-            'LWD': 'Learner With Disability'
-        };
-        remarksBadge.textContent = `${s.remarks} - ${legend[s.remarks] || ''}`;
-        remarksContainer.classList.remove('hidden');
-    } else {
-        remarksContainer.classList.add('hidden');
-    }
-    
+            // Show remarks if exists
+            const remarksContainer = document.getElementById('modalRemarksContainer');
+            const remarksBadge = document.getElementById('modalRemarksBadge');
+            
+            if (s.remarks && s.remarks !== 'No remarks') {
+                const legend = {
+                    'TI': 'Transferred In',
+                    'TO': 'Transferred Out',
+                    'DO': 'Dropped Out',
+                    'LE': 'Late Enrollee',
+                    'CCT': 'CCT Recipient',
+                    'BA': 'Balik Aral',
+                    'LWD': 'Learner With Disability'
+                };
+                remarksBadge.textContent = `${s.remarks} - ${legend[s.remarks] || s.remarks}`;
+                remarksContainer.classList.remove('hidden');
+            } else {
+                remarksContainer.classList.add('hidden');
+            }
+            
             document.getElementById('modalName').textContent = data.full_name || '-';
             document.getElementById('modalEmail').textContent = u.email || '-';
-            document.getElementById('modalGrade').textContent = s.grade_level?.name || '-';
+            document.getElementById('modalGrade').textContent = s.grade_level?.name ? `Grade ${s.grade_level.name}` : '-';
             document.getElementById('modalAge').textContent = data.age ? `${data.age} years old` : '-';
             document.getElementById('modalFullName').textContent = data.full_name || '-';
             
@@ -645,33 +887,30 @@
             
             document.getElementById('modalGender').textContent = s.gender || '-';
             document.getElementById('modalNationality').textContent = s.nationality || '-';
-
-              // ✅ ADD THESE NEW LINES
-    document.getElementById('modalEthnicity').textContent = s.ethnicity || '-';
-    document.getElementById('modalMotherTongue').textContent = s.mother_tongue || '-';
-  
+            document.getElementById('modalEthnicity').textContent = s.ethnicity || '-';
+            document.getElementById('modalMotherTongue').textContent = s.mother_tongue || '-';
             
             const addressParts = [s.street_address, s.barangay, s.city, s.province].filter(Boolean);
             document.getElementById('modalAddress').textContent = addressParts.join(', ') || '-';
             document.getElementById('modalGuardianContact').textContent = s.guardian_contact || '-';
             
             document.getElementById('modalFather').textContent = s.father_name || '-';
-            document.getElementById('modalFatherOccupation').textContent = s.father_occupation || '';
+            document.getElementById('modalFatherOccupation').textContent = s.father_occupation ? `Occupation: ${s.father_occupation}` : '';
             document.getElementById('modalMother').textContent = s.mother_name || '-';
-            document.getElementById('modalMotherOccupation').textContent = s.mother_occupation || '';
+            document.getElementById('modalMotherOccupation').textContent = s.mother_occupation ? `Occupation: ${s.mother_occupation}` : '';
             document.getElementById('modalGuardian').textContent = s.guardian_name || '-';
-            document.getElementById('modalGuardianRelationship').textContent = s.guardian_relationship || '';
+            document.getElementById('modalGuardianRelationship').textContent = s.guardian_relationship ? `Relationship: ${s.guardian_relationship}` : '';
             
-            document.getElementById('modalGradeLevel').textContent = s.grade_level?.name || '-';
-            document.getElementById('modalStudentType').textContent = s.type || ' ';
+            document.getElementById('modalGradeLevel').textContent = s.grade_level?.name ? `Grade ${s.grade_level.name}` : '-';
+            document.getElementById('modalStudentType').textContent = s.type || '-';
             document.getElementById('modalLRN').textContent = s.lrn || '-';
             document.getElementById('modalDateApplied').textContent = s.created_at 
                 ? new Date(s.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
                 : '-';
             
-            const baseUrl = '{{ url("/admin/pending-registrations") }}';
-            document.getElementById('modalApproveForm').action = `${baseUrl}/${studentId}/approve`;
-            document.getElementById('modalRejectForm').action = `${baseUrl}/${studentId}/reject`;
+            // Set form actions - use direct URLs
+            document.getElementById('modalApproveForm').action = `/admin/pending-registrations/${studentId}/approve`;
+            document.getElementById('modalRejectForm').action = `/admin/pending-registrations/${studentId}/reject`;
         }
 
         function closeStudentModal() {
@@ -687,8 +926,46 @@
             }, 300);
         }
 
+        // Delete Modal Functions
+        function openDeleteModal(studentId, studentName) {
+            const modal = document.getElementById('deleteModal');
+            const backdrop = document.getElementById('deleteModalBackdrop');
+            const panel = document.getElementById('deleteModalPanel');
+            
+            document.getElementById('deleteStudentName').textContent = studentName;
+            
+            // Set delete URL directly
+            document.getElementById('deleteConfirmForm').action = `/admin/pending-registrations/${studentId}`;
+            
+            modal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                panel.classList.remove('scale-95', 'opacity-0');
+                panel.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            const backdrop = document.getElementById('deleteModalBackdrop');
+            const panel = document.getElementById('deleteModalPanel');
+            
+            backdrop.classList.add('opacity-0');
+            panel.classList.remove('scale-100', 'opacity-100');
+            panel.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeStudentModal();
+            if (e.key === 'Escape') {
+                closeStudentModal();
+                closeDeleteModal();
+            }
         });
     </script>
 </body>

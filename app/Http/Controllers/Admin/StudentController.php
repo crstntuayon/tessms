@@ -20,15 +20,20 @@ public function index()
 {
     $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
     
-    // Get students who have enrollments in the active school year
-    $students = Student::with(['user', 'section'])
+    // Get students who are ENROLLED in a SECTION for the active school year
+    $students = Student::with(['user', 'section', 'gradeLevel'])
         ->whereHas('enrollments', function ($query) use ($activeSchoolYear) {
-            $query->where('school_year_id', $activeSchoolYear?->id);
+            $query->where('school_year_id', $activeSchoolYear?->id)
+                  ->where('status', 'enrolled')
+                  ->whereNotNull('section_id');
         })
         ->with(['enrollments' => function ($query) use ($activeSchoolYear) {
-            // Load only the active year enrollment
-            $query->where('school_year_id', $activeSchoolYear?->id);
+            // Load only the active year enrollment with section
+            $query->where('school_year_id', $activeSchoolYear?->id)
+                  ->where('status', 'enrolled')
+                  ->with('section');
         }])
+        ->where('status', 'active')
         ->latest()
         ->paginate(10);
     
@@ -78,6 +83,7 @@ public function index()
                 'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'grade_level_id' => 'nullable|exists:grade_levels,id',
                 'section_id' => 'nullable|exists:sections,id',
+                
 
                 // STUDENT TYPE
                 'type' => 'required|in:new,continuing,transferee',
@@ -342,5 +348,53 @@ public function show($id)
 
         return redirect()->route('admin.students.index')
             ->with('success', 'Student deleted successfully.');
+    }
+
+    /**
+     * View uploaded student document securely
+     */
+    public function viewDocument(Student $student, $type)
+    {
+        // Validate document type
+        $validTypes = ['birth_certificate', 'report_card', 'good_moral', 'transfer_credential', 'medical_record', 'id_picture', 'enrollment_form'];
+        if (!in_array($type, $validTypes)) {
+            abort(404, 'Invalid document type.');
+        }
+        
+        $column = $type . '_path';
+        $filePath = $student->$column;
+        
+        if (empty($filePath)) {
+            abort(404, 'Document not found.');
+        }
+        
+        // Check all possible paths (public disk, private disk, etc.)
+        $possiblePaths = [
+            storage_path('app/public/' . $filePath),
+            storage_path('app/' . $filePath),
+            public_path('storage/' . $filePath),
+            storage_path('app/private/public/' . $filePath), // Legacy path for old uploads
+            storage_path('app/private/' . $filePath), // Alternative private path
+        ];
+        
+        $fullPath = null;
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                $fullPath = $path;
+                break;
+            }
+        }
+        
+        if (!$fullPath) {
+            abort(404, 'File not found on server.');
+        }
+        
+        $mimeType = mime_content_type($fullPath);
+        $fileName = basename($filePath);
+        
+        return response()->file($fullPath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . $fileName . '"'
+        ]);
     }
 }

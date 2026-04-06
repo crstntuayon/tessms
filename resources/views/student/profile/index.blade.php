@@ -22,7 +22,7 @@
     <main class="transition-all duration-300 ease-out min-h-screen p-4 lg:p-8"
           :class="mainContentClass">
         
-        <!-- Toast Notification -->
+        <!-- Toast Notification with Countdown -->
         <div x-show="toast.show" 
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-2"
@@ -30,13 +30,24 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 translate-y-2"
-             class="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg"
-             :class="toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      :d="toast.type === 'success' ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'"/>
-            </svg>
-            <span class="font-medium text-sm" x-text="toast.message"></span>
+             class="fixed top-4 right-4 z-50 flex flex-col rounded-xl shadow-lg overflow-hidden min-w-[300px]"
+             :class="toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'">
+            <div class="flex items-center gap-2 px-4 py-3 text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          :d="toast.type === 'success' ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'"/>
+                </svg>
+                <span class="font-medium text-sm" x-text="toast.message"></span>
+                <button @click="toast.show = false" class="ml-auto text-white/80 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <!-- Countdown Progress Bar -->
+            <div class="h-1 bg-white/20">
+                <div class="h-full bg-white/60 transition-all ease-linear"
+                     :style="`width: ${toast.progress}%; transition-duration: ${toast.duration}ms`">
+                </div>
+            </div>
         </div>
 
         <!-- Header -->
@@ -190,7 +201,7 @@
                 
                 <!-- Tabs -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-1">
-                    <div class="flex gap-1">
+                    <div class="flex gap-1 flex-wrap">
                         <button @click="activeTab = 'personal'" 
                                 class="flex-1 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200"
                                 :class="activeTab === 'personal' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'">
@@ -210,6 +221,14 @@
                                 class="flex-1 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200"
                                 :class="activeTab === 'academic' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'">
                             Academic
+                        </button>
+                        <button @click="activeTab = 'documents'" 
+                                class="flex-1 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 relative"
+                                :class="activeTab === 'documents' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'">
+                            Documents
+                            @if(isset($student) && (!$student->birth_certificate_path || !$student->report_card_path || !$student->good_moral_path))
+                                <span class="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-white"></span>
+                            @endif
                         </button>
                     </div>
                 </div>
@@ -487,6 +506,114 @@ function formatDateWithAge(date) {
                         </div>
                     </div>
                 </div>
+
+                <!-- Documents Tab -->
+                <div x-show="activeTab === 'documents'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6">
+                    <!-- Document Upload Section -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Required Documents
+                            </h3>
+                            <span class="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Max 5MB per file</span>
+                        </div>
+
+                        @php
+                            $documents = [
+                                'birth_certificate' => ['label' => 'Birth Certificate', 'required' => true, 'icon' => 'fa-file-medical'],
+                                'report_card' => ['label' => 'Report Card / Form 138', 'required' => true, 'icon' => 'fa-file-alt'],
+                                'good_moral' => ['label' => 'Certificate of Good Moral', 'required' => true, 'icon' => 'fa-certificate'],
+                                'transfer_credential' => ['label' => 'Transfer Credentials (for transferees)', 'required' => false, 'icon' => 'fa-file-signature'],
+                            ];
+                        @endphp
+
+                        <div class="space-y-4">
+                            @foreach($documents as $field => $doc)
+                                @php
+                                    $hasFile = isset($student) && $student->{$field . '_path'};
+                                    $filePath = $student->{$field . '_path'} ?? null;
+                                @endphp
+                                <div class="border border-slate-200 rounded-xl p-4 {{ $hasFile ? 'bg-emerald-50/30 border-emerald-200' : 'bg-slate-50' }}">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-12 h-12 rounded-xl {{ $hasFile ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500' }} flex items-center justify-center flex-shrink-0">
+                                            <i class="fas {{ $doc['icon'] }} text-lg"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-semibold text-slate-900">{{ $doc['label'] }}</h4>
+                                                @if($doc['required'])
+                                                    <span class="text-[10px] bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full font-medium">Required</span>
+                                                @else
+                                                    <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">Optional</span>
+                                                @endif
+                                            </div>
+                                            
+                                            @if($hasFile)
+                                                <div class="flex items-center gap-3 mt-2">
+                                                    <span class="text-sm text-emerald-600 font-medium flex items-center gap-1">
+                                                        <i class="fas fa-check-circle"></i>
+                                                        Uploaded
+                                                    </span>
+                                                    <button @click="openDocumentModal('{{ route('student.profile.document.view', $field) }}', {{ json_encode($doc['label']) }}, '{{ strtolower(pathinfo($filePath, PATHINFO_EXTENSION)) }}')" 
+                                                            class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                                                        View File
+                                                    </button>
+                                                </div>
+                                            @else
+                                                <p class="text-sm text-slate-500 mt-1">No file uploaded yet</p>
+                                            @endif
+                                        </div>
+                                        <form action="{{ route('student.profile.document', $field) }}" method="POST" enctype="multipart/form-data" class="flex-shrink-0" id="doc-form-{{ $field }}">
+                                            @csrf
+                                            <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 {{ $hasFile ? 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200' }}" id="doc-label-{{ $field }}">
+                                                <i class="fas {{ $hasFile ? 'fa-sync-alt' : 'fa-upload' }}" id="doc-icon-{{ $field }}"></i>
+                                                <span id="doc-text-{{ $field }}">{{ $hasFile ? 'Replace' : 'Upload' }}</span>
+                                                <input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleDocUpload(this, '{{ $field }}')">
+                                            </label>
+                                        </form>
+                                        <script>
+                                            function handleDocUpload(input, field) {
+                                                if (input.files && input.files[0]) {
+                                                    // Show loading state
+                                                    const label = document.getElementById('doc-label-' + field);
+                                                    const icon = document.getElementById('doc-icon-' + field);
+                                                    const text = document.getElementById('doc-text-' + field);
+                                                    
+                                                    label.classList.add('opacity-75', 'cursor-not-allowed');
+                                                    icon.className = 'fas fa-spinner fa-spin';
+                                                    text.textContent = 'Uploading...';
+                                                    
+                                                    // Submit form
+                                                    document.getElementById('doc-form-' + field).submit();
+                                                }
+                                            }
+                                        </script>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-info-circle text-amber-600"></i>
+                                </div>
+                                <div>
+                                    <h5 class="font-semibold text-amber-800 text-sm">Document Guidelines</h5>
+                                    <ul class="text-xs text-amber-700 mt-2 space-y-1">
+                                        <li>• Accepted formats: PDF, JPG, JPEG, PNG</li>
+                                        <li>• Maximum file size: 5MB per document</li>
+                                        <li>• Ensure documents are clear and readable</li>
+                                        <li>• Required documents must be uploaded for enrollment verification</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -606,7 +733,13 @@ function formatDateWithAge(date) {
                 showPasswordModal: false,
                 showPhotoModal: false,
                 fileName: '',
-                toast: { show: false, message: '', type: 'success' },
+                toast: { show: false, message: '', type: 'success', progress: 100, duration: 3000 },
+                documentModal: { 
+                    open: false, 
+                    url: '', 
+                    title: '', 
+                    fileType: '' 
+                },
                 sidebarCollapsed: false,
                 sidebarMobileOpen: false,
                 isMobile: window.innerWidth < 1024,
@@ -649,6 +782,28 @@ function formatDateWithAge(date) {
                     return this.sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72';
                 },
                 init() {
+                    // Restore active tab from localStorage (for after form submissions)
+                    const savedTab = localStorage.getItem('profileActiveTab');
+                    if (savedTab) {
+                        this.activeTab = savedTab;
+                    }
+                    
+                    // Watch for tab changes and save to localStorage
+                    this.$watch('activeTab', value => {
+                        localStorage.setItem('profileActiveTab', value);
+                    });
+                    
+                    // Handle session flash messages
+                    @if(session('success'))
+                        this.showToast('{{ session('success') }}', 'success');
+                    @endif
+                    @if(session('error'))
+                        this.showToast('{{ session('error') }}', 'error');
+                    @endif
+                    @if($errors->any())
+                        this.showToast('{{ $errors->first() }}', 'error');
+                    @endif
+                    
                     // Check initial sidebar state from localStorage
                     this.sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
                     
@@ -672,11 +827,6 @@ function formatDateWithAge(date) {
                         if (e.key === 'sidebarCollapsed') {
                             this.sidebarCollapsed = e.newValue === 'true';
                         }
-                    });
-
-                    // Auto-hide toast
-                    this.$watch('toast.show', value => {
-                        if (value) setTimeout(() => this.toast.show = false, 3000);
                     });
                 },
                 saveProfile() {
@@ -704,12 +854,176 @@ function formatDateWithAge(date) {
                     this.passwordForm = { current: '', new: '', confirm: '' };
                     this.showToast('Password updated successfully!', 'success');
                 },
-                showToast(message, type = 'success') {
-                    this.toast = { show: true, message, type };
+                openDocumentModal(url, title, fileType) {
+                    // Close first to reset
+                    this.documentModal.open = false;
+                    this.documentModal.url = '';
+                    
+                    // Small delay to allow DOM to reset
+                    setTimeout(() => {
+                        this.documentModal = {
+                            open: true,
+                            url: url + '?t=' + Date.now(), // Add cache buster
+                            title: title,
+                            fileType: fileType.toLowerCase()
+                        };
+                    }, 10);
+                    
+                    // Prevent body scroll when modal is open
+                    document.body.style.overflow = 'hidden';
+                },
+                closeDocumentModal() {
+                    this.documentModal.open = false;
+                    this.documentModal.url = '';
+                    this.documentModal.title = '';
+                    this.documentModal.fileType = '';
+                    // Restore body scroll
+                    document.body.style.overflow = '';
+                },
+                showToast(message, type = 'success', duration = 3000) {
+                    // Clear any existing timeout
+                    if (this.toast.timeout) {
+                        clearTimeout(this.toast.timeout);
+                    }
+                    
+                    // Set toast with initial progress
+                    this.toast = { 
+                        show: true, 
+                        message, 
+                        type, 
+                        progress: 100, 
+                        duration: duration 
+                    };
+                    
+                    // Animate progress bar
+                    setTimeout(() => {
+                        this.toast.progress = 0;
+                    }, 50);
+                    
+                    // Auto hide after duration
+                    this.toast.timeout = setTimeout(() => {
+                        this.toast.show = false;
+                    }, duration);
                 }
             }
         }
     </script>
+
+    <!-- Document Viewer Modal -->
+    <div x-show="documentModal.open" 
+         x-cloak
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 overflow-y-auto"
+         aria-labelledby="modal-title" 
+         role="dialog" 
+         aria-modal="true">
+        
+        <!-- Backdrop -->
+        <div x-show="documentModal.open"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm transition-opacity"
+             @click="closeDocumentModal()"></div>
+
+        <!-- Modal Panel -->
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div x-show="documentModal.open"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-4xl">
+                
+                <!-- Header -->
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                            <i class="fas fa-file-alt text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900" x-text="documentModal.title"></h3>
+                            <p class="text-sm text-slate-500">Document Viewer</p>
+                        </div>
+                    </div>
+                    <button @click="closeDocumentModal()" 
+                            class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300 flex items-center justify-center transition-all">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Document Content -->
+                <div class="bg-slate-100 p-4">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden" style="height: 600px;">
+                        <!-- PDF Viewer -->
+                        <div x-show="documentModal.fileType === 'pdf'" class="w-full h-full">
+                            <iframe :src="documentModal.url" 
+                                    :key="documentModal.url"
+                                    class="w-full h-full" 
+                                    type="application/pdf"
+                                    style="border: none;"></iframe>
+                        </div>
+                        
+                        <!-- Image Viewer -->
+                        <div x-show="['jpg', 'jpeg', 'png'].includes(documentModal.fileType)" 
+                             class="w-full h-full flex items-center justify-center bg-slate-50 p-4">
+                            <img :src="documentModal.url" 
+                                 :key="documentModal.url"
+                                 class="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                                 :alt="documentModal.title">
+                        </div>
+                        
+                        <!-- Unsupported File Type -->
+                        <div x-show="documentModal.fileType && !['pdf', 'jpg', 'jpeg', 'png'].includes(documentModal.fileType)"
+                             class="w-full h-full flex flex-col items-center justify-center p-8">
+                                <div class="w-20 h-20 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-4">
+                                    <i class="fas fa-exclamation-triangle text-3xl"></i>
+                                </div>
+                                <h4 class="text-lg font-semibold text-slate-900 mb-2">Unsupported File Type</h4>
+                                <p class="text-slate-500 text-center mb-4">This file type cannot be previewed. Please download the file to view it.</p>
+                                <a :href="documentModal.url" 
+                                   download
+                                   class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
+                                    <i class="fas fa-download"></i>
+                                    Download File
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+                    <div class="text-sm text-slate-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Use browser zoom (Ctrl +/-) to resize document
+                    </div>
+                    <div class="flex gap-2">
+                        <button @click="closeDocumentModal()" 
+                                class="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-all">
+                            Close
+                        </button>
+                        <a :href="documentModal.url" 
+                           download
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
+                            <i class="fas fa-download"></i>
+                            Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

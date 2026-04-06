@@ -29,40 +29,43 @@ class GradesController extends Controller
             abort(404, 'Student record not found');
         }
 
-        // Get active school year
-        $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
-        $activeSchoolYear = SchoolYear::find($activeSchoolYearId) ?? SchoolYear::where('is_active', true)->first();
-        $schoolYear = $activeSchoolYear ? $activeSchoolYear->name : date('Y') . '-' . (date('Y') + 1);
-
-        // Get school settings from database
-        $schoolSettings = Setting::whereIn('group', ['school', 'general'])->get()->keyBy('key')->map->value;
+        // Get active school year from is_active flag (consistent with teacher's approach)
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
         
-        $schoolId = $schoolSettings['deped_school_id'] ?? '120231';
-        $schoolName = $schoolSettings['school_name'] ?? 'TUGAWE ELEMENTARY SCHOOL';
-        $schoolDivision = $schoolSettings['school_division'] ?? '_______';
-        $schoolRegion = $schoolSettings['school_region'] ?? '_______';
-        $schoolDistrict = $schoolSettings['school_district'] ?? '_______';
-        $schoolHead = $schoolSettings['school_head'] ?? '_______';
-
-        // Calculate age from birthdate
-        $age = null;
-        if ($student->user->date_of_birth) {
-            $age = \Carbon\Carbon::parse($student->user->date_of_birth)->age;
-        } elseif ($student->age) {
-            $age = $student->age;
+        // If no active school year found, get the latest one
+        if (!$activeSchoolYear) {
+            $activeSchoolYear = SchoolYear::latest('start_date')->first();
         }
 
-        // Get adviser name from section teacher
-        $adviserName = '___________';
+        $schoolYear = $activeSchoolYear->name ?? date('Y') . '-' . (date('Y') + 1);
+
+        // Get school settings (only for school info, not for active year)
+        $schoolSettings = Setting::whereIn('group', ['school', 'general'])->get()->keyBy('key')->map->value;
+        
+        $schoolId = $schoolSettings['deped_school_id'] ?? '';
+        $schoolName = $schoolSettings['school_name'] ?? '';
+        $schoolDivision = $schoolSettings['school_division'] ?? '';
+        $schoolRegion = $schoolSettings['school_region'] ?? '';
+        $schoolDistrict = $schoolSettings['school_district'] ?? '';
+        $schoolHead = $schoolSettings['school_head'] ?? '';
+
+        // Calculate age from birthdate (using student's birthdate column)
+        $age = null;
+        if ($student->birthdate) {
+            $age = \Carbon\Carbon::parse($student->birthdate)->age;
+        }
+
+        // Get adviser name from section teacher (same logic as teacher's version)
+        $adviserName = '';
         if ($student->section && $student->section->teacher) {
             $teacherUser = $student->section->teacher->user;
             if ($teacherUser) {
                 $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
                               ($teacherUser->first_name ?? '') . ' ' . 
                               ($teacherUser->middle_name ?? '');
-                $adviserName = trim($adviserName) ?: ($teacherUser->name ?? '___________');
+                $adviserName = trim($adviserName) ?: ($teacherUser->name ?? '');
             } else {
-                $adviserName = $student->section->teacher->name ?? '___________';
+                $adviserName = $student->section->teacher->name ?? '';
             }
         }
 
@@ -71,7 +74,7 @@ class GradesController extends Controller
             ->where('school_year_id', $activeSchoolYear->id)
             ->get();
 
-        // Get core values records grouped by core_value and statement_key
+        // Get core values records - GROUPED by core_value and statement_key
         $coreValues = CoreValue::where('student_id', $student->id)
             ->where('school_year_id', $activeSchoolYear->id)
             ->get()

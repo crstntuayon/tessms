@@ -102,6 +102,53 @@ class SettingsController extends Controller
     }
 
     /**
+     * Toggle enrollment submissions on/off
+     */
+    public function toggleEnrollment(Request $request)
+    {
+        try {
+            $value = $request->input('enrollment_enabled', '0');
+            // Handle both string '1'/'0' and boolean values
+            $enabled = $value === '1' || $value === true || $value === 1;
+            
+            \App\Models\Setting::set(
+                'enrollment_enabled', 
+                $enabled, 
+                'boolean', 
+                'enrollment'
+            );
+            
+            $status = $enabled ? 'enabled' : 'disabled';
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Enrollment submissions {$status}!",
+                    'enabled' => $enabled
+                ]);
+            }
+            
+            return redirect()
+                ->back()
+                ->with('success', "Enrollment submissions {$status}!");
+                
+        } catch (\Exception $e) {
+            \Log::error('Enrollment toggle failed: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to toggle enrollment: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()
+                ->back()
+                ->with('error', 'Failed to toggle enrollment: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Reset settings to defaults
      */
     public function reset()

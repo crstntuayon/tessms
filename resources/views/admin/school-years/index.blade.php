@@ -1,40 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Year Management - Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        * { font-family: 'Plus Jakarta Sans', sans-serif; }
-    </style>
-</head>
-<body class="bg-slate-50">
+@extends('layouts.admin')
 
-    @include('admin.includes.sidebar')
+@section('title', 'School Year Management')
 
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Main Header -->
-        <header class="main-header">
-            <div class="flex items-center justify-between w-full">
-                <div class="flex items-center gap-4">
-                    <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-xl hover:bg-slate-100 transition-colors">
-                        <i class="fas fa-bars text-slate-600 text-xl"></i>
-                    </button>
-                    <div>
-                        <h1 class="text-xl font-bold text-slate-900">School Year Management</h1>
-                        <p class="text-sm text-slate-500">Manage enrollment periods and QR codes</p>
-                    </div>
-                </div>
-                
-            </div>
-        </header>
+@section('header-title', 'School Year Management')
 
-        <!-- Main Content -->
-        <main class="main-content">
+@section('content')
+<style>
+    .glass-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+    @keyframes fadeInUp { 
+        from { opacity: 0; transform: translateY(20px); } 
+        to { opacity: 1; transform: translateY(0); } 
+    }
+    .animate-fade-in-up { 
+        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    }
+</style>
+
+<div class="max-w-7xl mx-auto" x-data="{ open: false }">
             <!-- Page Header -->
             <div class="mb-8">
                 <div class="flex items-center gap-4">
@@ -130,9 +116,9 @@
                             </p>
                             <div class="flex gap-3">
                                 <code class="flex-1 bg-slate-800 text-emerald-400 px-4 py-3.5 rounded-xl text-sm break-all font-mono min-w-0">
-                                    {{ route('admin.enrollment.form', ['token' => session('qr_code')->qr_code_token]) }}
+                                    {{ route('admin.enrollment.form.qr', ['token' => session('qr_code')->qr_code_token]) }}
                                 </code>
-                                <button onclick="copyToClipboard('{{ route('admin.enrollment.form', ['token' => session('qr_code')->qr_code_token]) }}')" 
+                                <button onclick="copyToClipboard('{{ route('admin.enrollment.form.qr', ['token' => session('qr_code')->qr_code_token]) }}')" 
                                         class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-500/30 flex items-center gap-2 font-semibold whitespace-nowrap"
                                         title="Copy URL">
                                     <i class="fas fa-copy"></i>
@@ -214,9 +200,9 @@
                             </p>
                             <div class="flex gap-3">
                                 <code class="flex-1 bg-slate-800 text-emerald-400 px-4 py-3.5 rounded-xl text-sm break-all font-mono min-w-0">
-                                    {{ route('admin.enrollment.form', ['token' => $activeSchoolYear->qrCode->qr_code_token]) }}
+                                    {{ route('admin.enrollment.form.qr', ['token' => $activeSchoolYear->qrCode->qr_code_token]) }}
                                 </code>
-                                <button onclick="copyToClipboard('{{ route('admin.enrollment.form', ['token' => $activeSchoolYear->qrCode->qr_code_token]) }}')" 
+                                <button onclick="copyToClipboard('{{ route('admin.enrollment.form.qr', ['token' => $activeSchoolYear->qrCode->qr_code_token]) }}')" 
                                         class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-500/30 flex items-center gap-2 font-semibold whitespace-nowrap"
                                         title="Copy URL">
                                     <i class="fas fa-copy"></i>
@@ -504,5 +490,5 @@
             }, 5000);
         }); */
     </script>
-</body>
-</html>
+</div>
+@endsection

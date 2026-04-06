@@ -311,12 +311,25 @@
                                         {{ $activeSection->gradeLevel->name ?? 'Grade' }} - {{ $activeSection->name ?? 'Section' }}
                                     </span>
                                 </div>
-                                <h1 class="text-2xl lg:text-4xl font-bold mb-2 tracking-tight">
-                                    @php
-                                        $hour = now()->format('H');
-                                        $greeting = $hour < 12 ? 'Maayong Buntag' : ($hour < 18 ? 'Maayong Hapon' : 'Maayong Gabie');
-                                    @endphp
-                                    {{ $greeting }}, {{ explode(' ', $teacher->user->first_name ?? 'Teacher')[0] }}! 
+                               
+@php
+    // Use Carbon with explicit timezone (adjust to your timezone)
+    $hour = now()->timezone('Asia/Manila')->format('H'); // or your local timezone
+    
+    // Debug: Uncomment to check current hour
+    // dd($hour);
+    
+    if ($hour >= 5 && $hour < 12) {
+        $greeting = 'Maayong Buntag'; // Good Morning (5:00 AM - 11:59 AM)
+    } elseif ($hour >= 12 && $hour < 18) {
+        $greeting = 'Maayong Hapon'; // Good Afternoon (12:00 PM - 5:59 PM)
+    } else {
+        $greeting = 'Maayong Gabie'; // Good Evening (6:00 PM - 4:59 AM)
+    }
+@endphp
+                                   <h1 class="text-2xl lg:text-4xl font-bold mb-2 tracking-tight">
+    {{ $greeting }}, {{ explode(' ', $teacher->user->first_name ?? 'Teacher')[0] }}! 
+</h1>
                                 </h1>
                                 <p class="text-indigo-100 text-lg max-w-2xl">Ready to make a difference today? You have {{ $pendingTasks ?? 0 }} pending tasks to review.</p>
                             </div>
@@ -433,111 +446,167 @@
                     <!-- Main Content Grid -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         
-                        <!-- Daily Attendance Section -->
-                        <div class="lg:col-span-2 glass-card rounded-2xl p-6">
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                                <div>
-                                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                        <i class="fas fa-clipboard-list text-indigo-500"></i>
-                                        Daily Attendance
-                                    </h3>
-                                    <p class="text-sm text-slate-500 mt-1">{{ now()->format('F d, Y - l') }}</p>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="markAllPresent()" class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl hover:bg-emerald-200 transition-all text-sm font-medium flex items-center gap-2">
-                                        <i class="fas fa-check"></i> All Present
-                                    </button>
-                                  <button type="button" onclick="saveAttendance()" id="saveAttendanceBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-medium shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2">
-                                        <i class="fas fa-save"></i> Save
-                                    </button>
-                                </div>
-                            </div>
+               <!-- Daily Attendance Section -->
+<div class="lg:col-span-2 glass-card rounded-2xl p-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fas fa-clipboard-list text-indigo-500"></i>
+                Daily Attendance
+            </h3>
+            <p class="text-sm text-slate-500 mt-1">{{ now()->format('F d, Y - l') }}</p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="markAllPresent()" class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl hover:bg-emerald-200 transition-all text-sm font-medium flex items-center gap-2">
+                <i class="fas fa-check"></i> All Present
+            </button>
+            <button type="button" onclick="saveAttendance()" id="saveAttendanceBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-medium shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2">
+                <i class="fas fa-save"></i> Save
+            </button>
+        </div>
+    </div>
+    
+    <form id="attendanceForm" onsubmit="event.preventDefault();">
+        @csrf
+        <input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}">
+        <input type="hidden" name="section_id" value="{{ $activeSection->id ?? '' }}">
+        <input type="hidden" name="teacher_id" value="{{ $teacher->id ?? '' }}">
+        
+        <div class="overflow-x-auto max-h-[400px] overflow-y-auto rounded-xl border border-slate-200 custom-scrollbar bg-white">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 sticky top-0 z-10">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Learner Name</th>
+                        <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider w-12">Sex</th>
+                        <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider w-48">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100" id="attendanceTableBody">
+                    @php
+                        // Sort students: Males first alphabetically by last name, then Females alphabetically by last name
+                        $sortedStudents = collect($students ?? [])->sortBy(function($student) {
+                            $gender = strtoupper($student->gender ?? '');
+                            $isMale = ($gender === 'MALE' || $gender === 'M');
+                            $lastName = $student->user->last_name ?? $student->last_name ?? '';
+                            $firstName = $student->user->first_name ?? $student->first_name ?? '';
                             
-                           <form id="attendanceForm" onsubmit="event.preventDefault();">
-                                @csrf
-                                <input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}">
-                                <input type="hidden" name="section_id" value="{{ $activeSection->id ?? '' }}">
-                                <input type="hidden" name="teacher_id" value="{{ $teacher->id ?? '' }}">
-                                
-                                <div class="overflow-x-auto max-h-[400px] overflow-y-auto rounded-xl border border-slate-200 custom-scrollbar bg-white">
-                                    <table class="w-full text-sm">
-                                        <thead class="bg-slate-50 sticky top-0 z-10">
-                                            <tr>
-                                                <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Learner Name</th>
-                                                <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider w-48">Status</th>
-                                                <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-slate-100" id="attendanceTableBody">
-                                            @forelse($students ?? [] as $student)
-                                            @php
-                                                $todayRecord = $student->attendances->where('date', now()->format('Y-m-d'))->first();
-                                                $currentStatus = $todayRecord ? $todayRecord->status : null;
-                                            @endphp
-                                            
-                                            <tr class="hover:bg-slate-50 transition-colors" data-student-id="{{ $student->id }}">
-                                                <td class="px-4 py-3">
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white flex items-center justify-center text-xs font-bold">
-                                                            {{ strtoupper(substr($student->first_name, 0, 1)) }}{{ strtoupper(substr($student->last_name, 0, 1)) }}
-                                                        </div>
-                                                        <div>
-                                                            <p class="font-semibold text-slate-800 text-sm">{{ $student->user->last_name }}, {{ $student->user->first_name }}</p>
-                                                            <p class="text-xs text-slate-500 font-mono">LRN: {{ $student->lrn }}</p>
-                                                        </div>
-                                                    </div>
-                                                    <input type="hidden" name="attendance[{{ $student->id }}][student_id]" value="{{ $student->id }}">
-                                                </td>
-                                                <td class="px-4 py-3">
-                                                    <div class="flex justify-center gap-2">
-                                                        <button type="button" 
-                                                                class="attendance-btn w-9 h-9 rounded-full border-2 {{ $currentStatus === 'present' ? 'active-present' : 'border-slate-200 hover:border-emerald-400 bg-white' }} flex items-center justify-center text-xs" 
-                                                                data-status="present"
-                                                                onclick="setAttendance(this, '{{ $student->id }}', 'present')"
-                                                                title="Present">
-                                                            <i class="fas fa-check"></i>
-                                                        </button>
-                                                        <button type="button" 
-                                                                class="attendance-btn w-9 h-9 rounded-full border-2 {{ $currentStatus === 'absent' ? 'active-absent' : 'border-slate-200 hover:border-rose-400 bg-white' }} flex items-center justify-center text-xs" 
-                                                                data-status="absent"
-                                                                onclick="setAttendance(this, '{{ $student->id }}', 'absent')"
-                                                                title="Absent">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                        <button type="button" 
-                                                                class="attendance-btn w-9 h-9 rounded-full border-2 {{ $currentStatus === 'late' ? 'active-late' : 'border-slate-200 hover:border-amber-400 bg-white' }} flex items-center justify-center text-xs" 
-                                                                data-status="late"
-                                                                onclick="setAttendance(this, '{{ $student->id }}', 'late')"
-                                                                title="Late">
-                                                            <i class="fas fa-clock"></i>
-                                                        </button>
-                                                    </div>
-                                                    <input type="hidden" name="attendance[{{ $student->id }}][status]" id="status-{{ $student->id }}" value="{{ $currentStatus }}">
-                                                </td>
-                                                <td class="px-4 py-3">
-                                                    <input type="text" 
-                                                           name="attendance[{{ $student->id }}][remarks]" 
-                                                           class="w-full text-xs border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 bg-slate-50 focus:bg-white transition-all" 
-                                                           placeholder="Add remarks..."
-                                                           value="{{ $todayRecord->remarks ?? '' }}">
-                                                </td>
-                                            </tr>
-                                            @empty
-                                            <tr>
-                                                <td colspan="3" class="px-4 py-12 text-center">
-                                                    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                        <i class="fas fa-users-slash text-2xl text-slate-400"></i>
-                                                    </div>
-                                                    <p class="text-slate-700 font-medium">No students enrolled</p>
-                                                    <a href="{{ route('teacher.sections.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm mt-2 inline-block">Select a section</a>
-                                                </td>
-                                            </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
+                            // Sort key: 0 for male, 1 for female, then last name, then first name
+                            return [
+                                $isMale ? 0 : 1,
+                                strtolower($lastName),
+                                strtolower($firstName)
+                            ];
+                        })->values();
+                        
+                        $maleCount = $sortedStudents->filter(function($s) {
+                            $g = strtoupper($s->gender ?? '');
+                            return $g === 'MALE' || $g === 'M';
+                        })->count();
+                        
+                        $displayIndex = 0;
+                    @endphp
+
+                    @forelse($sortedStudents as $index => $student)
+                        @php
+                            $todayRecord = $student->attendances->where('date', now()->format('Y-m-d'))->first();
+                            $currentStatus = $todayRecord ? $todayRecord->status : null;
+                            
+                            $gender = strtoupper($student->gender ?? '');
+                            $sex = ($gender === 'MALE' || $gender === 'M') ? 'M' : 'F';
+                            $isFirstFemale = ($sex === 'F' && $displayIndex === $maleCount && $maleCount > 0);
+                            $displayIndex++;
+                        @endphp
+                        
+                        {{-- FEMALE HEADER ROW --}}
+                        @if($isFirstFemale)
+                            <tr class="bg-slate-100">
+                                <td colspan="4" class="px-4 py-2 text-center text-xs font-bold text-slate-600 uppercase tracking-wider border-y border-slate-200">
+                                    <i class="fas fa-venus text-pink-500 mr-2"></i>Female Students
+                                </td>
+                            </tr>
+                        @endif
+                        
+                        {{-- MALE HEADER ROW (first row) --}}
+                        @if($displayIndex === 1 && $maleCount > 0)
+                            <tr class="bg-slate-100">
+                                <td colspan="4" class="px-4 py-2 text-center text-xs font-bold text-slate-600 uppercase tracking-wider border-y border-slate-200">
+                                    <i class="fas fa-mars text-blue-500 mr-2"></i>Male Students
+                                </td>
+                            </tr>
+                        @endif
+                        
+                        <tr class="hover:bg-slate-50 transition-colors" data-student-id="{{ $student->id }}">
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 text-white flex items-center justify-center text-xs font-bold">
+                                        {{ strtoupper(substr($student->user->first_name ?? $student->first_name, 0, 1)) }}{{ strtoupper(substr($student->user->last_name ?? $student->last_name, 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-800 text-sm">
+                                            {{ $student->user->last_name ?? $student->last_name }}, 
+                                            {{ $student->user->first_name ?? $student->first_name }}
+                                        </p>
+                                        <p class="text-xs text-slate-500 font-mono">LRN: {{ $student->lrn }}</p>
+                                    </div>
                                 </div>
-                            </form>
-                        </div>
+                                <input type="hidden" name="attendance[{{ $student->id }}][student_id]" value="{{ $student->id }}">
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold {{ $sex === 'M' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700' }}">
+                                    {{ $sex }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex justify-center gap-2">
+                                    <button type="button" 
+                                            class="attendance-btn w-9 h-9 rounded-full border-2 {{ $currentStatus === 'present' ? 'active-present' : 'border-slate-200 hover:border-emerald-400 bg-white' }} flex items-center justify-center text-xs" 
+                                            data-status="present"
+                                            onclick="setAttendance(this, '{{ $student->id }}', 'present')"
+                                            title="Present">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button type="button" 
+                                            class="attendance-btn w-9 h-9 rounded-full border-2 {{ $currentStatus === 'absent' ? 'active-absent' : 'border-slate-200 hover:border-rose-400 bg-white' }} flex items-center justify-center text-xs" 
+                                            data-status="absent"
+                                            onclick="setAttendance(this, '{{ $student->id }}', 'absent')"
+                                            title="Absent">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button type="button" 
+                                            class="attendance-btn w-9 h-9 rounded-full border-2 {{ $currentStatus === 'late' ? 'active-late' : 'border-slate-200 hover:border-amber-400 bg-white' }} flex items-center justify-center text-xs" 
+                                            data-status="late"
+                                            onclick="setAttendance(this, '{{ $student->id }}', 'late')"
+                                            title="Late">
+                                        <i class="fas fa-clock"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="attendance[{{ $student->id }}][status]" id="status-{{ $student->id }}" value="{{ $currentStatus }}">
+                            </td>
+                            <td class="px-4 py-3">
+                                <input type="text" 
+                                       name="attendance[{{ $student->id }}][remarks]" 
+                                       class="w-full text-xs border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 bg-slate-50 focus:bg-white transition-all" 
+                                       placeholder="Add remarks..."
+                                       value="{{ $todayRecord->remarks ?? '' }}">
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-4 py-12 text-center">
+                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-users-slash text-2xl text-slate-400"></i>
+                                </div>
+                                <p class="text-slate-700 font-medium">No students enrolled</p>
+                                <a href="{{ route('teacher.sections.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm mt-2 inline-block">Select a section</a>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
 
                         <!-- Right Sidebar -->
                         <div class="space-y-6">

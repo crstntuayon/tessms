@@ -17,10 +17,18 @@ Route::middleware('guest')->group(function () {
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
+    // Admin/Teacher Login
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    
+    // Student Login
+    Route::get('student/login', [AuthenticatedSessionController::class, 'createStudent'])
+        ->name('student.login');
+
+    Route::post('student/login', [AuthenticatedSessionController::class, 'storeStudent'])
+        ->name('student.login.post');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');

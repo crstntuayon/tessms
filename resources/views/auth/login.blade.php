@@ -461,18 +461,23 @@ img {
                     </p>
                     
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <button onclick="openAuthPanel('login')" class="btn-primary text-white px-8 py-4 rounded-full font-semibold inline-flex items-center justify-center gap-2 shadow-xl shadow-teal-500/30 text-base">
+                        <a href="{{ route('enrollment.form') }}" class="btn-primary text-white px-8 py-4 rounded-full font-semibold inline-flex items-center justify-center gap-2 shadow-xl shadow-teal-500/30 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                            <i class="fas fa-user-plus"></i>
+                            Enroll Now
+                        </a>
+                        <a href="{{ route('student.login') }}" class="px-8 py-4 rounded-full font-semibold text-slate-700 bg-white border-2 border-slate-200 hover:border-teal-500 hover:text-teal-600 inline-flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
                             </svg>
                             Student Portal
-                        </button>
-                        <a href="#announcements" class="px-8 py-4 rounded-full font-semibold text-slate-700 bg-white border-2 border-slate-200 hover:border-teal-500 hover:text-teal-600 inline-flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl">
-                            Latest Updates
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
                         </a>
+                        <button onclick="openAuthPanel('login')" class="px-8 py-4 rounded-full font-semibold text-slate-700 bg-white border-2 border-slate-200 hover:border-teal-500 hover:text-teal-600 inline-flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            Staff Portal
+                        </button>
                     </div>
 
                     <!-- Quick Stats -->
@@ -1104,8 +1109,8 @@ function imageSlider() {
                         </svg>
                     </div>
                     <div>
-                        <h3 id="authTitle" class="text-xl font-bold text-slate-900 transition-all duration-300">Welcome Back</h3>
-                        <p id="authSubtitle" class="text-sm text-slate-500 transition-all duration-300">Sign in to access your account</p>
+                        <h3 id="authTitle" class="text-xl font-bold text-slate-900 transition-all duration-300">Staff Portal</h3>
+                        <p id="authSubtitle" class="text-sm text-slate-500 transition-all duration-300">Sign in for Teachers, Admins & Registrar</p>
                     </div>
                 </div>
             </div>
@@ -1185,8 +1190,26 @@ function imageSlider() {
                         </button>
                     </form>
 
+                    <!-- Student Login Link -->
+                    <div class="mt-5 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-user-graduate text-indigo-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-indigo-900">Are you a student?</p>
+                                    <p class="text-xs text-indigo-700">Click the button to access student login</p>
+                                </div>
+                            </div>
+                            <a href="{{ route('student.login') }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                Student Login
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Help Box -->
-                    <div class="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                    <div class="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-xl">
                         <div class="flex items-start gap-3">
                             <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
                                 <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1195,7 +1218,7 @@ function imageSlider() {
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-blue-900 mb-1">Need Help?</p>
-                                <p class="text-xs text-blue-700 leading-relaxed">Contact your class adviser or the school admin office if you're having trouble signing in.</p>
+                                <p class="text-xs text-blue-700 leading-relaxed">Contact the school admin office if you're having trouble signing in.</p>
                             </div>
                         </div>
                     </div>
@@ -1596,6 +1619,158 @@ function imageSlider() {
             </div>
         </div>
 
+
+        <!-- Remarks/Legend Section -->
+<div class="mt-6 bg-slate-50 p-6 rounded-xl border border-slate-200">
+    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">7</span>
+        Student Remarks <span class="text-slate-400 font-normal text-sm">(Optional)</span>
+    </h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Remark Code</label>
+            <select name="remarks" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
+                <option value="">-- Select Remark (Optional) --</option>
+                <option value="TI">TI - Transferred In</option>
+                <option value="TO">TO - Transferred Out</option>
+                <option value="DO">DO - Dropped Out</option>
+                <option value="LE">LE - Late Enrollee</option>
+                <option value="CCT">CCT - CCT Recipient</option>
+                <option value="BA">BA - Balik Aral</option>
+                <option value="LWD">LWD - Learner With Disability</option>
+            </select>
+        </div>
+        
+        <div class="flex items-center">
+            <div class="p-4 bg-amber-50 border border-amber-100 rounded-lg w-full">
+                <p class="text-xs text-amber-800 leading-relaxed">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Select only if applicable. Multiple selections require admin assistance.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- Required Documents Upload Section -->
+<div class="mt-6 bg-slate-50 p-6 rounded-xl border border-slate-200" id="documentsSection">
+    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+        <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">8</span>
+        Required Documents
+    </h3>
+    
+    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
+        <p class="text-sm text-blue-800">
+            <i class="fas fa-info-circle mr-2"></i>
+            <span id="documentRequirementsText">New Students: Birth Certificate, Report Card, Good Moral Certificate</span>
+        </p>
+    </div>
+    
+    <div class="space-y-4">
+        <!-- Birth Certificate -->
+        <div class="bg-white p-4 rounded-lg border border-slate-200">
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+                <span id="birthCertLabel">Birth Certificate</span> 
+                <span class="text-red-500" id="birthCertRequired">*</span>
+            </label>
+            <div class="flex items-center justify-center w-full">
+                <label for="birth_certificate" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
+                    <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                        <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
+                        <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                    </div>
+                    <input id="birth_certificate" type="file" name="birth_certificate" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'birthCertPreview')" />
+                </label>
+            </div>
+            <div id="birthCertPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="file-name"></span>
+            </div>
+        </div>
+        
+        <!-- Report Card -->
+        <div class="bg-white p-4 rounded-lg border border-slate-200">
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+                Report Card / Form 138 <span class="text-red-500">*</span>
+            </label>
+            <div class="flex items-center justify-center w-full">
+                <label for="report_card" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
+                    <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                        <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
+                        <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                    </div>
+                    <input id="report_card" type="file" name="report_card" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'reportCardPreview')" />
+                </label>
+            </div>
+            <div id="reportCardPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="file-name"></span>
+            </div>
+        </div>
+        
+        <!-- Good Moral Certificate -->
+        <div class="bg-white p-4 rounded-lg border border-slate-200">
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+                Certificate of Good Moral Character <span class="text-red-500">*</span>
+            </label>
+            <div class="flex items-center justify-center w-full">
+                <label for="good_moral" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
+                    <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                        <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
+                        <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                    </div>
+                    <input id="good_moral" type="file" name="good_moral" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'goodMoralPreview')" />
+                </label>
+            </div>
+            <div id="goodMoralPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="file-name"></span>
+            </div>
+        </div>
+        
+        <!-- Transfer Credentials (for transferees only) -->
+        <div class="bg-white p-4 rounded-lg border border-slate-200 hidden" id="transferCredentialField">
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+                Transfer Credentials / Honorable Dismissal <span class="text-red-500">*</span>
+            </label>
+            <div class="flex items-center justify-center w-full">
+                <label for="transfer_credential" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
+                    <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                        <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
+                        <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                    </div>
+                    <input id="transfer_credential" type="file" name="transfer_credential" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'transferCredPreview')" />
+                </label>
+            </div>
+            <div id="transferCredPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="file-name"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
         <!-- Submit Button -->
         <div class="pt-4">
             <button type="submit" class="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-3">
@@ -1771,14 +1946,51 @@ function togglePreviousSchool() {
     const typeSelect = document.getElementById('studentType');
     const previousSchoolField = document.getElementById('previousSchoolField');
     const previousSchoolInput = document.getElementById('previousSchoolInput');
+    const transferCredentialField = document.getElementById('transferCredentialField');
+    const transferCredentialInput = document.getElementById('transfer_credential');
+    const documentRequirementsText = document.getElementById('documentRequirementsText');
+    const birthCertLabel = document.getElementById('birthCertLabel');
+    const birthCertRequired = document.getElementById('birthCertRequired');
     
     if (typeSelect.value === 'transferee') {
         previousSchoolField.classList.remove('hidden');
         previousSchoolInput.setAttribute('required', 'required');
-    } else {
+        transferCredentialField.classList.remove('hidden');
+        transferCredentialInput.setAttribute('required', 'required');
+        documentRequirementsText.textContent = 'Transferees: Report Card, Good Moral, Transfer Credentials (Birth Certificate optional)';
+        birthCertLabel.textContent = 'Birth Certificate (Optional)';
+        birthCertRequired.classList.add('hidden');
+    } else if (typeSelect.value === 'new') {
         previousSchoolField.classList.add('hidden');
         previousSchoolInput.removeAttribute('required');
         previousSchoolInput.value = '';
+        transferCredentialField.classList.add('hidden');
+        transferCredentialInput.removeAttribute('required');
+        transferCredentialInput.value = '';
+        documentRequirementsText.textContent = 'New Students: Birth Certificate, Report Card, Good Moral Certificate';
+        birthCertLabel.textContent = 'Birth Certificate';
+        birthCertRequired.classList.remove('hidden');
+    } else {
+        // Continuing students - no documents required
+        previousSchoolField.classList.add('hidden');
+        previousSchoolInput.removeAttribute('required');
+        previousSchoolInput.value = '';
+        transferCredentialField.classList.add('hidden');
+        transferCredentialInput.removeAttribute('required');
+        transferCredentialInput.value = '';
+    }
+}
+
+// Document preview function
+function previewDocument(input, previewId) {
+    const preview = document.getElementById(previewId);
+    const fileName = preview.querySelector('.file-name');
+    
+    if (input.files && input.files[0]) {
+        fileName.textContent = input.files[0].name;
+        preview.classList.remove('hidden');
+    } else {
+        preview.classList.add('hidden');
     }
 }
 
@@ -1793,13 +2005,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const suffixInput = document.getElementById('lrn_suffix');
     const fullInput = document.getElementById('lrn_full');
 
-    suffixInput.addEventListener('input', function () {
-        // Allow only numbers
-        this.value = this.value.replace(/\D/g, '');
+    if (suffixInput && fullInput) {
+        suffixInput.addEventListener('input', function () {
+            // Allow only numbers
+            this.value = this.value.replace(/\D/g, '');
 
-        // Combine prefix + suffix
-        fullInput.value = '120231' + this.value;
-    });
+            // Combine prefix + suffix
+            fullInput.value = '120231' + this.value;
+        });
+    }
+    
+    // Check for mode=register query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') === 'register') {
+        openAuthPanel('register');
+    }
 });
         // Mobile Menu Toggle
         function toggleMobileMenu() {

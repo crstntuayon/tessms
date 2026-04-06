@@ -1268,7 +1268,7 @@
                     <div class="profile-header animate-fade-in">
                         <div class="flex flex-col lg:flex-row lg:items-center gap-8">
                             <div class="photo-container">
-                                <div class="photo-placeholder {{ $student->status === 'enrolled' ? 'ring-enrolled' : 'ring-pending' }}">
+                                <div class="photo-placeholder {{ $student->status === 'active' ? 'ring-enrolled' : 'ring-pending' }}">
                                     @php
                                         $name = $student->user->name ?? $student->full_name ?? 'Student';
                                         $initials = '';
@@ -1284,16 +1284,16 @@
                                         <span class="text-3xl font-bold">{{ $initials ?: 'ST' }}</span>
                                     @endif
                                 </div>
-                                <div class="status-badge {{ $student->status === 'enrolled' ? 'status-enrolled' : 'status-pending' }}">
-                                    <i class="fas fa-{{ $student->status === 'enrolled' ? 'check' : 'times' }}"></i>
+                                <div class="status-badge {{ $student->status === 'active' ? 'status-enrolled' : 'status-pending' }}">
+                                    <i class="fas fa-{{ $student->status === 'active' ? 'check' : 'times' }}"></i>
                                 </div>
                             </div>
                             
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-3 mb-3 flex-wrap">
                                     <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ $name }}</h1>
-                                    <span class="status-pill {{ $student->status === 'enrolled' ? 'pill-enrolled' : 'pill-pending' }}">
-                                        <span class="status-dot {{ $student->status === 'enrolled' ? 'dot-enrolled' : 'dot-pending' }}"></span>
+                                    <span class="status-pill {{ $student->status === 'active' ? 'pill-enrolled' : 'pill-pending' }}">
+                                        <span class="status-dot {{ $student->status === 'active' ? 'dot-enrolled' : 'dot-pending' }}"></span>
                                         {{ ucfirst($student->status) }}
                                     </span>
                                 </div>
@@ -1509,8 +1509,8 @@
                                     </div>
                                     <div>
                                         <div class="info-label">Status</div>
-                                        <span class="status-pill {{ $student->status === 'enrolled' ? 'pill-enrolled' : 'pill-pending' }}">
-                                            <span class="status-dot {{ $student->status === 'enrolled' ? 'dot-enrolled' : 'dot-pending' }}"></span>
+                                        <span class="status-pill {{ $student->status === 'active' ? 'pill-enrolled' : 'pill-pending' }}">
+                                            <span class="status-dot {{ $student->status === 'active' ? 'dot-enrolled' : 'dot-pending' }}"></span>
                                             {{ ucfirst($student->status) }}
                                         </span>
                                     </div>
@@ -1677,9 +1677,22 @@
                                             </div>
                                         </div>
                                         @if($doc['path'])
-                                            <a href="{{ asset('storage/' . $doc['path']) }}" target="_blank" class="btn-primary">
+                                            @php
+                                                $docType = match($doc['name']) {
+                                                    'Birth Certificate' => 'birth_certificate',
+                                                    'Report Card' => 'report_card',
+                                                    'Good Moral Certificate' => 'good_moral',
+                                                    'Medical Record' => 'medical_record',
+                                                    'ID Picture' => 'id_picture',
+                                                    'Enrollment Form' => 'enrollment_form',
+                                                    default => ''
+                                                };
+                                                $fileExt = pathinfo($doc['path'], PATHINFO_EXTENSION);
+                                            @endphp
+                                            <button onclick="openDocumentModal('{{ route('admin.students.document.view', ['student' => $student->id, 'type' => $docType]) }}', {{ json_encode($doc['name']) }}, '{{ strtolower($fileExt) }}')" 
+                                                    class="btn-primary">
                                                 <i class="fas fa-eye"></i> View
-                                            </a>
+                                            </button>
                                         @else
                                             <span class="document-status missing">Missing</span>
                                         @endif
@@ -1835,8 +1848,113 @@
                 e.preventDefault();
                 window.print();
             }
+            // Close modal with Escape key
+            if(e.key === 'Escape') {
+                closeDocumentModal();
+            }
         });
+
+        // Document Modal Functions
+        function openDocumentModal(url, title, fileType) {
+            const modal = document.getElementById('documentModal');
+            const backdrop = document.getElementById('documentModalBackdrop');
+            const content = document.getElementById('documentModalContent');
+            const modalTitle = document.getElementById('documentModalTitle');
+            
+            modalTitle.textContent = title;
+            
+            // Add cache buster to prevent browser caching
+            const urlWithCache = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+            
+            let contentHtml = '';
+            const fileTypeLower = fileType.toLowerCase();
+            
+            if (fileTypeLower === 'pdf') {
+                contentHtml = `<iframe src="${urlWithCache}" class="w-full h-full" style="border: none; min-height: 600px;" type="application/pdf"></iframe>`;
+            } else if (['jpg', 'jpeg', 'png'].includes(fileTypeLower)) {
+                contentHtml = `<div class="flex items-center justify-center p-4" style="min-height: 600px;"><img src="${urlWithCache}" alt="${title}" style="max-width: 100%; max-height: 600px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"></div>`;
+            } else {
+                contentHtml = `
+                    <div class="flex flex-col items-center justify-center p-8" style="min-height: 400px;">
+                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #d97706;"></i>
+                        </div>
+                        <h4 style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 10px;">Unsupported File Type</h4>
+                        <p style="color: #64748b; text-align: center; margin-bottom: 20px;">This file type cannot be previewed. Please download the file to view it.</p>
+                        <a href="${urlWithCache}" download class="btn-primary">
+                            <i class="fas fa-download"></i> Download File
+                        </a>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = contentHtml;
+            
+            // Update download button
+            const downloadBtn = document.getElementById('documentModalDownload');
+            if (downloadBtn) {
+                downloadBtn.href = urlWithCache;
+            }
+            
+            modal.style.display = 'block';
+            backdrop.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDocumentModal() {
+            const modal = document.getElementById('documentModal');
+            const backdrop = document.getElementById('documentModalBackdrop');
+            const content = document.getElementById('documentModalContent');
+            
+            modal.style.display = 'none';
+            backdrop.style.display = 'none';
+            content.innerHTML = '';
+            document.body.style.overflow = '';
+        }
     </script>
+
+    <!-- Document Viewer Modal -->
+    <div id="documentModalBackdrop" class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-50" style="display: none;" onclick="closeDocumentModal()"></div>
+    <div id="documentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden" style="max-height: 90vh;">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-5 border-b" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9);">
+                <div class="flex items-center gap-3">
+                    <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-file-alt" style="color: white; font-size: 20px;"></i>
+                    </div>
+                    <div>
+                        <h3 id="documentModalTitle" class="font-bold text-slate-900" style="font-size: 18px;">Document</h3>
+                        <p class="text-slate-500" style="font-size: 13px;">Document Viewer</p>
+                    </div>
+                </div>
+                <button onclick="closeDocumentModal()" class="w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300 flex items-center justify-center transition-all">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div id="documentModalContent" class="bg-slate-50" style="max-height: 70vh; overflow: auto;">
+                <!-- Content will be injected here -->
+            </div>
+            
+            <!-- Footer -->
+            <div class="flex items-center justify-between p-4 border-t bg-slate-50">
+                <div class="text-slate-500" style="font-size: 13px;">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Use browser zoom (Ctrl +/-) to resize
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="closeDocumentModal()" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-medium" style="font-size: 14px;">
+                        Close
+                    </button>
+                    <a id="documentModalDownload" href="#" download class="btn-primary" style="font-size: 14px;">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

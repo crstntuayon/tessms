@@ -8,6 +8,7 @@ use App\Models\Grade;
 use App\Models\GradeLevel;
 use App\Models\Subject;
 use App\Models\Setting;
+use App\Models\SchoolYear;
 use Illuminate\Http\Request;
 
 class GradeController extends Controller
@@ -18,7 +19,11 @@ class GradeController extends Controller
             abort(403);
         }
 
-        $students = $section->students()->with('user')->get();
+        $students = $section->students()
+            ->whereNotIn('status', ['completed', 'inactive'])
+            ->with('user')
+            ->get();
+
         $gradeLevel = $section->gradeLevel;
         $gradeLevels = collect([$gradeLevel]);
 
@@ -55,11 +60,14 @@ class GradeController extends Controller
                 
                 $wwGrade = $grades->firstWhere('component_type', 'written_work');
                 $ptGrade = $grades->firstWhere('component_type', 'performance_task');
+                $qeGrade = $grades->firstWhere('component_type', 'quarterly_exam');
                 
                 $existingGrades['ww_titles'] = $wwGrade ? (json_decode($wwGrade->titles, true) ?? []) : [];
                 $existingGrades['pt_titles'] = $ptGrade ? (json_decode($ptGrade->titles, true) ?? []) : [];
                 $existingGrades['ww_total_items'] = $wwGrade ? (json_decode($wwGrade->total_items, true) ?? []) : [];
                 $existingGrades['pt_total_items'] = $ptGrade ? (json_decode($ptGrade->total_items, true) ?? []) : [];
+                // NEW: Load QE total items from first QE grade record
+                $existingGrades['qe_total_items'] = $qeGrade ? ($qeGrade->total_items ?? 100) : 100;
             }
         }
 
@@ -100,6 +108,7 @@ class GradeController extends Controller
             'pt_titles' => 'nullable|array',
             'ww_total_items' => 'nullable|array',
             'pt_total_items' => 'nullable|array',
+            'qe_total_items' => 'nullable|numeric|min:1', // NEW: Validation for QE total items
         ]);
 
         $totalWeight = $request->ww_weight + $request->pt_weight + $request->qe_weight;
@@ -110,9 +119,14 @@ class GradeController extends Controller
         $subjectId = $request->subject_id;
         $quarter = $request->quarter;
 
-        // Get active school year
-        $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
-        $schoolYearId = $activeSchoolYearId;
+        // Get active school year from is_active flag
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        if (!$activeSchoolYear) {
+            return back()->with('error', 'No active school year found.');
+        }
+        
+        $schoolYearId = $activeSchoolYear->id;
 
         if ($request->has('ww')) {
             $wwTitles = $request->ww_titles ?? [];
@@ -131,14 +145,18 @@ class GradeController extends Controller
         }
 
         if ($request->has('qe')) {
+            $qeTotalItems = $request->qe_total_items ?? 100; // NEW: Get QE total items from request
             foreach ($request->qe as $studentId => $score) {
                 if ($score !== null && $score !== '') {
-                    $this->saveQuarterlyExam($section->id, $studentId, $subjectId, $quarter, $score, $schoolYearId);
+                    $this->saveQuarterlyExam($section->id, $studentId, $subjectId, $quarter, $score, $qeTotalItems, $schoolYearId);
                 }
             }
         }
 
-        $students = $section->students()->pluck('id');
+        $students = $section->students()
+            ->whereNotIn('status', ['completed', 'inactive'])
+            ->pluck('id');
+            
         foreach ($students as $studentId) {
             $this->calculateAndSaveFinalGrade(
                 $section->id, 
@@ -201,11 +219,10 @@ class GradeController extends Controller
     }
 
     /**
-     * Save Quarterly Exam grade
+     * Save Quarterly Exam grade - UPDATED to include total_items
      */
-    private function saveQuarterlyExam($sectionId, $studentId, $subjectId, $quarter, $score, $schoolYearId = null)
+    private function saveQuarterlyExam($sectionId, $studentId, $subjectId, $quarter, $score, $totalItems = 100, $schoolYearId = null)
     {
-        $totalItems = 100;
         $percentageScore = ($score / $totalItems) * 100;
 
         Grade::updateOrCreate(
@@ -220,6 +237,7 @@ class GradeController extends Controller
             [
                 'school_year_id' => $schoolYearId,
                 'total_score' => $score,
+                'total_items' => $totalItems, // NEW: Save total items
                 'percentage_score' => round($percentageScore, 2),
             ]
         );

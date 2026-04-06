@@ -16,9 +16,18 @@ use App\Models\Enrollment;
 use App\Models\SchoolYear;
 use App\Models\Setting;
 use App\Models\CoreValue;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Book;
+use App\Models\BookInventory;
+use App\Models\TeachingProgram;
+use App\Models\StudentHealthRecord;
+
+
 
 class SchoolFormController extends Controller
 {
+
+
     /**
      * Get logged-in teacher sections
      */
@@ -35,25 +44,31 @@ class SchoolFormController extends Controller
     /**
      * SF1 - School Register (Student List)
      */
- public function sf1(Request $request)
+
+
+public function sf1(Request $request)
 {
     $sections = $this->getTeacherSections();
     
-    // Get active school year from settings
-    $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
-    $activeSchoolYear = SchoolYear::find($activeSchoolYearId) ?? SchoolYear::where('is_active', true)->first();
+    // Get active school year from is_active flag
+    $activeSchoolYear = SchoolYear::where('is_active', true)->first();
     
-    $schoolYear = $activeSchoolYear ? $activeSchoolYear->name : '2025-2026';
-    $schoolYearStart = $activeSchoolYear ? Carbon::parse($activeSchoolYear->start_date)->year : 2025;
+    // If no active school year found, get the latest one
+    if (!$activeSchoolYear) {
+        $activeSchoolYear = SchoolYear::latest('start_date')->first();
+    }
+    
+    $schoolYear = $activeSchoolYear->name ?? '';
+    $schoolYearStart = $activeSchoolYear ? Carbon::parse($activeSchoolYear->start_date)->year : Carbon::now()->year;
     
     // Get school settings
     $schoolSettings = Setting::where('group', 'school')->get()->keyBy('key')->map->value;
     
-    $schoolId = $schoolSettings['deped_school_id'] ?? '_______';
-    $schoolName = $schoolSettings['school_name'] ?? 'TUGAWE ELEMENTARY SCHOOL';
-    $schoolDivision = $schoolSettings['school_division'] ?? '_______';
-    $schoolRegion = $schoolSettings['school_region'] ?? '_______';
-    $schoolHead = $schoolSettings['school_head'] ?? '_______';
+    $schoolId = $schoolSettings['deped_school_id'] ?? '';
+    $schoolName = $schoolSettings['school_name'] ?? '';
+    $schoolDivision = $schoolSettings['school_division'] ?? '';
+    $schoolRegion = $schoolSettings['school_region'] ?? '';
+    $schoolHead = $schoolSettings['school_head'] ?? '';
     
     // Get selected section with teacher
     $selectedSection = $request->section_id 
@@ -61,20 +76,20 @@ class SchoolFormController extends Controller
         : $sections->first();
 
     // Get adviser name from section's teacher
-    $adviserName = '___________';
+    $adviserName = '';
     if ($selectedSection && $selectedSection->teacher) {
         $teacherUser = $selectedSection->teacher->user;
         if ($teacherUser) {
             $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
                           ($teacherUser->first_name ?? '') . ' ' . 
                           ($teacherUser->middle_name ?? '');
-            $adviserName = trim($adviserName) ?: $teacherUser->name ?? '___________';
+            $adviserName = trim($adviserName) ?: ($teacherUser->name ?? '');
         } else {
-            $adviserName = $selectedSection->teacher->name ?? '___________';
+            $adviserName = $selectedSection->teacher->name ?? '';
         }
     }
 
-    // Get enrolled students with user data (for names)
+    // Get enrolled students
     $enrollments = collect();
     $maleCount = 0;
     $femaleCount = 0;
@@ -84,11 +99,18 @@ class SchoolFormController extends Controller
             ->where('section_id', $selectedSection->id)
             ->where('school_year_id', $activeSchoolYear->id)
             ->where('status', 'enrolled')
+            // Filter out students with completed or inactive status
+            ->whereHas('student', function ($query) {
+                $query->whereNotIn('status', ['completed', 'inactive']);
+            })
             ->get()
             ->sortBy(function ($enrollment) {
                 $student = $enrollment->student;
+                if (!$student) {
+                    return [2, '', ''];
+                }
+                
                 $gender = strtoupper($student->gender ?? '');
-                // Males first (0), then females (1)
                 $genderOrder = ($gender == 'MALE' || $gender == 'M') ? 0 : 1;
                 
                 $user = $student->user;
@@ -98,6 +120,15 @@ class SchoolFormController extends Controller
                 return [$genderOrder, $lastName, $firstName];
             })
             ->values();
+
+        // Calculate age for each student
+        foreach ($enrollments as $enrollment) {
+            $student = $enrollment->student;
+            if ($student && $student->birthdate) {
+                $age = $this->calculateAge($student->birthdate, $schoolYearStart);
+                $student->calculated_age = $age;
+            }
+        }
 
         // Count gender
         $maleCount = $enrollments->filter(function ($e) {
@@ -109,21 +140,6 @@ class SchoolFormController extends Controller
             $gender = strtoupper($e->student->gender ?? '');
             return $gender == 'FEMALE' || $gender == 'F';
         })->count();
-
-        // Process enrollments to calculate age
-        foreach ($enrollments as $enrollment) {
-            $student = $enrollment->student;
-            if ($student) {
-                // Calculate age using birthdate
-                $age = $this->calculateAge($student->birthdate, $schoolYearStart);
-                
-                // Store age using setAttribute which properly tracks changes
-                $student->setAttribute('calculated_age', $age);
-                
-                // Make the attribute visible when converting to array
-                $student->makeVisible(['calculated_age']);
-            }
-        }
     }
 
     return view('teacher.school-forms.sf1', compact(
@@ -149,7 +165,9 @@ class SchoolFormController extends Controller
  */
 public function calculateAge($birthDate, $year)
 {
-    if (!$birthDate) return '';
+    if (!$birthDate) {
+        return '';
+    }
     
     try {
         $birth = Carbon::parse($birthDate);
@@ -162,7 +180,6 @@ public function calculateAge($birthDate, $year)
             $firstFriday = $juneFirst->copy()->next(Carbon::FRIDAY);
         }
         
-        // Use floor() to get whole number
         return floor($birth->diffInYears($firstFriday));
         
     } catch (\Exception $e) {
@@ -176,58 +193,342 @@ public function calculateAge($birthDate, $year)
    
 # Create the updated SF2 Controller method
 
-    public function sf2(Request $request)
+
+
+public function sf2(Request $request)
+{
+    $sections = $this->getTeacherSections();
+    
+    // Get active school year from is_active flag (not from settings)
+    $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+    
+    // If no active school year found, get the latest one
+    if (!$activeSchoolYear) {
+        $activeSchoolYear = SchoolYear::latest('start_date')->first();
+    }
+    
+    $schoolYear = $activeSchoolYear->name ?? '';
+    
+    // Get school settings (only for school info, not for active year)
+    $schoolSettings = Setting::where('group', 'school')->get()->keyBy('key')->map->value;
+    
+    $schoolId = $schoolSettings['deped_school_id'] ?? '';
+    $schoolName = $schoolSettings['school_name'] ?? '';
+    $schoolHead = $schoolSettings['school_head'] ?? '';
+    
+    // Get selected section
+    $selectedSection = $request->section_id 
+        ? Section::with(['gradeLevel', 'teacher.user'])->find($request->section_id)
+        : $sections->first();
+    
+    // Get selected month (default to June)
+    $selectedMonth = $request->month ?? 'June';
+    
+    // Get adviser name from section's teacher
+    $adviserName = '';
+    if ($selectedSection && $selectedSection->teacher) {
+        $teacherUser = $selectedSection->teacher->user;
+        if ($teacherUser) {
+            $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
+                          ($teacherUser->first_name ?? '') . ' ' . 
+                          ($teacherUser->middle_name ?? '');
+            $adviserName = trim($adviserName) ?: ($teacherUser->name ?? '');
+        } else {
+            $adviserName = $selectedSection->teacher->name ?? '';
+        }
+    }
+
+    // Get enrolled students sorted by gender (Male first) then alphabetically
+    $enrollments = collect();
+    
+    if ($selectedSection && $activeSchoolYear) {
+        $enrollments = Enrollment::with(['student.user'])
+            ->where('section_id', $selectedSection->id)
+            ->where('school_year_id', $activeSchoolYear->id)
+            ->where('status', 'enrolled')
+            // Filter out students with completed or inactive status
+            ->whereHas('student', function ($query) {
+                $query->whereNotIn('status', ['completed', 'inactive']);
+            })
+            ->get()
+            ->sortBy(function ($enrollment) {
+                $student = $enrollment->student;
+                if (!$student) {
+                    return [2, '', ''];
+                }
+                
+                $gender = strtoupper($student->gender ?? '');
+                $genderOrder = ($gender == 'MALE' || $gender == 'M') ? 0 : 1;
+                
+                $user = $student->user;
+                $lastName = $user->last_name ?? '';
+                $firstName = $user->first_name ?? '';
+                
+                return [$genderOrder, $lastName, $firstName];
+            })
+            ->values();
+    }
+
+    // Get attendances for the selected month
+    $attendances = collect();
+    if ($selectedSection && $activeSchoolYear && $enrollments->isNotEmpty()) {
+        $year = Carbon::parse($activeSchoolYear->start_date)->year;
+        $monthNum = date('n', strtotime($selectedMonth));
+        
+        $attendances = Attendance::whereIn(
+            'student_id',
+            $enrollments->pluck('student.id')
+        )
+        ->whereYear('date', $year)
+        ->whereMonth('date', $monthNum)
+        ->get();
+    }
+
+    // Calculate summary statistics
+    $lateEnrollments = 0;
+    $consecutiveAbsences = 0;
+    $dropoutMale = 0;
+    $dropoutFemale = 0;
+    $transferredOutMale = 0;
+    $transferredOutFemale = 0;
+    $transferredInMale = 0;
+    $transferredInFemale = 0;
+    $averageDailyAttendance = '';
+    $attendancePercentage = '';
+
+    return view('teacher.school-forms.sf2', compact(
+        'sections',
+        'selectedSection',
+        'adviserName',
+        'enrollments',
+        'attendances',
+        'schoolYear',
+        'activeSchoolYear',
+        'schoolId',
+        'schoolName',
+        'schoolHead',
+        'selectedMonth',
+        'lateEnrollments',
+        'consecutiveAbsences',
+        'dropoutMale',
+        'dropoutFemale',
+        'transferredOutMale',
+        'transferredOutFemale',
+        'transferredInMale',
+        'transferredInFemale',
+        'averageDailyAttendance',
+        'attendancePercentage'
+    ));
+}
+ 
+/**
+ * SF3 - Books Issued and Returned
+ */
+public function sf3(Request $request)
+{
+    $sections = $this->getTeacherSections();
+    
+    // Get active school year from is_active flag
+    $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+    
+    // If no active school year found, get the latest one
+    if (!$activeSchoolYear) {
+        $activeSchoolYear = SchoolYear::latest('start_date')->first();
+    }
+    
+    $schoolYear = $activeSchoolYear->name ?? '';
+    
+    // Get school settings
+    $schoolSettings = Setting::where('group', 'school')->get()->keyBy('key')->map->value;
+    
+    $schoolId = $schoolSettings['deped_school_id'] ?? '';
+    $schoolName = $schoolSettings['school_name'] ?? '';
+    $schoolDivision = $schoolSettings['school_division'] ?? '';
+    $schoolDistrict = $schoolSettings['school_district'] ?? '';
+    $schoolRegion = $schoolSettings['school_region'] ?? '';
+    
+    // Get selected section
+    $selectedSection = $request->section_id 
+        ? Section::with(['gradeLevel', 'teacher.user'])->find($request->section_id)
+        : $sections->first();
+    
+    // Get adviser name from section's teacher
+    $adviserName = '';
+    if ($selectedSection && $selectedSection->teacher) {
+        $teacherUser = $selectedSection->teacher->user;
+        if ($teacherUser) {
+            $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
+                          ($teacherUser->first_name ?? '') . ' ' . 
+                          ($teacherUser->middle_name ?? '');
+            $adviserName = trim($adviserName) ?: ($teacherUser->name ?? '');
+        } else {
+            $adviserName = $selectedSection->teacher->name ?? '';
+        }
+    }
+
+    // Get enrolled students sorted by gender (Male first) then alphabetically
+    $enrollments = collect();
+    $books = collect();
+    $bookInventories = collect();
+
+    if ($selectedSection && $activeSchoolYear) {
+        $enrollments = Enrollment::with(['student.user'])
+            ->where('section_id', $selectedSection->id)
+            ->where('school_year_id', $activeSchoolYear->id)
+            ->where('status', 'enrolled')
+            ->whereHas('student', function ($query) {
+                $query->whereNotIn('status', ['completed', 'inactive']);
+            })
+            ->get();
+
+        // Separate Male and Female
+        $males = $enrollments->filter(function ($enrollment) {
+            $gender = strtoupper($enrollment->student->gender ?? '');
+            return $gender === 'MALE' || $gender === 'M';
+        })->sortBy(function ($enrollment) {
+            return [
+                $enrollment->student->user->last_name ?? '',
+                $enrollment->student->user->first_name ?? ''
+            ];
+        });
+
+        $females = $enrollments->filter(function ($enrollment) {
+            $gender = strtoupper($enrollment->student->gender ?? '');
+            return $gender === 'FEMALE' || $gender === 'F';
+        })->sortBy(function ($enrollment) {
+            return [
+                $enrollment->student->user->last_name ?? '',
+                $enrollment->student->user->first_name ?? ''  // ← FIXED: was $enrollment->user->first_name
+            ];
+        });
+
+        // Merge: Male first, then Female
+        $enrollments = $males->concat($females)->values();
+
+        // Get books for enrolled students
+        if ($enrollments->isNotEmpty()) {
+            $studentIds = $enrollments->pluck('student.id');
+            
+            $books = Book::whereIn('student_id', $studentIds)
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->get()
+                ->groupBy('student_id');
+        }
+
+        // Get book inventory for the grade level
+        if ($selectedSection->gradeLevel) {
+            $bookInventories = BookInventory::where('grade_level', $selectedSection->gradeLevel->name)
+                ->orWhere('grade_level', 'All')
+                ->orderBy('subject_area')
+                ->orderBy('title')
+                ->get();
+        }
+    }
+
+    // Calculate summary statistics
+    $totalBooksIssued = 0;
+    $totalBooksReturned = 0;
+    $totalBooksDamaged = 0;
+    $totalBooksLost = 0;
+    
+    foreach ($books as $studentBooks) {
+        foreach ($studentBooks as $book) {
+            $totalBooksIssued++;
+            if ($book->date_returned) {
+                $totalBooksReturned++;
+            }
+            if ($book->status == 'damaged') {
+                $totalBooksDamaged++;
+            }
+            if ($book->status == 'lost') {
+                $totalBooksLost++;
+            }
+        }
+    }
+
+    return view('teacher.school-forms.sf3', compact(
+        'sections',
+        'selectedSection',
+        'adviserName',
+        'enrollments',
+        'books',
+        'bookInventories',
+        'schoolYear',
+        'activeSchoolYear',
+        'schoolId',
+        'schoolName',
+        'schoolDivision',
+        'schoolDistrict',
+        'schoolRegion',
+        'totalBooksIssued',
+        'totalBooksReturned',
+        'totalBooksDamaged',
+        'totalBooksLost'
+    ));
+}
+
+
+     /**
+     * SF4 - Monthly Attendance Report (Teacher Level)
+     * Shows monthly summary per student based on SF2 data
+     */
+    public function sf4(Request $request)
     {
         $sections = $this->getTeacherSections();
         
-        // Get active school year from settings
-        $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
-        $activeSchoolYear = SchoolYear::find($activeSchoolYearId) ?? SchoolYear::where('is_active', true)->first();
+        // Get active school year (same logic as SF2)
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            $activeSchoolYear = SchoolYear::latest('start_date')->first();
+        }
         
-        $schoolYear = $activeSchoolYear ? $activeSchoolYear->name : '2025-2026';
-        
-        // Get school settings
+        // Get school settings (same as SF2)
         $schoolSettings = Setting::where('group', 'school')->get()->keyBy('key')->map->value;
+        $schoolId = $schoolSettings['deped_school_id'] ?? '';
+        $schoolName = $schoolSettings['school_name'] ?? '';
+        $schoolHead = $schoolSettings['school_head'] ?? '';
         
-        $schoolId = $schoolSettings['deped_school_id'] ?? '_______';
-        $schoolName = $schoolSettings['school_name'] ?? 'TUGAWE ELEMENTARY SCHOOL';
-        $schoolHead = $schoolSettings['school_head'] ?? '_______';
-        
-        // Get selected section
+        // Get selected section and month
         $selectedSection = $request->section_id 
             ? Section::with(['gradeLevel', 'teacher.user'])->find($request->section_id)
             : $sections->first();
-        
-        // Get selected month (default to current month or June)
+            
         $selectedMonth = $request->month ?? 'June';
         
-        // Get adviser name from section's teacher
-        $adviserName = '___________';
+        // Get adviser name (same logic as SF2)
+        $adviserName = '';
         if ($selectedSection && $selectedSection->teacher) {
             $teacherUser = $selectedSection->teacher->user;
             if ($teacherUser) {
                 $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
                               ($teacherUser->first_name ?? '') . ' ' . 
                               ($teacherUser->middle_name ?? '');
-                $adviserName = trim($adviserName) ?: $teacherUser->name ?? '___________';
+                $adviserName = trim($adviserName) ?: ($teacherUser->name ?? '');
             } else {
-                $adviserName = $selectedSection->teacher->name ?? '___________';
+                $adviserName = $selectedSection->teacher->name ?? '';
             }
         }
 
-        // Get enrolled students sorted by gender (Male first) then alphabetically
+        // Get enrolled students - SAME FILTERS AS SF2 (status: 'enrolled', not 'completed'/'inactive')
         $enrollments = collect();
+        $attendanceSummary = collect();
         
         if ($selectedSection && $activeSchoolYear) {
             $enrollments = Enrollment::with(['student.user'])
                 ->where('section_id', $selectedSection->id)
                 ->where('school_year_id', $activeSchoolYear->id)
-                ->where('status', 'enrolled')
+                ->where('status', 'enrolled')  // FIXED: Changed from 'active' to 'enrolled'
+                ->whereHas('student', function ($query) {
+                    $query->whereNotIn('status', ['completed', 'inactive']);  // Same as SF2
+                })
                 ->get()
                 ->sortBy(function ($enrollment) {
                     $student = $enrollment->student;
+                    if (!$student) {
+                        return [2, '', ''];
+                    }
+                    
                     $gender = strtoupper($student->gender ?? '');
-                    // Males first (0), then females (1)
                     $genderOrder = ($gender == 'MALE' || $gender == 'M') ? 0 : 1;
                     
                     $user = $student->user;
@@ -237,182 +538,964 @@ public function calculateAge($birthDate, $year)
                     return [$genderOrder, $lastName, $firstName];
                 })
                 ->values();
-        }
 
-        // Get attendances for the selected month
-        $attendances = collect();
-        if ($selectedSection && $activeSchoolYear) {
-            $year = $activeSchoolYear ? \Carbon\Carbon::parse($activeSchoolYear->start_date)->year : date('Y');
+            // Calculate month date range
+            $year = Carbon::parse($activeSchoolYear->start_date)->year;
             $monthNum = date('n', strtotime($selectedMonth));
             
-            $attendances = Attendance::whereIn(
-                'student_id',
-                $enrollments->pluck('student.id')
-            )
-            ->whereYear('date', $year)
-            ->whereMonth('date', $monthNum)
-            ->get();
+            // Get all school days (Mon-Fri) in the month
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $monthNum, $year);
+            $schoolDays = [];
+            
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $date = Carbon::create($year, $monthNum, $day);
+                if (!$date->isWeekend()) {
+                    $schoolDays[] = $day;
+                }
+            }
+
+            $totalSchoolDays = count($schoolDays);
+
+            // Get attendances for this section and month
+            $attendances = collect();
+            if ($enrollments->isNotEmpty()) {
+                $attendances = Attendance::whereIn(
+                    'student_id',
+                    $enrollments->pluck('student.id')
+                )
+                ->whereYear('date', $year)
+                ->whereMonth('date', $monthNum)
+                ->get();
+            }
+
+            // Calculate attendance summary for each student
+            foreach ($enrollments as $enrollment) {
+                $student = $enrollment->student;
+                $user = $student->user ?? null;
+                
+                $fullName = ($user->last_name ?? '') . ', ' . 
+                           ($user->first_name ?? '') . ' ' . 
+                           ($user->middle_name ?? '');
+                
+                $present = 0;
+                $absent = 0;
+                $tardy = 0;
+                
+                foreach ($schoolDays as $day) {
+                    $dateStr = sprintf('%04d-%02d-%02d', $year, $monthNum, $day);
+                    
+                    $attendance = $attendances->first(function($a) use ($student, $dateStr) {
+                        return $a->student_id == $student->id && $a->date == $dateStr;
+                    });
+                    
+                    if ($attendance) {
+                        switch ($attendance->status) {
+                            case 'present':
+                                $present++;
+                                break;
+                            case 'absent':
+                                $absent++;
+                                break;
+                            case 'tardy':
+                                $tardy++;
+                                break;
+                        }
+                    } else {
+                        // No record = present (default assumption like SF2)
+                        $present++;
+                    }
+                }
+
+                $attendanceSummary->push([
+                    'enrollment' => $enrollment,
+                    'student' => $student,
+                    'full_name' => $fullName,
+                    'gender' => strtoupper($student->gender ?? '') == 'MALE' || strtoupper($student->gender ?? '') == 'M' ? 'M' : 'F',
+                    'present' => $present,
+                    'absent' => $absent,
+                    'tardy' => $tardy,
+                    'total_days' => $totalSchoolDays,
+                    'attendance_rate' => $totalSchoolDays > 0 ? round(($present / $totalSchoolDays) * 100, 1) : 0
+                ]);
+            }
         }
 
-        // Calculate summary statistics
-        $lateEnrollments = 0;
-        $consecutiveAbsences = 0;
-        $dropoutMale = 0;
-        $dropoutFemale = 0;
-        $transferredOutMale = 0;
-        $transferredOutFemale = 0;
-        $transferredInMale = 0;
-        $transferredInFemale = 0;
-        $averageDailyAttendance = '';
-        $attendancePercentage = '';
+        // Calculate summary statistics for the view
+        $maleSummary = $attendanceSummary->filter(function($item) {
+            return $item['gender'] == 'M';
+        });
+        
+        $femaleSummary = $attendanceSummary->filter(function($item) {
+            return $item['gender'] == 'F';
+        });
 
-        return view('teacher.school-forms.sf2', compact(
+        $monthlyStats = [
+            'total_school_days' => $totalSchoolDays ?? 0,
+            'total_students' => $attendanceSummary->count(),
+            'male_count' => $maleSummary->count(),
+            'female_count' => $femaleSummary->count(),
+            'male_avg_attendance' => $maleSummary->avg('attendance_rate') ?? 0,
+            'female_avg_attendance' => $femaleSummary->avg('attendance_rate') ?? 0,
+            'overall_avg_attendance' => $attendanceSummary->avg('attendance_rate') ?? 0,
+            'total_absences' => $attendanceSummary->sum('absent'),
+            'total_tardy' => $attendanceSummary->sum('tardy'),
+        ];
+
+        return view('teacher.school-forms.sf4', compact(
             'sections',
             'selectedSection',
             'adviserName',
             'enrollments',
-            'attendances',
-            'schoolYear',
+            'attendanceSummary',
             'activeSchoolYear',
             'schoolId',
             'schoolName',
             'schoolHead',
             'selectedMonth',
-            'lateEnrollments',
-            'consecutiveAbsences',
-            'dropoutMale',
-            'dropoutFemale',
-            'transferredOutMale',
-            'transferredOutFemale',
-            'transferredInMale',
-            'transferredInFemale',
-            'averageDailyAttendance',
-            'attendancePercentage'
+            'monthlyStats'
         ));
     }
- 
 
-    public function sf5(Request $request)
+public function sf5(Request $request)
+{
+    $sections = $this->getTeacherSections();
+    
+    // Get active school year from is_active flag (not from settings)
+    $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+    
+    // If no active school year found, get the latest one
+    if (!$activeSchoolYear) {
+        $activeSchoolYear = SchoolYear::latest('start_date')->first();
+    }
+    
+    $schoolYear = $activeSchoolYear->name ?? '';
+    
+    // Get school settings (only for school info, not for active year)
+    $schoolSettings = Setting::where('group', 'school')->get()->keyBy('key')->map->value;
+    
+    $schoolId = $schoolSettings['deped_school_id'] ?? '';
+    $schoolName = $schoolSettings['school_name'] ?? '';
+    $schoolDivision = $schoolSettings['school_division'] ?? '';
+    $schoolRegion = $schoolSettings['school_region'] ?? '';
+    $schoolDistrict = $schoolSettings['school_district'] ?? '';
+    $schoolHead = $schoolSettings['school_head'] ?? '';
+    
+    // Get selected section
+    $selectedSection = $request->section_id 
+        ? Section::with(['gradeLevel', 'teacher.user'])->find($request->section_id)
+        : $sections->first();
+    
+    // Get adviser name from section's teacher
+    $adviserName = '';
+    if ($selectedSection && $selectedSection->teacher) {
+        $teacherUser = $selectedSection->teacher->user;
+        if ($teacherUser) {
+            $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
+                          ($teacherUser->first_name ?? '') . ' ' . 
+                          ($teacherUser->middle_name ?? '');
+            $adviserName = trim($adviserName) ?: ($teacherUser->name ?? '');
+        } else {
+            $adviserName = $selectedSection->teacher->name ?? '';
+        }
+    }
+
+    // Get enrolled students sorted by gender (Male first) then alphabetically
+    $enrollments = collect();
+    $grades = collect();
+
+    if ($selectedSection && $activeSchoolYear) {
+        $enrollments = Enrollment::with(['student.user'])
+            ->where('section_id', $selectedSection->id)
+            ->where('school_year_id', $activeSchoolYear->id)
+            ->where('status', 'enrolled')
+            // Filter out students with completed or inactive status
+            ->whereHas('student', function ($query) {
+                $query->whereNotIn('status', ['completed', 'inactive']);
+            })
+            ->get()
+            ->sortBy(function ($enrollment) {
+                $student = $enrollment->student;
+                if (!$student) {
+                    return [2, '', ''];
+                }
+                
+                $gender = strtoupper($student->gender ?? '');
+                $genderOrder = ($gender == 'MALE' || $gender == 'M') ? 0 : 1;
+                
+                $user = $student->user;
+                $lastName = $user->last_name ?? '';
+                $firstName = $user->first_name ?? '';
+                
+                return [$genderOrder, $lastName, $firstName];
+            })
+            ->values();
+
+        // Get grades for enrolled students
+        if ($enrollments->isNotEmpty()) {
+            $grades = Grade::whereIn(
+                'student_id',
+                $enrollments->pluck('student.id')
+            )->get();
+        }
+    }
+
+    return view('teacher.school-forms.sf5', compact(
+        'sections',
+        'selectedSection',
+        'adviserName',
+        'enrollments',
+        'grades',
+        'schoolYear',
+        'activeSchoolYear',
+        'schoolId',
+        'schoolName',
+        'schoolDivision',
+        'schoolRegion',
+        'schoolDistrict',
+        'schoolHead'
+    ));
+}
+
+/**
+ * Calculate Final Grade
+ */
+public function calculateFinal($grade)
+{
+    $ww = $grade->written_works_avg ?? 0;
+    $pt = $grade->performance_tasks_avg ?? 0;
+
+    return round(($ww * 0.4) + ($pt * 0.6), 2);
+}
+
+    
+ public function sf6(Request $request)
+{
+    $sections = $this->getTeacherSections();
+    
+    // Get active school year
+    $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+    if (!$activeSchoolYear) {
+        $activeSchoolYear = SchoolYear::latest('start_date')->first();
+    }
+    
+    // Get school settings (only for school info, not for active year)
+    $schoolSettings = Setting::where('group', 'school')->get()->keyBy('key')->map->value;
+    
+    $schoolId = $schoolSettings['deped_school_id'] ?? '';
+    $schoolName = $schoolSettings['school_name'] ?? '';
+    $schoolDivision = $schoolSettings['school_division'] ?? '';
+    $schoolRegion = $schoolSettings['school_region'] ?? '';
+    $schoolDistrict = $schoolSettings['school_district'] ?? '';
+    $schoolHead = $schoolSettings['school_head'] ?? '';
+    
+    // Selected section
+    $selectedSection = $request->section_id 
+        ? Section::with(['gradeLevel', 'teacher.user'])->find($request->section_id)
+        : $sections->first();
+        
+    // Adviser name
+    $adviserName = '';
+    if ($selectedSection && $selectedSection->teacher) {
+        $teacherUser = $selectedSection->teacher->user;
+
+        if ($teacherUser) {
+            $adviserName = trim(
+                ($teacherUser->last_name ?? '') . ', ' .
+                ($teacherUser->first_name ?? '') . ' ' .
+                ($teacherUser->middle_name ?? '')
+            ) ?: ($teacherUser->name ?? '');
+        } else {
+            $adviserName = $selectedSection->teacher->name ?? '';
+        }
+    }
+
+    $enrollments = collect();
+    $promotionData = collect();
+
+    if ($selectedSection && $activeSchoolYear) {
+
+        // ✅ FIXED: use student.grades instead of enrollment.grades
+        $enrollments = Enrollment::with([
+                'student.user',
+                'student.grades.subject'
+            ])
+            ->where('section_id', $selectedSection->id)
+            ->where('school_year_id', $activeSchoolYear->id)
+            ->where('status', 'enrolled')
+            ->whereHas('student', function ($query) {
+                $query->whereNotIn('status', ['completed', 'inactive']);
+            })
+            ->get()
+            ->sortBy(function ($enrollment) {
+                $student = $enrollment->student;
+
+                if (!$student) return [2, '', ''];
+
+                $gender = strtoupper($student->gender ?? '');
+                $genderOrder = ($gender == 'MALE' || $gender == 'M') ? 0 : 1;
+
+                $user = $student->user;
+                $lastName = $user->last_name ?? '';
+                $firstName = $user->first_name ?? '';
+
+                return [$genderOrder, $lastName, $firstName];
+            })
+            ->values();
+
+        foreach ($enrollments as $enrollment) {
+
+            $student = $enrollment->student;
+            $user = $student->user ?? null;
+
+            $fullName = trim(
+                ($user->last_name ?? '') . ', ' .
+                ($user->first_name ?? '') . ' ' .
+                ($user->middle_name ?? '')
+            );
+
+            // ✅ FIXED: get grades via student
+            $grades = $student->grades ?? collect();
+
+            // Final average
+            $finalAverage = round($grades->avg('final_grade') ?? 0);
+
+            // Proficiency
+            $proficiencyLevel = $this->getProficiencyLevel($finalAverage);
+
+            // Promotion
+            $promotionStatus = $this->getPromotionStatus($finalAverage, $grades);
+
+            // Words
+            $generalAverageWords = $this->numberToWords($finalAverage);
+
+            $promotionData->push([
+                'enrollment' => $enrollment,
+                'student' => $student,
+                'full_name' => $fullName,
+                'gender' => (strtoupper($student->gender ?? '') == 'MALE' || strtoupper($student->gender ?? '') == 'M') ? 'M' : 'F',
+                'final_average' => $finalAverage,
+                'proficiency_level' => $proficiencyLevel,
+                'promotion_status' => $promotionStatus,
+                'general_average_words' => $generalAverageWords,
+                'grades' => $grades,
+                'remarks' => $this->getRemarks($promotionStatus, $finalAverage, $selectedSection)
+            ]);
+        }
+    }
+
+    // Summary
+    $maleData = $promotionData->where('gender', 'M');
+    $femaleData = $promotionData->where('gender', 'F');
+
+    $summaryStats = [
+        'total_students' => $promotionData->count(),
+        'male_count' => $maleData->count(),
+        'female_count' => $femaleData->count(),
+
+        'promoted_male' => $maleData->where('promotion_status', 'Promoted')->count(),
+        'promoted_female' => $femaleData->where('promotion_status', 'Promoted')->count(),
+        'conditional_male' => $maleData->where('promotion_status', 'Conditional')->count(),
+        'conditional_female' => $femaleData->where('promotion_status', 'Conditional')->count(),
+        'retained_male' => $maleData->where('promotion_status', 'Retained')->count(),
+        'retained_female' => $femaleData->where('promotion_status', 'Retained')->count(),
+
+        'beginning_male' => $maleData->where('proficiency_level', 'Beginning')->count(),
+        'beginning_female' => $femaleData->where('proficiency_level', 'Beginning')->count(),
+        'developing_male' => $maleData->where('proficiency_level', 'Developing')->count(),
+        'developing_female' => $femaleData->where('proficiency_level', 'Developing')->count(),
+        'approaching_male' => $maleData->where('proficiency_level', 'Approaching Proficiency')->count(),
+        'approaching_female' => $femaleData->where('proficiency_level', 'Approaching Proficiency')->count(),
+        'proficient_male' => $maleData->where('proficiency_level', 'Proficient')->count(),
+        'proficient_female' => $femaleData->where('proficiency_level', 'Proficient')->count(),
+        'advanced_male' => $maleData->where('proficiency_level', 'Advanced')->count(),
+        'advanced_female' => $femaleData->where('proficiency_level', 'Advanced')->count(),
+    ];
+
+    return view('teacher.school-forms.sf6', compact(
+        'sections',
+        'selectedSection',
+        'adviserName',
+        'enrollments',
+        'promotionData',
+        'activeSchoolYear',
+        'schoolId',
+        'schoolName',
+        'schoolHead',
+        'schoolRegion',
+        'schoolDivision',
+        'summaryStats'
+    ));
+}
+private function getPromotionStatus($finalAverage, $grades)
+{
+    $hasIncomplete = $grades->contains(function ($g) {
+        return is_null($g->final_grade);
+    });
+
+    if ($hasIncomplete) return 'Incomplete';
+
+    return $finalAverage >= 75 ? 'Promoted' : 'Retained';
+}
+/**
+ * Get proficiency level based on final grade
+ */
+private function getProficiencyLevel($grade)
+{
+    if ($grade >= 90) return 'Advanced';
+    if ($grade >= 85) return 'Proficient';
+    if ($grade >= 80) return 'Approaching Proficiency';
+    if ($grade >= 75) return 'Developing';
+    return 'Beginning';
+}
+/**
+ * Convert number to words (simplified)
+ */
+private function numberToWords($number)
+{
+    $words = [
+        0 => 'Zero', 1 => 'One', 2 => 'Two', 3 => 'Three', 4 => 'Four',
+        5 => 'Five', 6 => 'Six', 7 => 'Seven', 8 => 'Eight', 9 => 'Nine',
+        10 => 'Ten', 11 => 'Eleven', 12 => 'Twelve', 13 => 'Thirteen',
+        14 => 'Fourteen', 15 => 'Fifteen', 16 => 'Sixteen', 17 => 'Seventeen',
+        18 => 'Eighteen', 19 => 'Nineteen', 20 => 'Twenty',
+        30 => 'Thirty', 40 => 'Forty', 50 => 'Fifty',
+        60 => 'Sixty', 70 => 'Seventy', 80 => 'Eighty', 90 => 'Ninety',
+        100 => 'One Hundred'
+    ];
+
+    if (isset($words[$number])) {
+        return $words[$number];
+    }
+
+    if ($number < 100) {
+        $tens = floor($number / 10) * 10;
+        $ones = $number % 10;
+
+        return $words[$tens] . '-' . strtolower($words[$ones]);
+    }
+
+    return (string) $number;
+}
+private function getRemarks($status, $finalAverage, $selectedSection)
+{
+    if ($status == 'Retained') {
+        return 'Retained in ' . ($selectedSection->gradeLevel->name ?? 'same grade');
+    } elseif ($status == 'Promoted') {
+        return 'Promoted to next grade level';
+    } elseif ($status == 'Conditional') {
+        return 'Promoted with deficiencies';
+    }
+    return '';
+}
+
+    /**
+     * SF7 - School Personnel Assignment List and Basic Profile
+     */
+    public function sf7(Request $request)
     {
         $sections = $this->getTeacherSections();
         
-        // Get active school year from settings
-        $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
-        $activeSchoolYear = SchoolYear::find($activeSchoolYearId) ?? SchoolYear::where('is_active', true)->first();
+        // Get active school year
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            $activeSchoolYear = SchoolYear::latest('start_date')->first();
+        }
         
-        $schoolYear = $activeSchoolYear ? $activeSchoolYear->name : '2025-2026';
-        
-        // Get school settings
-        $schoolSettings = Setting::where('group', 'school')->get()->keyBy('key')->map->value;
-        
-        $schoolId = $schoolSettings['deped_school_id'] ?? '_______';
-        $schoolName = $schoolSettings['school_name'] ?? 'TUGAWE ELEMENTARY SCHOOL';
-        $schoolDivision = $schoolSettings['school_division'] ?? '_______';
-        $schoolRegion = $schoolSettings['school_region'] ?? '_______';
-        $schoolDistrict = $schoolSettings['school_district'] ?? '_______';
-        $schoolHead = $schoolSettings['school_head'] ?? '_______';
+    // Get school settings (only for school info, not for active year)
+    $schoolSettings = Setting::where('group', 'school')->get()->keyBy('key')->map->value;
+    
+    $schoolId = $schoolSettings['deped_school_id'] ?? '';
+    $schoolName = $schoolSettings['school_name'] ?? '';
+    $schoolDivision = $schoolSettings['school_division'] ?? '';
+    $schoolRegion = $schoolSettings['school_region'] ?? '';
+    $schoolDistrict = $schoolSettings['school_district'] ?? '';
+    $schoolHead = $schoolSettings['school_head'] ?? '';
         
         // Get selected section
         $selectedSection = $request->section_id 
             ? Section::with(['gradeLevel', 'teacher.user'])->find($request->section_id)
-            : $sections->first();
+            : $sections->first()?->load(['gradeLevel', 'teacher.user']);
         
-        // Get adviser name from section's teacher
-        $adviserName = '___________';
+        // Get teacher
+        $teacher = auth()->user()->teacher ?? null;
+        $teacherUser = auth()->user();
+        
+        $teacherProfile = null;
+        $teachingPrograms = collect();
+        $subjects = collect();
+        
+        if ($teacher && $selectedSection) {
+            // Get adviser name
+            $adviserName = '';
+            $adviserUser = $selectedSection->teacher?->user;
+            if ($adviserUser) {
+                $adviserName = ($adviserUser->last_name ?? '') . ', ' . 
+                              ($adviserUser->first_name ?? '') . ' ' . 
+                              ($adviserUser->middle_name ?? '');
+                $adviserName = trim($adviserName) ?: ($adviserUser->name ?? '');
+            }
+            
+            // Get ONLY currently enrolled students (not completed, not inactive)
+            $enrollments = Enrollment::where('section_id', $selectedSection->id)
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->where('status', 'enrolled')
+                ->whereHas('student', function ($query) {
+                    $query->whereNotIn('status', ['completed', 'inactive', 'dropped']);
+                })
+                ->with('student')
+                ->get();
+            
+            $totalStudents = $enrollments->count();
+            $maleStudents = $enrollments->filter(function($e) {
+                $gender = strtoupper($e->student->gender ?? '');
+                return $gender == 'MALE' || $gender == 'M';
+            })->count();
+            $femaleStudents = $totalStudents - $maleStudents;
+            
+            // Get REAL subjects from database based on grade level
+            $subjects = Subject::where('grade_level_id', $selectedSection->grade_level_id)
+                ->orderBy('name')
+                ->get();
+            
+            // Get teaching programs from database
+            $teachingPrograms = TeachingProgram::where('teacher_id', $teacher->id)
+                ->where('section_id', $selectedSection->id)
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->orderByRaw("FIELD(day, 'M', 'T', 'W', 'TH', 'F')")
+                ->orderBy('time_from')
+                ->get();
+            
+            // Build teacher profile with real data
+            $teacherProfile = [
+                'employee_no' => $teacher->employee_no ?? $teacherUser->id ?? 'N/A',
+                'tin' => $teacher->tin ?? 'N/A',
+                'full_name' => $adviserName,
+                'last_name' => $adviserUser->last_name ?? '',
+                'first_name' => $adviserUser->first_name ?? '',
+                'middle_name' => $adviserUser->middle_name ?? '',
+                'name_extension' => $teacher->name_extension ?? '',
+                'sex' => strtoupper($adviserUser->gender ?? '') == 'MALE' || strtoupper($adviserUser->gender ?? '') == 'M' ? 'M' : 'F',
+                'birthdate' => $teacher->birthdate ? Carbon::parse($teacher->birthdate)->format('m/d/Y') : '',
+                'age' => $teacher->birthdate ? Carbon::parse($teacher->birthdate)->age : '',
+                'contact_no' => $teacher->contact_no ?? $teacherUser->phone ?? '',
+                'email' => $teacherUser->email ?? '',
+                
+                'position' => $teacher->position ?? 'Teacher I',
+                'nature_of_appointment' => $teacher->nature_of_appointment ?? 'Permanent',
+                'fund_source' => $teacher->fund_source ?? 'National',
+                'date_of_appointment' => $teacher->date_of_appointment ? Carbon::parse($teacher->date_of_appointment)->format('m/d/Y') : '',
+                'years_in_service' => $teacher->date_of_appointment ? Carbon::parse($teacher->date_of_appointment)->diffInYears(now()) : '',
+                
+                'highest_degree' => $teacher->highest_degree ?? 'Bachelor of Elementary Education',
+                'major' => $teacher->major ?? 'General Education',
+                'minor' => $teacher->minor ?? '',
+                'prc_license_no' => $teacher->prc_license_no ?? '',
+                'prc_validity' => $teacher->prc_validity ? Carbon::parse($teacher->prc_validity)->format('m/d/Y') : '',
+                
+                'section' => $selectedSection->name ?? '',
+                'grade_level' => $selectedSection->gradeLevel->name ?? '',
+                'advisory_class' => $selectedSection->name ?? '',
+                'total_students' => $totalStudents,
+                'male_students' => $maleStudents,
+                'female_students' => $femaleStudents,
+                
+                'ancillary_assignments' => $teacher->ancillary_assignments ?? 'None',
+                'remarks' => $teacher->remarks ?? '',
+            ];
+        }
+
+        return view('teacher.school-forms.sf7', compact(
+            'sections',
+            'selectedSection',
+            'teacherProfile',
+            'teacher',
+            'activeSchoolYear',
+            'schoolId',
+            'schoolName',
+            'schoolHead',
+            'schoolRegion',
+            'schoolDivision',
+            'schoolDistrict',
+            'subjects',
+            'teachingPrograms'
+        ));
+    }
+
+    /**
+     * Store teaching program
+     */
+    public function storeTeachingProgram(Request $request)
+    {
+        $validated = $request->validate([
+            'section_id' => 'required|exists:sections,id',
+            'day' => 'required|in:M,T,W,TH,F',
+            'time_from' => 'required|date_format:H:i',
+            'time_to' => 'required|date_format:H:i|after:time_from',
+            'subject' => 'nullable|string|max:255',
+            'activity' => 'nullable|string',
+        ]);
+
+        $teacher = auth()->user()->teacher;
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first() 
+            ?? SchoolYear::latest('start_date')->first();
+
+        // Calculate minutes
+        $from = Carbon::createFromFormat('H:i', $validated['time_from']);
+        $to = Carbon::createFromFormat('H:i', $validated['time_to']);
+        $minutes = $from->diffInMinutes($to);
+
+        TeachingProgram::create([
+            'teacher_id' => $teacher->id,
+            'section_id' => $validated['section_id'],
+            'school_year_id' => $activeSchoolYear->id,
+            'day' => $validated['day'],
+            'time_from' => $validated['time_from'],
+            'time_to' => $validated['time_to'],
+            'subject' => $validated['subject'],
+            'activity' => $validated['activity'],
+            'minutes' => $minutes,
+        ]);
+
+        return back()->with('success', 'Teaching program added successfully.');
+    }
+
+    /**
+     * Update teaching program
+     */
+    public function updateTeachingProgram(Request $request, TeachingProgram $program)
+    {
+        // Verify ownership
+        if ($program->teacher_id !== auth()->user()->teacher?->id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'day' => 'required|in:M,T,W,TH,F',
+            'time_from' => 'required|date_format:H:i',
+            'time_to' => 'required|date_format:H:i|after:time_from',
+            'subject' => 'nullable|string|max:255',
+            'activity' => 'nullable|string',
+        ]);
+
+        // Calculate minutes
+        $from = Carbon::createFromFormat('H:i', $validated['time_from']);
+        $to = Carbon::createFromFormat('H:i', $validated['time_to']);
+        $minutes = $from->diffInMinutes($to);
+
+        $program->update([
+            'day' => $validated['day'],
+            'time_from' => $validated['time_from'],
+            'time_to' => $validated['time_to'],
+            'subject' => $validated['subject'],
+            'activity' => $validated['activity'],
+            'minutes' => $minutes,
+        ]);
+
+        return back()->with('success', 'Teaching program updated successfully.');
+    }
+
+    /**
+     * Delete teaching program
+     */
+    public function deleteTeachingProgram(TeachingProgram $program)
+    {
+        if ($program->teacher_id !== auth()->user()->teacher?->id) {
+            abort(403);
+        }
+
+        $program->delete();
+
+        return back()->with('success', 'Teaching program deleted successfully.');
+    }
+
+
+
+       /**
+     * SF8 - Learner's Basic Health and Nutrition Report
+     */
+    public function sf8(Request $request)
+    {
+        $sections = $this->getTeacherSections();
+        
+        // Get active school year
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            $activeSchoolYear = SchoolYear::latest('start_date')->first();
+        }
+        
+    // Get school settings (only for school info, not for active year)
+    $schoolSettings = Setting::where('group', 'school')->get()->keyBy('key')->map->value;
+    
+    $schoolId = $schoolSettings['deped_school_id'] ?? '';
+    $schoolName = $schoolSettings['school_name'] ?? '';
+    $schoolDivision = $schoolSettings['school_division'] ?? '';
+    $schoolRegion = $schoolSettings['school_region'] ?? '';
+    $schoolDistrict = $schoolSettings['school_district'] ?? '';
+    $schoolHead = $schoolSettings['school_head'] ?? '';
+
+
+        
+        // Get selected section and period
+        $selectedSection = $request->section_id 
+            ? Section::with(['gradeLevel', 'teacher.user'])->find($request->section_id)
+            : $sections->first()?->load(['gradeLevel', 'teacher.user']);
+            
+        $selectedPeriod = $request->period ?? 'bosy'; // bosy or eosy
+        
+        // Get adviser name
+        $adviserName = '';
         if ($selectedSection && $selectedSection->teacher) {
             $teacherUser = $selectedSection->teacher->user;
             if ($teacherUser) {
                 $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
                               ($teacherUser->first_name ?? '') . ' ' . 
                               ($teacherUser->middle_name ?? '');
-                $adviserName = trim($adviserName) ?: $teacherUser->name ?? '___________';
+                $adviserName = trim($adviserName) ?: ($teacherUser->name ?? '');
             } else {
-                $adviserName = $selectedSection->teacher->name ?? '___________';
+                $adviserName = $selectedSection->teacher->name ?? '';
             }
         }
 
-        // Get enrolled students sorted by gender (Male first) then alphabetically
-        $enrollments = collect();
-        $grades = collect();
-
+        // Get enrolled students with health records
+        $healthData = collect();
+        $summaryStats = [];
+        
         if ($selectedSection && $activeSchoolYear) {
-            $enrollments = Enrollment::with(['student.user'])
+            // Get enrolled students only (not completed/inactive)
+            $enrollments = Enrollment::with(['student.user', 'student.healthRecords'])
                 ->where('section_id', $selectedSection->id)
                 ->where('school_year_id', $activeSchoolYear->id)
                 ->where('status', 'enrolled')
+                ->whereHas('student', function ($query) {
+                    $query->whereNotIn('status', ['completed', 'inactive', 'dropped']);
+                })
                 ->get()
                 ->sortBy(function ($enrollment) {
                     $student = $enrollment->student;
+                    if (!$student) return [2, '', ''];
+                    
                     $gender = strtoupper($student->gender ?? '');
-                    // Males first (0), then females (1)
                     $genderOrder = ($gender == 'MALE' || $gender == 'M') ? 0 : 1;
                     
                     $user = $student->user;
-                    $lastName = $user->last_name ?? '';
-                    $firstName = $user->first_name ?? '';
-                    
-                    return [$genderOrder, $lastName, $firstName];
-                })
-                ->values();
+                    return [$genderOrder, $user->last_name ?? '', $user->first_name ?? ''];
+                });
 
-            // Get grades for enrolled students
-            $grades = Grade::whereIn(
-                'student_id',
-                $enrollments->pluck('student.id')
-            )->get();
+            // Process each student
+            foreach ($enrollments as $enrollment) {
+                $student = $enrollment->student;
+                $user = $student->user ?? null;
+                
+                $fullName = ($user->last_name ?? '') . ', ' . 
+                           ($user->first_name ?? '') . ' ' . 
+                           ($user->middle_name ?? '');
+                
+                // Get birthdate and calculate age
+                $birthdate = $student->birthdate ? Carbon::parse($student->birthdate) : null;
+                $age = $birthdate ? $birthdate->age : '';
+                $ageFormatted = $birthdate ? $birthdate->diff(Carbon::now())->format('%y.%m') : '';
+                
+                // Get existing health record for this period
+                $healthRecord = $student->healthRecords
+                    ->where('section_id', $selectedSection->id)
+                    ->where('school_year_id', $activeSchoolYear->id)
+                    ->where('period', $selectedPeriod)
+                    ->first();
+                
+                $healthData->push([
+                    'enrollment' => $enrollment,
+                    'student' => $student,
+                    'full_name' => $fullName,
+                    'gender' => strtoupper($student->gender ?? '') == 'MALE' || strtoupper($student->gender ?? '') == 'M' ? 'M' : 'F',
+                    'lrn' => $student->lrn ?? '',
+                    'birthdate' => $birthdate ? $birthdate->format('m/d/Y') : '',
+                    'age' => $age,
+                    'age_formatted' => $ageFormatted,
+                    'weight' => $healthRecord?->weight,
+                    'height' => $healthRecord?->height,
+                    'height_squared' => $healthRecord?->height ? round(pow($healthRecord->height, 2), 2) : null,
+                    'bmi' => $healthRecord?->bmi,
+                    'nutritional_status' => $healthRecord?->nutritional_status,
+                    'height_for_age' => $healthRecord?->height_for_age,
+                    'remarks' => $healthRecord?->remarks,
+                    'health_record_id' => $healthRecord?->id,
+                ]);
+            }
+
+            // Calculate summary statistics
+            $maleData = $healthData->where('gender', 'M')->whereNotNull('bmi');
+            $femaleData = $healthData->where('gender', 'F')->whereNotNull('bmi');
+            
+            $summaryStats = [
+                'total_students' => $healthData->count(),
+                'assessed_count' => $healthData->whereNotNull('bmi')->count(),
+                'male_count' => $maleData->count(),
+                'female_count' => $femaleData->count(),
+                
+                // Nutritional Status - Male
+                'male_severely_wasted' => $maleData->where('nutritional_status', 'Severely Wasted')->count(),
+                'male_wasted' => $maleData->where('nutritional_status', 'Wasted')->count(),
+                'male_normal' => $maleData->where('nutritional_status', 'Normal')->count(),
+                'male_overweight' => $maleData->where('nutritional_status', 'Overweight')->count(),
+                'male_obese' => $maleData->where('nutritional_status', 'Obese')->count(),
+                
+                // Nutritional Status - Female
+                'female_severely_wasted' => $femaleData->where('nutritional_status', 'Severely Wasted')->count(),
+                'female_wasted' => $femaleData->where('nutritional_status', 'Wasted')->count(),
+                'female_normal' => $femaleData->where('nutritional_status', 'Normal')->count(),
+                'female_overweight' => $femaleData->where('nutritional_status', 'Overweight')->count(),
+                'female_obese' => $femaleData->where('nutritional_status', 'Obese')->count(),
+                
+                // Height for Age - Male
+                'male_severely_stunted' => $maleData->where('height_for_age', 'Severely Stunted')->count(),
+                'male_stunted' => $maleData->where('height_for_age', 'Stunted')->count(),
+                'male_normal_hfa' => $maleData->where('height_for_age', 'Normal')->count(),
+                'male_tall' => $maleData->where('height_for_age', 'Tall')->count(),
+                
+                // Height for Age - Female
+                'female_severely_stunted' => $femaleData->where('height_for_age', 'Severely Stunted')->count(),
+                'female_stunted' => $femaleData->where('height_for_age', 'Stunted')->count(),
+                'female_normal_hfa' => $femaleData->where('height_for_age', 'Normal')->count(),
+                'female_tall' => $femaleData->where('height_for_age', 'Tall')->count(),
+            ];
         }
 
-        return view('teacher.school-forms.sf5', compact(
+        return view('teacher.school-forms.sf8', compact(
             'sections',
             'selectedSection',
+            'selectedPeriod',
             'adviserName',
-            'enrollments',
-            'grades',
-            'schoolYear',
+            'healthData',
             'activeSchoolYear',
             'schoolId',
             'schoolName',
-            'schoolDivision',
+            'schoolHead',
             'schoolRegion',
+            'schoolDivision',
             'schoolDistrict',
-            'schoolHead'
+            'summaryStats'
         ));
     }
 
     /**
-     * Calculate Final Grade
+     * Store or update health record
      */
-    public function calculateFinal($grade)
+    public function storeHealthRecord(Request $request)
     {
-        $ww = $grade->written_works_avg ?? 0;
-        $pt = $grade->performance_tasks_avg ?? 0;
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'section_id' => 'required|exists:sections,id',
+            'period' => 'required|in:bosy,eosy',
+            'weight' => 'required|numeric|min:0|max:200',
+            'height' => 'required|numeric|min:0|max:3',
+            'remarks' => 'nullable|string',
+            'date_of_assessment' => 'required|date',
+        ]);
 
-        return round(($ww * 0.4) + ($pt * 0.6), 2);
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first() 
+            ?? SchoolYear::latest('start_date')->first();
+
+        // Calculate BMI
+        $weight = $validated['weight'];
+        $height = $validated['height'];
+        $bmi = $height > 0 ? round($weight / pow($height, 2), 2) : null;
+        
+        // Determine nutritional status based on BMI (WHO Child Growth Standards simplified)
+        $nutritionalStatus = $this->getNutritionalStatus($bmi, $request->age);
+        
+        // Determine height for age (simplified - would need reference tables)
+        $heightForAge = $this->getHeightForAge($height, $request->age, $request->gender);
+
+        StudentHealthRecord::updateOrCreate(
+            [
+                'student_id' => $validated['student_id'],
+                'section_id' => $validated['section_id'],
+                'school_year_id' => $activeSchoolYear->id,
+                'period' => $validated['period'],
+            ],
+            [
+                'weight' => $weight,
+                'height' => $height,
+                'bmi' => $bmi,
+                'nutritional_status' => $nutritionalStatus,
+                'height_for_age' => $heightForAge,
+                'remarks' => $validated['remarks'],
+                'date_of_assessment' => $validated['date_of_assessment'],
+                'assessed_by' => auth()->id(),
+            ]
+        );
+
+        return back()->with('success', 'Health record saved successfully.');
+    }
+
+    /**
+     * Delete health record
+     */
+    public function deleteHealthRecord(StudentHealthRecord $record)
+    {
+        // Verify teacher owns this section
+        $teacher = auth()->user()->teacher;
+        if ($record->section->teacher_id !== $teacher?->id) {
+            abort(403);
+        }
+
+        $record->delete();
+        return back()->with('success', 'Health record deleted.');
+    }
+
+    /**
+     * Get nutritional status based on BMI
+     */
+    private function getNutritionalStatus($bmi, $age)
+    {
+        // Simplified WHO BMI-for-age categories (would need age/sex specific tables for accuracy)
+        if ($bmi < 14) return 'Severely Wasted';
+        if ($bmi < 15) return 'Wasted';
+        if ($bmi < 25) return 'Normal';
+        if ($bmi < 30) return 'Overweight';
+        return 'Obese';
+    }
+
+    /**
+     * Get height for age status
+     */
+    private function getHeightForAge($height, $age, $gender)
+    {
+        // Simplified - would need WHO growth reference tables
+        // This is placeholder logic
+        if ($height < 1.20 && $age > 10) return 'Stunted';
+        if ($height < 1.10 && $age > 8) return 'Severely Stunted';
+        if ($height > 1.70 && $age < 15) return 'Tall';
+        return 'Normal';
     }
 
 
 
-    
+
 
 public function sf9(Request $request)
 {
     $sections = $this->getTeacherSections();
     
-    // Get active school year from settings
-    $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
-    $activeSchoolYear = SchoolYear::find($activeSchoolYearId) ?? SchoolYear::where('is_active', true)->first();
+    // Get active school year from is_active flag (not from settings)
+    $activeSchoolYear = SchoolYear::where('is_active', true)->first();
     
-    $schoolYear = $activeSchoolYear ? $activeSchoolYear->name : '2025-2026';
+    // If no active school year found, get the latest one
+    if (!$activeSchoolYear) {
+        $activeSchoolYear = SchoolYear::latest('start_date')->first();
+    }
     
-    // Get school settings
+    $schoolYear = $activeSchoolYear->name ?? '';
+    
+    // Get school settings (only for school info, not for active year)
     $schoolSettings = Setting::whereIn('group', ['school', 'general'])->get()->keyBy('key')->map->value;
     
-    $schoolId = $schoolSettings['deped_school_id'] ?? '_______';
-    $schoolName = $schoolSettings['school_name'] ?? 'TUGAWE ELEMENTARY SCHOOL';
-    $schoolDivision = $schoolSettings['school_division'] ?? '_______';
-    $schoolRegion = $schoolSettings['school_region'] ?? '_______';
-    $schoolDistrict = $schoolSettings['school_district'] ?? '_______';
-    $schoolHead = $schoolSettings['school_head'] ?? '_______';
+    $schoolId = $schoolSettings['deped_school_id'] ?? '';
+    $schoolName = $schoolSettings['school_name'] ?? '';
+    $schoolDivision = $schoolSettings['school_division'] ?? '';
+    $schoolRegion = $schoolSettings['school_region'] ?? '';
+    $schoolDistrict = $schoolSettings['school_district'] ?? '';
+    $schoolHead = $schoolSettings['school_head'] ?? '';
     
     // Get all students from teacher's sections
     $students = collect();
@@ -422,6 +1505,8 @@ public function sf9(Request $request)
                 $q->where('school_year_id', $activeSchoolYear->id)
                   ->where('status', 'enrolled');
             })
+            // Filter out students with completed or inactive status
+            ->whereNotIn('status', ['completed', 'inactive'])
             ->where('section_id', $section->id)
             ->get();
         $students = $students->merge($sectionStudents);
@@ -434,16 +1519,16 @@ public function sf9(Request $request)
         : null;
     
     // Get adviser name
-    $adviserName = '___________';
+    $adviserName = '';
     if ($selectedStudent && $selectedStudent->section && $selectedStudent->section->teacher) {
         $teacherUser = $selectedStudent->section->teacher->user;
         if ($teacherUser) {
             $adviserName = ($teacherUser->last_name ?? '') . ', ' . 
                           ($teacherUser->first_name ?? '') . ' ' . 
                           ($teacherUser->middle_name ?? '');
-            $adviserName = trim($adviserName) ?: $teacherUser->name ?? '___________';
+            $adviserName = trim($adviserName) ?: ($teacherUser->name ?? '');
         } else {
-            $adviserName = $selectedStudent->section->teacher->name ?? '___________';
+            $adviserName = $selectedStudent->section->teacher->name ?? '';
         }
     }
 
@@ -451,7 +1536,7 @@ public function sf9(Request $request)
     $subjectGrades = collect();
     $attendances = collect();
     $generalAverage = null;
-    $coreValues = collect(); // Initialize core values collection
+    $coreValues = collect();
     
     if ($selectedStudent) {
         // Get attendance records
@@ -459,12 +1544,11 @@ public function sf9(Request $request)
             ->where('school_year_id', $activeSchoolYear->id)
             ->get();
         
-       
- // Get core values records - GROUPED by core_value and quarter
-$coreValues = CoreValue::where('student_id', $selectedStudent->id)
-    ->where('school_year_id', $activeSchoolYear->id)
-    ->get()
-    ->groupBy(['core_value', 'statement_key']);
+        // Get core values records - GROUPED by core_value and quarter
+        $coreValues = CoreValue::where('student_id', $selectedStudent->id)
+            ->where('school_year_id', $activeSchoolYear->id)
+            ->get()
+            ->groupBy(['core_value', 'statement_key']);
         
         // Build subject grades array from grade level subjects
         $gradeLevelSubjects = $selectedStudent->section->gradeLevel->subjects ?? collect();
@@ -530,7 +1614,7 @@ $coreValues = CoreValue::where('student_id', $selectedStudent->id)
         'subjectGrades',
         'generalAverage',
         'attendances',
-        'coreValues', // Add to compact
+        'coreValues',
         'schoolYear',
         'activeSchoolYear',
         'schoolId',
@@ -543,10 +1627,11 @@ $coreValues = CoreValue::where('student_id', $selectedStudent->id)
 }
 
 
-
     /**
      * SF10 - Learner's Permanent Academic Record (Form 137)
      */
+
+
 
 
 public function sf10(Request $request)
@@ -554,22 +1639,27 @@ public function sf10(Request $request)
     // Get teacher's sections
     $sections = $this->getTeacherSections();
 
-    // Active school year
-    $activeSchoolYearId = Setting::where('key', 'active_school_year_id')->value('value') ?? 1;
-    $activeSchoolYear = SchoolYear::find($activeSchoolYearId) ?? SchoolYear::where('is_active', true)->first();
-    $schoolYear = $activeSchoolYear->name ?? '2025-2026';
+    // Get active school year from is_active flag (not from settings)
+    $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+    
+    // If no active school year found, get the latest one
+    if (!$activeSchoolYear) {
+        $activeSchoolYear = SchoolYear::latest('start_date')->first();
+    }
+    
+    $schoolYear = $activeSchoolYear->name ?? '';
 
-    // School settings
+    // School settings (only for school info, not for active year)
     $schoolSettings = Setting::whereIn('group', ['school', 'general'])
         ->get()->keyBy('key')->map->value;
     $schoolId = $schoolSettings['deped_school_id'] ?? '';
-    $schoolName = $schoolSettings['school_name'] ?? 'TUGAWE ELEMENTARY SCHOOL';
+    $schoolName = $schoolSettings['school_name'] ?? '';
     $schoolDivision = $schoolSettings['school_division'] ?? '';
     $schoolRegion = $schoolSettings['school_region'] ?? '';
     $schoolDistrict = $schoolSettings['school_district'] ?? '';
     $schoolHead = $schoolSettings['school_head'] ?? '';
 
-    // Get all students from teacher's sections (same pattern as SF9)
+    // Get all students from teacher's sections
     $students = collect();
     foreach ($sections as $section) {
         $sectionStudents = Student::with(['user', 'section.gradeLevel'])
@@ -577,6 +1667,8 @@ public function sf10(Request $request)
                 $q->where('school_year_id', $activeSchoolYear->id)
                   ->where('status', 'enrolled');
             })
+            // Filter out students with completed or inactive status
+            ->whereNotIn('status', ['completed', 'inactive'])
             ->where('section_id', $section->id)
             ->get();
         $students = $students->merge($sectionStudents);
@@ -588,7 +1680,7 @@ public function sf10(Request $request)
         ? Student::with(['user', 'section.gradeLevel.subjects', 'section.teacher.user'])->find($request->student_id)
         : null;
 
-    // Get adviser name (same pattern as SF9)
+    // Get adviser name
     $adviserName = '';
     if ($selectedStudent && $selectedStudent->section && $selectedStudent->section->teacher) {
         $teacherUser = $selectedStudent->section->teacher->user;
@@ -635,7 +1727,7 @@ public function sf10(Request $request)
                 $subjectsByGrade[$gradeLevelName] = collect();
             }
 
-            // Get grades for this student in this grade level (same pattern as SF9)
+            // Get grades for this student in this grade level
             $grades = Grade::with(['subject', 'section.gradeLevel'])
                 ->where('student_id', $selectedStudent->id)
                 ->where('school_year_id', $activeSchoolYear->id)
