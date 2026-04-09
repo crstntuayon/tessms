@@ -33,15 +33,15 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request)
     {
-        // Generate full LRN
-        $fullLrn = '120231' . $request->lrn_suffix;
+        // Generate full LRN if provided
+        $fullLrn = $request->filled('lrn_suffix') ? '120231' . $request->lrn_suffix : null;
 
         $request->validate([
             'lrn_suffix' => [
-                'required',
+                'nullable',
                 'digits:6',
                 function ($attribute, $value, $fail) use ($fullLrn) {
-                    if (Student::where('lrn', $fullLrn)->exists()) {
+                    if ($fullLrn && Student::where('lrn', $fullLrn)->exists()) {
                         $fail('The LRN is already taken.');
                     }
                 },
@@ -56,15 +56,15 @@ class RegisteredUserController extends Controller
             'birth_place' => 'required|string|max:255',
             'gender' => 'required|in:Male,Female,Other',
             'nationality' => 'required|string|max:255',
-            'religion' => 'nullable|string|max:255',
+            'religion' => 'required|string|max:255',
 
-            'father_name' => 'nullable|string|max:255',
-            'father_occupation' => 'nullable|string|max:255',
-            'mother_name' => 'nullable|string|max:255',
-            'mother_occupation' => 'nullable|string|max:255',
+            'father_name' => 'required|string|max:255',
+            'father_occupation' => 'required|string|max:255',
+            'mother_name' => 'required|string|max:255',
+            'mother_occupation' => 'required|string|max:255',
 
-            'guardian_name' => 'nullable|string|max:255',
-            'guardian_relationship' => 'nullable|string|max:255',
+            'guardian_name' => 'required|string|max:255',
+            'guardian_relationship' => 'required|string|max:255',
             'guardian_contact' => 'nullable|string|max:50',
 
             'street_address' => 'required|string|max:255',
@@ -85,14 +85,14 @@ class RegisteredUserController extends Controller
 
             'photo' => 'nullable|image|max:2048',
 
-            'ethnicity' => 'nullable|string|max:100',
-            'mother_tongue' => 'nullable|string|max:100',
+            'ethnicity' => 'required|string|max:100',
+            'mother_tongue' => 'required|string|max:100',
             'remarks' => 'nullable|string|max:255',
             
-            // Document uploads
+            // Document uploads - all optional
             'birth_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'report_card' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'good_moral' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'report_card' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'good_moral' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'transfer_credential' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 

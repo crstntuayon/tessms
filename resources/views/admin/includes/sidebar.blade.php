@@ -195,6 +195,15 @@ if ($activeSchoolYear) {
                 <span class="ml-auto bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0">{{ $sidebarEnrollmentCount }}</span>
             @endif
         </a>
+
+        <a href="{{ route('admin.announcements.index') }}" 
+           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           class="nav-item {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.announcements.*') ? 'text-amber-600 bg-amber-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
+            <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.announcements.*') ? 'bg-amber-100' : 'bg-slate-100 group-hover:bg-amber-50' }} flex items-center justify-center flex-shrink-0 transition-colors">
+                <i class="fas fa-bullhorn text-sm {{ request()->routeIs('admin.announcements.*') ? 'text-amber-600' : 'group-hover:text-amber-600' }}"></i>
+            </div>
+            <span class="truncate">Announcements</span>
+        </a>
         
         <a href="{{ route('admin.reports.index') }}" 
            @click="if (window.innerWidth < 1024) sidebarOpen = false"

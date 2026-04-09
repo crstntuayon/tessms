@@ -29,7 +29,7 @@
             <div class="credentials-box">
                 <h3 style="margin-top: 0; color: #10b981;">Student Account Credentials</h3>
                 <p><strong>Student Name:</strong> {{ $student->first_name }} {{ $student->last_name }}</p>
-                <p><strong>LRN:</strong> {{ $student->lrn }}</p>
+                <p><strong>LRN:</strong> {{ $student->lrn ?? 'Not Assigned' }}</p>
                 <p><strong>Username:</strong> {{ $user->username }}</p>
                 <p><strong>Email:</strong> {{ $user->email }}</p>
                 <hr style="margin: 15px 0; border: none; border-top: 1px solid #e5e7eb;">

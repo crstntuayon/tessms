@@ -729,7 +729,7 @@
                                             </span>
                                         </td>
                                         <td class="px-4 sm:px-6 py-3 sm:py-4">
-                                            <span class="font-mono text-xs sm:text-sm text-slate-600 bg-slate-50 px-2 py-1 rounded border border-slate-200">{{ $student->lrn }}</span>
+                                            <span class="font-mono text-xs sm:text-sm text-slate-600 bg-slate-50 px-2 py-1 rounded border border-slate-200">{{ $student->lrn ?? 'N/A' }}</span>
                                         </td>
                                         <td class="px-4 sm:px-6 py-3 sm:py-4">
                                             <span class="status-badge status-{{ $student->status }} capitalize">

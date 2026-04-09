@@ -547,7 +547,7 @@
                                             {{ $student->user->last_name ?? $student->last_name }}, 
                                             {{ $student->user->first_name ?? $student->first_name }}
                                         </p>
-                                        <p class="text-xs text-slate-500 font-mono">LRN: {{ $student->lrn }}</p>
+                                        <p class="text-xs text-slate-500 font-mono">LRN: {{ $student->lrn ?? 'Not Assigned' }}</p>
                                     </div>
                                 </div>
                                 <input type="hidden" name="attendance[{{ $student->id }}][student_id]" value="{{ $student->id }}">
@@ -803,7 +803,7 @@
                                                     </div>
                                                     <div>
                                                         <p class="font-semibold text-slate-800 text-sm">{{ $student->user->last_name }}, {{ $student->user->first_name }}</p>
-                                                        <p class="text-[10px] text-slate-500 font-mono">LRN: {{ $student->lrn }}</p>
+                                                        <p class="text-[10px] text-slate-500 font-mono">LRN: {{ $student->lrn ?? 'Not Assigned' }}</p>
                                                     </div>
                                                 </div>
                                             </td>

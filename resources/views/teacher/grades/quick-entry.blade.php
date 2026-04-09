@@ -87,7 +87,7 @@
                                         </span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-2 text-sm text-slate-500 font-mono">{{ substr($student->lrn, -4) }}</td>
+                                <td class="px-4 py-2 text-sm text-slate-500 font-mono">{{ $student->lrn ? substr($student->lrn, -4) : 'N/A' }}</td>
                                 @foreach($subjects as $subject)
                                     @php
                                         $gradeKey = $student->id . '_' . $subject->id;

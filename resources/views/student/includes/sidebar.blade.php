@@ -1,3 +1,16 @@
+@php
+// Calculate unread announcement count for the student
+$unreadAnnouncements = 0;
+$currentStudent = auth()->user()->student;
+if ($currentStudent) {
+    $activeSchoolYear = \App\Models\SchoolYear::getActive();
+    $unreadAnnouncements = \App\Models\Announcement::visibleToStudent($currentStudent)
+        ->active()
+        ->when($activeSchoolYear, fn($q) => $q->forSchoolYear($activeSchoolYear->id))
+        ->unreadBy(auth()->id())
+        ->count();
+}
+@endphp
 <!-- Tugawe Elementary School Sidebar - Alpine.js Only -->
 <aside id="sidebar" 
        x-cloak
@@ -255,9 +268,16 @@
                     <!-- Announcements -->
                     <a href="{{ route('student.announcements') }}" 
                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group {{ request()->routeIs('student.announcements*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50' }}">
-                        <svg class="w-5 h-5 {{ request()->routeIs('student.announcements*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }} transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
-                        </svg>
+                        <div class="relative">
+                            <svg class="w-5 h-5 {{ request()->routeIs('student.announcements*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }} transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                            </svg>
+                            @if($unreadAnnouncements > 0)
+                                <span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                                    {{ $unreadAnnouncements > 9 ? '9+' : $unreadAnnouncements }}
+                                </span>
+                            @endif
+                        </div>
                         <span class="flex-1 whitespace-nowrap transition-all duration-300" 
                               :class="{ 'opacity-0 w-0 hidden': sidebarCollapsed && window.innerWidth >= 1024 && !mobileOpen, 'opacity-100': (!sidebarCollapsed && window.innerWidth >= 1024) || mobileOpen }">Announcements</span>
                     </a>

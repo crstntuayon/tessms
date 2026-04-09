@@ -639,7 +639,7 @@
                                         pattern="[0-9]{6}"
                                         inputmode="numeric"
                                         oninput="validateLRN(this)"
-                                        value="{{ old('lrn', substr($student->lrn, 6)) }}"
+                                        value="{{ old('lrn', $student->lrn ? substr($student->lrn, 6) : '') }}"
                                     >
                                 </div>
                                 <p class="input-hint">Enter last 6 digits only (12 digits total)</p>

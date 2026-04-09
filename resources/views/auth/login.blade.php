@@ -4,7 +4,13 @@
     use App\Models\Student;
     use App\Models\Section;
     
-    $announcements = Announcement::latest()->take(6)->get();
+    $announcements = Announcement::with(['author.role', 'author.teacher.sections.gradeLevel'])
+        ->whereHas('author.role', function ($q) {
+            $q->where('name', 'System Admin');
+        })
+        ->latest()
+        ->take(6)
+        ->get();
     $teachers = Teacher::all();
     $students = Student::whereHas('enrollments', function($q) {
         $q->where('status', 'enrolled');
@@ -855,16 +861,35 @@ function imageSlider() {
                     </h3>
                     
                     <p class="text-slate-600 line-clamp-3 mb-6 leading-relaxed">
-                        {{ $announcement->content }}
+                        {{ $announcement->message }}
                     </p>
                     
                     <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center text-sm font-bold text-teal-700">
-                            {{ substr($announcement->user->name, 0, 1) }}
+                            {{ $announcement->author ? substr($announcement->author->full_name ?? $announcement->author->name ?? 'A', 0, 1) : 'A' }}
                         </div>
                         <div>
-                            <span class="text-sm font-semibold text-slate-900 block">{{ $announcement->user->name }}</span>
-                            <span class="text-xs text-slate-500">Administrator</span>
+                            @php
+                                $authorName = $announcement->author?->full_name ?? $announcement->author?->name ?? 'Administrator';
+                                $authorRole = 'Administrator';
+                                if ($announcement->author && $announcement->author->role) {
+                                    $roleName = strtolower($announcement->author->role->name ?? '');
+                                    if ($roleName === 'teacher' && $announcement->author->teacher) {
+                                        $teacherSections = $announcement->author->teacher->sections;
+                                        if ($teacherSections->isNotEmpty()) {
+                                            $firstSection = $teacherSections->first();
+                                            $gradeName = $firstSection->gradeLevel?->name ?? '';
+                                            $authorRole = $gradeName ? $gradeName . ' Adviser' : 'Teacher';
+                                        } else {
+                                            $authorRole = 'Teacher';
+                                        }
+                                    } elseif ($roleName === 'admin') {
+                                        $authorRole = 'Administrator';
+                                    }
+                                }
+                            @endphp
+                            <span class="text-sm font-semibold text-slate-900 block">{{ $authorName }}</span>
+                            <span class="text-xs text-slate-500">{{ $authorRole }}</span>
                         </div>
                     </div>
                 </article>
@@ -1277,7 +1302,7 @@ function imageSlider() {
             <label class="block text-sm font-medium text-slate-700 mb-2">LRN</label>
             <div class="flex max-w-md">
                 <span class="inline-flex items-center px-4 py-3 bg-teal-50 border-2 border-r-0 border-teal-200 rounded-l-lg text-teal-700 font-semibold text-sm">120231</span>
-                <input type="text" name="lrn_suffix" maxlength="6" required placeholder="Last 6 digits"
+                <input type="text" name="lrn_suffix" maxlength="6" placeholder="Last 6 digits"
                        class="flex-1 px-4 py-3 border-2 border-slate-200 rounded-r-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-mono text-lg tracking-wider placeholder:text-slate-400">
             </div>
             <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
@@ -1355,18 +1380,18 @@ function imageSlider() {
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div class="group">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Religion</label>
-                    <input type="text" name="religion" placeholder="Roman Catholic" 
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Religion <span class="text-red-500">*</span></label>
+                    <input type="text" name="religion" placeholder="Roman Catholic" required
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div class="group">
-    <label class="block text-sm font-medium text-slate-700 mb-2">Ethnicity</label>
-    <input type="text" name="ethnicity" placeholder="e.g., Cebuano, Tagalog" 
+    <label class="block text-sm font-medium text-slate-700 mb-2">Ethnicity <span class="text-red-500">*</span></label>
+    <input type="text" name="ethnicity" placeholder="e.g., Cebuano, Tagalog" required
            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
 </div>
 <div class="group">
-    <label class="block text-sm font-medium text-slate-700 mb-2">Mother Tongue</label>
-    <input type="text" name="mother_tongue" placeholder="e.g., Cebuano, Filipino" 
+    <label class="block text-sm font-medium text-slate-700 mb-2">Mother Tongue <span class="text-red-500">*</span></label>
+    <input type="text" name="mother_tongue" placeholder="e.g., Cebuano, Filipino" required
            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
 </div>
             </div>
@@ -1386,14 +1411,14 @@ function imageSlider() {
                             <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
-                            Father's Name
+                            Father's Name <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" name="father_name" placeholder="Full Name" 
+                        <input type="text" name="father_name" placeholder="Full Name" required
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Occupation</label>
-                        <input type="text" name="father_occupation" placeholder="e.g., Engineer" 
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Occupation <span class="text-red-500">*</span></label>
+                        <input type="text" name="father_occupation" placeholder="e.g., Engineer" required
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                 </div>
@@ -1404,14 +1429,14 @@ function imageSlider() {
                             <svg class="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
-                            Mother's Name
+                            Mother's Name <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" name="mother_name" placeholder="Full Name" 
+                        <input type="text" name="mother_name" placeholder="Full Name" required
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Occupation</label>
-                        <input type="text" name="mother_occupation" placeholder="e.g., Teacher" 
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Occupation <span class="text-red-500">*</span></label>
+                        <input type="text" name="mother_occupation" placeholder="e.g., Teacher" required
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                 </div>
@@ -1422,14 +1447,14 @@ function imageSlider() {
                             <svg class="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                             </svg>
-                            Guardian's Name
+                            Guardian's Name <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" name="guardian_name" placeholder="Full Name" 
+                        <input type="text" name="guardian_name" placeholder="Full Name" required
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Relationship</label>
-                        <select name="guardian_relationship" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Relationship <span class="text-red-500">*</span></label>
+                        <select name="guardian_relationship" required class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
                             <option value="">Select</option>
                             <option value="Parent">Parent</option>
                             <option value="Grandparent">Grandparent</option>
@@ -1455,30 +1480,30 @@ function imageSlider() {
             </h3>
             
             <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-700 mb-2">Street Address</label>
-                <input type="text" name="street_address" placeholder="House No., Street, Subdivision" 
+                <label class="block text-sm font-medium text-slate-700 mb-2">Street Address <span class="text-red-500">*</span></label>
+                <input type="text" name="street_address" placeholder="House No., Street, Subdivision" required
                        class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
             </div>
             
            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Barangay</label>
-                    <input type="text" name="barangay" placeholder="Barangay" 
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Barangay <span class="text-red-500">*</span></label>
+                    <input type="text" name="barangay" placeholder="Barangay" required
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">City</label>
-                    <input type="text" name="city" placeholder="City" 
+                    <label class="block text-sm font-medium text-slate-700 mb-2">City <span class="text-red-500">*</span></label>
+                    <input type="text" name="city" placeholder="City" required
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Province</label>
-                    <input type="text" name="province" placeholder="Province" 
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Province <span class="text-red-500">*</span></label>
+                    <input type="text" name="province" placeholder="Province" required
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">ZIP Code</label>
-                    <input type="text" name="zip_code" placeholder="ZIP" maxlength="4"
+                    <label class="block text-sm font-medium text-slate-700 mb-2">ZIP Code <span class="text-red-500">*</span></label>
+                    <input type="text" name="zip_code" placeholder="ZIP" maxlength="4" required
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-mono">
                 </div>
             </div>
@@ -1672,7 +1697,7 @@ function imageSlider() {
         <div class="bg-white p-4 rounded-lg border border-slate-200">
             <label class="block text-sm font-medium text-slate-700 mb-2">
                 <span id="birthCertLabel">Birth Certificate</span> 
-                <span class="text-red-500" id="birthCertRequired">*</span>
+                <span class="text-slate-400 text-xs" id="birthCertRequired">(Optional)</span>
             </label>
             <div class="flex items-center justify-center w-full">
                 <label for="birth_certificate" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
@@ -1697,7 +1722,7 @@ function imageSlider() {
         <!-- Report Card -->
         <div class="bg-white p-4 rounded-lg border border-slate-200">
             <label class="block text-sm font-medium text-slate-700 mb-2">
-                Report Card / Form 138 <span class="text-red-500">*</span>
+                Report Card / Form 138 <span class="text-slate-400 text-xs">(Optional)</span>
             </label>
             <div class="flex items-center justify-center w-full">
                 <label for="report_card" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
@@ -1722,7 +1747,7 @@ function imageSlider() {
         <!-- Good Moral Certificate -->
         <div class="bg-white p-4 rounded-lg border border-slate-200">
             <label class="block text-sm font-medium text-slate-700 mb-2">
-                Certificate of Good Moral Character <span class="text-red-500">*</span>
+                Certificate of Good Moral Character <span class="text-slate-400 text-xs">(Optional)</span>
             </label>
             <div class="flex items-center justify-center w-full">
                 <label for="good_moral" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
@@ -1747,7 +1772,7 @@ function imageSlider() {
         <!-- Transfer Credentials (for transferees only) -->
         <div class="bg-white p-4 rounded-lg border border-slate-200 hidden" id="transferCredentialField">
             <label class="block text-sm font-medium text-slate-700 mb-2">
-                Transfer Credentials / Honorable Dismissal <span class="text-red-500">*</span>
+                Transfer Credentials / Honorable Dismissal <span class="text-slate-400 text-xs">(Optional)</span>
             </label>
             <div class="flex items-center justify-center w-full">
                 <label for="transfer_credential" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
@@ -1860,12 +1885,31 @@ function imageSlider() {
                             </time>
                         </div>
                         <h3 class="text-xl font-bold text-slate-900 mb-2">{{ $announcement->title }}</h3>
-                        <p class="text-slate-600 leading-relaxed">{{ $announcement->content }}</p>
+                        <p class="text-slate-600 leading-relaxed">{{ $announcement->message }}</p>
                         <div class="mt-4 flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center text-xs font-bold text-teal-700">
-                                {{ substr($announcement->user->name, 0, 1) }}
+                                {{ $announcement->author ? substr($announcement->author->full_name ?? $announcement->author->name ?? 'A', 0, 1) : 'A' }}
                             </div>
-                            <span class="text-sm text-slate-500">Posted by <span class="font-semibold text-slate-700">{{ $announcement->user->name }}</span></span>
+                            @php
+                                $authorName2 = $announcement->author?->full_name ?? $announcement->author?->name ?? 'Administrator';
+                                $authorRole2 = 'Administrator';
+                                if ($announcement->author && $announcement->author->role) {
+                                    $roleName2 = strtolower($announcement->author->role->name ?? '');
+                                    if ($roleName2 === 'teacher' && $announcement->author->teacher) {
+                                        $teacherSections2 = $announcement->author->teacher->sections;
+                                        if ($teacherSections2->isNotEmpty()) {
+                                            $firstSection2 = $teacherSections2->first();
+                                            $gradeName2 = $firstSection2->gradeLevel?->name ?? '';
+                                            $authorRole2 = $gradeName2 ? $gradeName2 . ' Adviser' : 'Teacher';
+                                        } else {
+                                            $authorRole2 = 'Teacher';
+                                        }
+                                    } elseif ($roleName2 === 'admin') {
+                                        $authorRole2 = 'Administrator';
+                                    }
+                                }
+                            @endphp
+                            <span class="text-sm text-slate-500">Posted by <span class="font-semibold text-slate-700">{{ $authorName2 }}</span> <span class="text-slate-400">· {{ $authorRole2 }}</span></span>
                         </div>
                     </article>
                     @endforeach
@@ -2003,15 +2047,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.addEventListener('DOMContentLoaded', function () {
     const suffixInput = document.getElementById('lrn_suffix');
-    const fullInput = document.getElementById('lrn_full');
 
-    if (suffixInput && fullInput) {
+    if (suffixInput) {
         suffixInput.addEventListener('input', function () {
             // Allow only numbers
             this.value = this.value.replace(/\D/g, '');
-
-            // Combine prefix + suffix
-            fullInput.value = '120231' + this.value;
         });
     }
     

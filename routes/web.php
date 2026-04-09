@@ -388,9 +388,6 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
     Route::get('/messages/attachment/{attachment}', [App\Http\Controllers\Student\MessageController::class, 'downloadAttachment'])->name('messages.attachment');
 
 
- Route::get('/announcements', [App\Http\Controllers\Student\AnnouncementController::class, 'index'])->name('announcements');
-
-
  Route::get('/profile', [App\Http\Controllers\Student\ProfileController::class, 'index'])->name('profile');
  Route::post('/profile/photo', [App\Http\Controllers\Student\ProfileController::class, 'updatePhoto'])->name('profile.photo');
  Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
@@ -415,6 +412,16 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth'])->group(func
 Route::prefix('teacher')->name('teacher.')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Teacher\DashboardController::class, 'index'])->name('dashboard');
     
+    // Teacher Announcements
+    Route::get('/announcements', [App\Http\Controllers\Teacher\AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('/announcements/create', [App\Http\Controllers\Teacher\AnnouncementController::class, 'create'])->name('announcements.create');
+    Route::post('/announcements', [App\Http\Controllers\Teacher\AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::get('/announcements/{announcement}/edit', [App\Http\Controllers\Teacher\AnnouncementController::class, 'edit'])->name('announcements.edit');
+    Route::put('/announcements/{announcement}', [App\Http\Controllers\Teacher\AnnouncementController::class, 'update'])->name('announcements.update');
+    Route::get('/announcements/{announcement}', [App\Http\Controllers\Teacher\AnnouncementController::class, 'show'])->name('announcements.show');
+    Route::post('/announcements/{announcement}/pin', [App\Http\Controllers\Teacher\AnnouncementController::class, 'togglePin'])->name('announcements.pin');
+    Route::delete('/announcements/{announcement}', [App\Http\Controllers\Teacher\AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+    
     // Quick Grade Entry
     Route::get('/sections/{section}/grades/quick-entry', [App\Http\Controllers\Teacher\GradeController::class, 'quickEntry'])->name('grades.quick-entry');
     Route::post('/sections/{section}/grades/quick-save', [App\Http\Controllers\Teacher\GradeController::class, 'saveQuickGrades'])->name('grades.quick-save');
@@ -425,6 +432,11 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth'])->group(function
 
 Route::prefix('student')->name('student.')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('dashboard');
+    
+    // Student Announcements
+    Route::get('/announcements', [App\Http\Controllers\Student\AnnouncementController::class, 'index'])->name('announcements');
+    Route::get('/announcements/{announcement}', [App\Http\Controllers\Student\AnnouncementController::class, 'show'])->name('announcements.show');
+    Route::post('/announcements/{announcement}/read', [App\Http\Controllers\Student\AnnouncementController::class, 'markAsRead'])->name('announcements.read');
 });
 
 // Notification Routes (for all authenticated users)
@@ -456,6 +468,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
     // Admin Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Admin Announcements
+    Route::get('/announcements', [\App\Http\Controllers\Admin\AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('/announcements/create', [\App\Http\Controllers\Admin\AnnouncementController::class, 'create'])->name('announcements.create');
+    Route::post('/announcements', [\App\Http\Controllers\Admin\AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::get('/announcements/{announcement}/edit', [\App\Http\Controllers\Admin\AnnouncementController::class, 'edit'])->name('announcements.edit');
+    Route::put('/announcements/{announcement}', [\App\Http\Controllers\Admin\AnnouncementController::class, 'update'])->name('announcements.update');
+    Route::get('/announcements/{announcement}', [\App\Http\Controllers\Admin\AnnouncementController::class, 'show'])->name('announcements.show');
+    Route::post('/announcements/{announcement}/pin', [\App\Http\Controllers\Admin\AnnouncementController::class, 'togglePin'])->name('announcements.pin');
+    Route::delete('/announcements/{announcement}', [\App\Http\Controllers\Admin\AnnouncementController::class, 'destroy'])->name('announcements.destroy');
 
     // Students Management
     Route::get('/students', [StudentController::class, 'index'])->name('students.index');
