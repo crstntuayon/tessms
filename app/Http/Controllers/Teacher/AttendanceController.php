@@ -139,4 +139,47 @@ class AttendanceController extends Controller
             'message' => 'Attendance saved successfully'
         ]);
     }
+
+    /**
+     * Mark all students with same status
+     */
+    public function markAll(Request $request, Section $section)
+    {
+        if ($section->teacher_id !== auth()->user()->teacher->id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'status' => 'required|in:present,absent,late',
+        ]);
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        if (!$activeSchoolYear) {
+            return back()->with('error', 'No active school year found.');
+        }
+
+        $students = $section->students()
+            ->whereNotIn('status', ['completed', 'inactive'])
+            ->get();
+
+        $today = now()->toDateString();
+
+        foreach ($students as $student) {
+            Attendance::updateOrCreate(
+                [
+                    'section_id' => $section->id,
+                    'student_id' => $student->id,
+                    'date' => $today,
+                ],
+                [
+                    'school_year_id' => $activeSchoolYear->id,
+                    'status' => $request->status,
+                    'teacher_id' => auth()->user()->teacher->id,
+                ]
+            );
+        }
+
+        return back()->with('success', "All students marked as {$request->status}.");
+    }
 }

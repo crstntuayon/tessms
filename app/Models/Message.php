@@ -20,11 +20,13 @@ class Message extends Model
         'is_read',
         'read_at',
         'is_bulk',
+        'is_edited',
     ];
 
     protected $casts = [
         'is_read' => 'boolean',
         'is_bulk' => 'boolean',
+        'is_edited' => 'boolean',
         'read_at' => 'datetime',
     ];
 
@@ -81,6 +83,17 @@ class Message extends Model
     public function scopeSentBy($query, $userId)
     {
         return $query->where('sender_id', $userId);
+    }
+
+    public function scopeBetweenUsers($query, $userId1, $userId2)
+    {
+        return $query->where(function ($q) use ($userId1, $userId2) {
+            $q->where(function ($sq) use ($userId1, $userId2) {
+                $sq->where('sender_id', $userId1)->where('recipient_id', $userId2);
+            })->orWhere(function ($sq) use ($userId1, $userId2) {
+                $sq->where('sender_id', $userId2)->where('recipient_id', $userId1);
+            });
+        });
     }
 
     public function scopeSearch($query, $search)

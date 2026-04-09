@@ -374,4 +374,92 @@ class GradeController extends Controller
             return 'Failed';
         }
     }
+
+    /**
+     * Quick Grade Entry - Spreadsheet view for all subjects
+     */
+    public function quickEntry(Section $section)
+    {
+        if ($section->teacher_id !== auth()->user()->teacher->id) {
+            abort(403);
+        }
+
+        $students = $section->students()
+            ->whereNotIn('status', ['completed', 'inactive'])
+            ->with('user')
+            ->orderBy('last_name')
+            ->get();
+
+        $subjects = $section->gradeLevel->subjects ?? collect();
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        $currentQuarter = Setting::get('current_quarter', 1);
+
+        // Get all existing grades for quick loading
+        $grades = Grade::where('section_id', $section->id)
+            ->where('school_year_id', $activeSchoolYear?->id)
+            ->where('quarter', $currentQuarter)
+            ->where('component_type', 'final_grade')
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->student_id . '_' . $item->subject_id;
+            });
+
+        return view('teacher.grades.quick-entry', compact(
+            'section',
+            'students',
+            'subjects',
+            'grades',
+            'currentQuarter'
+        ));
+    }
+
+    /**
+     * Save quick grades
+     */
+    public function saveQuickGrades(Request $request, Section $section)
+    {
+        if ($section->teacher_id !== auth()->user()->teacher->id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'grades' => 'required|array',
+            'quarter' => 'required|in:1,2,3,4',
+        ]);
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            return back()->with('error', 'No active school year found.');
+        }
+
+        DB::beginTransaction();
+        try {
+            foreach ($request->grades as $studentId => $subjects) {
+                foreach ($subjects as $subjectId => $grade) {
+                    if ($grade !== null && $grade !== '') {
+                        Grade::updateOrCreate(
+                            [
+                                'section_id' => $section->id,
+                                'student_id' => $studentId,
+                                'subject_id' => $subjectId,
+                                'quarter' => $request->quarter,
+                                'component_type' => 'final_grade',
+                                'school_year_id' => $activeSchoolYear->id,
+                            ],
+                            [
+                                'school_year_id' => $activeSchoolYear->id,
+                                'final_grade' => $grade,
+                                'remarks' => $this->getRemarks($grade),
+                            ]
+                        );
+                    }
+                }
+            }
+            DB::commit();
+            return back()->with('success', 'Grades saved successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to save grades: ' . $e->getMessage());
+        }
+    }
 }

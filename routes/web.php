@@ -141,26 +141,96 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
         Route::delete('/students/{student}', [App\Http\Controllers\Teacher\StudentController::class, 'destroy'])->name('students.destroy');
 
         // Communications Routes
-        Route::get('/communications', [App\Http\Controllers\Teacher\CommunicationController::class, 'index'])
-            ->name('communications.index');
-        Route::post('/communications', [App\Http\Controllers\Teacher\CommunicationController::class, 'store'])
-            ->name('communications.store');
-        Route::get('/communications/{message}', [App\Http\Controllers\Teacher\CommunicationController::class, 'show'])
-            ->name('communications.show');
-        Route::post('/communications/{message}/reply', [App\Http\Controllers\Teacher\CommunicationController::class, 'reply'])
-            ->name('communications.reply');
-        Route::delete('/communications/{message}', [App\Http\Controllers\Teacher\CommunicationController::class, 'destroy'])
-            ->name('communications.destroy');
-        Route::get('/communications/attachment/{attachment}', [App\Http\Controllers\Teacher\CommunicationController::class, 'downloadAttachment'])
-            ->name('communications.attachment');
-        Route::get('/communications/section/{section}/students', [App\Http\Controllers\Teacher\CommunicationController::class, 'getSectionStudents'])
-            ->name('communications.section.students');
+        // Messenger (Real-time Chat)
+    Route::get('/messenger', [App\Http\Controllers\MessengerController::class, 'index'])->name('messenger');
+    Route::get('/messenger-test', function() {
+        $user = auth()->user();
+        $roleName = strtolower($user->role?->name ?? '');
+        $contacts = collect();
+        
+        if ($roleName === 'teacher') {
+            $teacherSections = \App\Models\Section::where('teacher_id', $user->id)->pluck('id');
+            if ($teacherSections->isNotEmpty()) {
+                $contacts = \App\Models\User::whereHas('student', function ($query) use ($teacherSections) {
+                        $query->whereIn('section_id', $teacherSections);
+                    })->where('id', '!=', $user->id)->get();
+            }
+        } elseif ($roleName === 'student') {
+            $student = \App\Models\Student::where('user_id', $user->id)->first();
+            if ($student && $student->section_id) {
+                $section = \App\Models\Section::find($student->section_id);
+                if ($section && $section->teacher_id) {
+                    $contacts = \App\Models\User::where('id', $section->teacher_id)->get();
+                }
+            }
+        }
+        
+        return view('messenger.test', compact('contacts'));
+    })->name('messenger.test');
+    
+    // Legacy Communication Routes (redirect to messenger)
+    Route::get('/communications', function() {
+        return redirect()->route('teacher.messenger');
+    })->name('communications.index');
+    Route::post('/communications', [App\Http\Controllers\Teacher\CommunicationController::class, 'store'])
+        ->name('communications.store');
+    Route::get('/communications/{message}', [App\Http\Controllers\Teacher\CommunicationController::class, 'show'])
+        ->name('communications.show');
+    Route::post('/communications/{message}/reply', [App\Http\Controllers\Teacher\CommunicationController::class, 'reply'])
+        ->name('communications.reply');
+    Route::delete('/communications/{message}', [App\Http\Controllers\Teacher\CommunicationController::class, 'destroy'])
+        ->name('communications.destroy');
+    Route::get('/communications/attachment/{attachment}', [App\Http\Controllers\Teacher\CommunicationController::class, 'downloadAttachment'])
+        ->name('communications.attachment');
+    Route::get('/communications/section/{section}/students', [App\Http\Controllers\Teacher\CommunicationController::class, 'getSectionStudents'])
+        ->name('communications.section.students');
 
         
 
     Route::get('/sections/{section}/attendance',
         [App\Http\Controllers\Teacher\AttendanceController::class, 'index'])
         ->name('sections.attendance');
+    
+    // Attendance Quick Actions
+    Route::get('/sections/{section}/attendance/create',
+        [App\Http\Controllers\Teacher\AttendanceController::class, 'create'])
+        ->name('attendance.create');
+    Route::post('/sections/{section}/attendance/mark-all',
+        [App\Http\Controllers\Teacher\AttendanceController::class, 'markAll'])
+        ->name('attendance.mark-all');
+    
+    // Quick Grade Entry
+    Route::get('/sections/{section}/grades/quick-entry',
+        [App\Http\Controllers\Teacher\GradeController::class, 'quickEntry'])
+        ->name('grades.quick-entry');
+    Route::post('/sections/{section}/grades/quick-save',
+        [App\Http\Controllers\Teacher\GradeController::class, 'saveQuickGrades'])
+        ->name('grades.quick-save');
+    
+    // Performance Analytics
+    Route::get('/sections/{section}/analytics',
+        [App\Http\Controllers\Teacher\AnalyticsController::class, 'index'])
+        ->name('sections.analytics');
+    
+    // Assignments
+    Route::get('/sections/{section}/assignments',
+        [App\Http\Controllers\Teacher\AssignmentController::class, 'index'])
+        ->name('assignments.index');
+    Route::get('/sections/{section}/assignments/create',
+        [App\Http\Controllers\Teacher\AssignmentController::class, 'create'])
+        ->name('assignments.create');
+    Route::post('/sections/{section}/assignments',
+        [App\Http\Controllers\Teacher\AssignmentController::class, 'store'])
+        ->name('assignments.store');
+    Route::get('/sections/{section}/assignments/{assignment}',
+        [App\Http\Controllers\Teacher\AssignmentController::class, 'show'])
+        ->name('assignments.show');
+    Route::post('/sections/{section}/assignments/{assignment}/grade',
+        [App\Http\Controllers\Teacher\AssignmentController::class, 'grade'])
+        ->name('assignments.grade');
+    Route::delete('/sections/{section}/assignments/{assignment}',
+        [App\Http\Controllers\Teacher\AssignmentController::class, 'destroy'])
+        ->name('assignments.destroy');
         
 
     Route::post('/sections/{section}/attendance',
@@ -237,6 +307,31 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
 
     Route::get('/sf9', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf9'])->name('sf9');
     Route::get('/sf10', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf10'])->name('sf10');
+    
+    // Seating Chart & Roster
+    Route::get('/sections/{section}/seating',
+        [App\Http\Controllers\Teacher\SeatingController::class, 'index'])
+        ->name('seating.index');
+    Route::post('/sections/{section}/seating',
+        [App\Http\Controllers\Teacher\SeatingController::class, 'save'])
+        ->name('seating.save');
+    Route::get('/sections/{section}/roster',
+        [App\Http\Controllers\Teacher\SeatingController::class, 'roster'])
+        ->name('seating.roster');
+    
+    // Report Cards
+    Route::get('/sections/{section}/report-cards',
+        [App\Http\Controllers\Teacher\ReportCardController::class, 'index'])
+        ->name('report-cards.index');
+    Route::get('/sections/{section}/report-cards/{student}/preview',
+        [App\Http\Controllers\Teacher\ReportCardController::class, 'preview'])
+        ->name('report-cards.preview');
+    Route::post('/sections/{section}/report-cards/{student}/generate',
+        [App\Http\Controllers\Teacher\ReportCardController::class, 'generate'])
+        ->name('report-cards.generate');
+    Route::post('/sections/{section}/report-cards/batch',
+        [App\Http\Controllers\Teacher\ReportCardController::class, 'generateBatch'])
+        ->name('report-cards.batch');
 });
 
 Route::middleware(['auth', 'role:Teacher'])->prefix('teacher')->group(function () {
@@ -278,8 +373,14 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
  Route::get('/achievements', [App\Http\Controllers\Student\AchievementController::class, 'index'])->name('achievements'); 
 
  
- Route::resource('messages', App\Http\Controllers\Student\MessageController::class);
-   Route::get('/messages', [App\Http\Controllers\Student\MessageController::class, 'index'])->name('messages.index');
+ // Student Messenger (Real-time Chat)
+    Route::get('/messenger', [App\Http\Controllers\MessengerController::class, 'index'])->name('messenger');
+    
+    // Legacy Message Routes (redirect to messenger)
+    Route::get('/messages', function() {
+        return redirect()->route('student.messenger');
+    })->name('messages.index');
+    Route::resource('messages', App\Http\Controllers\Student\MessageController::class);
     Route::post('/messages', [App\Http\Controllers\Student\MessageController::class, 'store'])->name('messages.store');
     Route::get('/messages/{message}', [App\Http\Controllers\Student\MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{message}/reply', [App\Http\Controllers\Student\MessageController::class, 'reply'])->name('messages.reply');
@@ -313,6 +414,13 @@ Route::prefix('registrar')->name('registrar.')->middleware(['auth'])->group(func
 
 Route::prefix('teacher')->name('teacher.')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Teacher\DashboardController::class, 'index'])->name('dashboard');
+    
+    // Quick Grade Entry
+    Route::get('/sections/{section}/grades/quick-entry', [App\Http\Controllers\Teacher\GradeController::class, 'quickEntry'])->name('grades.quick-entry');
+    Route::post('/sections/{section}/grades/quick-save', [App\Http\Controllers\Teacher\GradeController::class, 'saveQuickGrades'])->name('grades.quick-save');
+    
+    // Attendance Quick Actions
+    Route::post('/sections/{section}/attendance/mark-all', [App\Http\Controllers\Teacher\AttendanceController::class, 'markAll'])->name('attendance.mark-all');
 });
 
 Route::prefix('student')->name('student.')->middleware(['auth'])->group(function () {
@@ -483,6 +591,40 @@ Route::get('/admin/dashboard/stats', [App\Http\Controllers\Admin\DashboardContro
 
 Route::put('/admin/sections/{section}/assign-teacher',
     [SectionController::class, 'assignTeacher'])->name('sections.assignTeacher');
+
+// API Routes for Messenger
+Route::middleware(['auth'])->prefix('api')->name('api.')->group(function () {
+    // Conversations
+    Route::get('/conversations', [App\Http\Controllers\Api\ConversationController::class, 'index'])->name('conversations.index');
+    Route::get('/conversations/{userId}', [App\Http\Controllers\Api\ConversationController::class, 'show'])->name('conversations.show');
+    Route::post('/conversations/{userId}/read', [App\Http\Controllers\Api\ConversationController::class, 'markAsRead'])->name('conversations.read');
+    
+    // Messages
+    Route::post('/messages', [App\Http\Controllers\Api\MessageController::class, 'store'])->name('messages.store');
+    Route::get('/messages/{message}', [App\Http\Controllers\Api\MessageController::class, 'show'])->name('messages.show');
+    Route::put('/messages/{message}', [App\Http\Controllers\Api\MessageController::class, 'update'])->name('messages.update');
+    Route::delete('/messages/{message}', [App\Http\Controllers\Api\MessageController::class, 'destroy'])->name('messages.destroy');
+    
+    // Attachments
+    Route::get('/attachments/{attachment}/view', [App\Http\Controllers\Api\AttachmentController::class, 'view'])->name('attachments.view');
+    Route::get('/attachments/{attachment}/download', [App\Http\Controllers\Api\AttachmentController::class, 'download'])->name('attachments.download');
+    
+    // Typing indicator
+    Route::post('/typing/{userId}', function($userId) {
+        broadcast(new App\Events\UserTyping(auth()->id(), $userId))->toOthers();
+        return response()->json(['success' => true]);
+    })->name('typing');
+    
+    // Heartbeat for online status
+    Route::post('/heartbeat', function() {
+        $user = auth()->user();
+        if ($user) {
+            // Store last seen timestamp in cache for 2 minutes
+            \Cache::put('user-online-' . $user->id, true, 120);
+        }
+        return response()->json(['success' => true]);
+    })->name('heartbeat');
+});
 
 Route::get('/admin/sections/{section}/students',
     [SectionController::class, 'students'])->name('sections.students');

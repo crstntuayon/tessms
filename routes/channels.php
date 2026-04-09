@@ -28,3 +28,8 @@ Broadcast::channel('section.{sectionId}', function ($user, $sectionId) {
     }
     return false;
 });
+
+// Private channel for user messages (for typing indicator and new messages)
+Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});

@@ -77,12 +77,12 @@ $sections = $teacher
 
             <!-- Communications / Messages -->
             <li>
-                <a href="{{ route('teacher.communications.index') }}" 
+                <a href="{{ route('teacher.messenger') }}" 
                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group
-                   {{ request()->routeIs('teacher.communications*') ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600' }}">
+                   {{ request()->routeIs('teacher.messenger') ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600' }}">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center transition-all relative
-                        {{ request()->routeIs('teacher.communications*') ? 'bg-white/20' : 'bg-indigo-50 group-hover:bg-indigo-100' }}">
-                        <i class="fas fa-envelope {{ request()->routeIs('teacher.communications*') ? 'text-white' : 'text-indigo-500' }}"></i>
+                        {{ request()->routeIs('teacher.messenger') ? 'bg-white/20' : 'bg-indigo-50 group-hover:bg-indigo-100' }}">
+                        <i class="fas fa-envelope {{ request()->routeIs('teacher.messenger') ? 'text-white' : 'text-indigo-500' }}"></i>
                         @php
                             $unreadMessages = \App\Models\Message::receivedBy(auth()->id())->unread()->count();
                         @endphp

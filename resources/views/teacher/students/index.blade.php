@@ -394,6 +394,13 @@
 
                                   <td class="px-6 py-4 text-right">
     <div class="flex items-center justify-end gap-1">
+        <!-- Message -->
+        <a href="{{ route('teacher.messenger', ['contact' => $student->user_id]) }}" 
+           class="p-2 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 rounded-lg transition-colors" 
+           title="Send Message">
+            <i class="fas fa-comment-dots"></i>
+        </a>
+
         <!-- View Profile -->
         <a href="{{ route('teacher.students.show', $student->id) }}" 
            class="p-2 hover:bg-primary-50 text-slate-400 hover:text-primary-600 rounded-lg transition-colors" 
