@@ -256,9 +256,13 @@
         <div class="flex items-center gap-2">
             <h1 class="text-lg font-bold gradient-text">Teacher Profile</h1>
         </div>
-        <div class="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-sm avatar-glow">
-            {{ substr($user->first_name ?? 'T', 0, 1) }}{{ substr($user->last_name ?? 'P', 0, 1) }}
-        </div>
+        @if($user->photo)
+            <img src="{{ asset('storage/' . $user->photo) }}" alt="Profile" class="w-9 h-9 rounded-full object-cover avatar-glow">
+        @else
+            <div class="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-sm avatar-glow">
+                {{ substr($user->first_name ?? 'T', 0, 1) }}{{ substr($user->last_name ?? 'P', 0, 1) }}
+            </div>
+        @endif
     </div>
 
     {{-- Mobile Sidebar Overlay --}}
@@ -286,9 +290,13 @@
                             <p class="text-sm font-bold text-slate-800">{{ $user->first_name }} {{ $user->last_name }}</p>
                             <p class="text-xs text-slate-500 font-medium">{{ $teacher->position ?? 'Teacher' }}</p>
                         </div>
-                        <div class="w-11 h-11 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-lg avatar-glow ring-4 ring-white/50">
-                            {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
-                        </div>
+                        @if($user->photo)
+                            <img src="{{ asset('storage/' . $user->photo) }}" alt="Profile" class="w-11 h-11 rounded-full object-cover avatar-glow ring-4 ring-white/50">
+                        @else
+                            <div class="w-11 h-11 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-lg avatar-glow ring-4 ring-white/50">
+                                {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </header>
@@ -331,6 +339,37 @@
                                 Account Information
                             </h2>
                         </div>
+
+                        {{-- Profile Photo Card --}}
+                        <div class="mb-8 p-6 bg-gradient-to-br from-primary-50 to-white rounded-2xl border border-primary-100">
+                            <div class="flex flex-col sm:flex-row items-center gap-6">
+                                {{-- Photo Display --}}
+                                <div class="relative">
+                                    @if($user->photo)
+                                        <img src="{{ asset('storage/' . $user->photo) }}" alt="Profile Photo" 
+                                             class="w-28 h-28 rounded-2xl object-cover shadow-lg border-4 border-white">
+                                    @else
+                                        <div class="w-28 h-28 rounded-2xl gradient-bg flex items-center justify-center text-white font-bold text-2xl shadow-lg border-4 border-white">
+                                            {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
+                                        </div>
+                                    @endif
+                                    <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white shadow-md" title="Active">
+                                        <i class="fas fa-check text-white text-xs"></i>
+                                    </div>
+                                </div>
+
+                                {{-- Photo Info & Actions --}}
+                                <div class="flex-1 text-center sm:text-left">
+                                    <h3 class="text-lg font-bold text-slate-800">{{ $user->first_name }} {{ $user->last_name }}</h3>
+                                    <p class="text-sm text-slate-500 mb-3">{{ $teacher->position ?? 'Teacher' }}</p>
+                                    <a href="{{ route('teacher.profile.edit') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-md shadow-primary-500/20">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Change Photo</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                             <div class="info-card bg-white rounded-2xl p-5 shadow-sm">
                                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Full Name</p>

@@ -7,7 +7,16 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [AuthenticatedSessionController::class, 'create']);
 
 Route::get('/dashboard', function () {
-    return view('admin.dashboard');
+    $user = auth()->user();
+    $roleName = strtolower($user->role?->name ?? '');
+    
+    return match ($roleName) {
+        'system admin', 'admin' => redirect()->route('admin.dashboard'),
+        'teacher' => redirect()->route('teacher.dashboard'),
+        'student' => redirect()->route('student.dashboard'),
+        'registrar' => redirect()->route('registrar.dashboard'),
+        default => redirect()->route('login'),
+    };
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/pending-approval', function () {
@@ -390,6 +399,8 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
 
  Route::get('/profile', [App\Http\Controllers\Student\ProfileController::class, 'index'])->name('profile');
  Route::post('/profile/photo', [App\Http\Controllers\Student\ProfileController::class, 'updatePhoto'])->name('profile.photo');
+ Route::post('/profile/password', [App\Http\Controllers\Student\ProfileController::class, 'updatePassword'])->name('profile.password');
+ Route::post('/profile/delete', [App\Http\Controllers\Student\ProfileController::class, 'destroyAccount'])->name('profile.delete');
  Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
  Route::post('/profile/document/{type}', [App\Http\Controllers\Student\ProfileController::class, 'uploadDocument'])->name('profile.document');
  Route::get('/profile/document/{type}/view', [App\Http\Controllers\Student\ProfileController::class, 'viewDocument'])->name('profile.document.view');
@@ -469,6 +480,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     // Admin Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
+    // Admin Profile
+    Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('profile');
+    Route::put('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/photo', [App\Http\Controllers\Admin\ProfileController::class, 'updatePhoto'])->name('profile.photo');
+    Route::delete('/profile/photo', [App\Http\Controllers\Admin\ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
+    Route::post('/profile/password', [App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::post('/profile/delete', [App\Http\Controllers\Admin\ProfileController::class, 'destroyAccount'])->name('profile.delete');
+
     // Admin Announcements
     Route::get('/announcements', [\App\Http\Controllers\Admin\AnnouncementController::class, 'index'])->name('announcements.index');
     Route::get('/announcements/create', [\App\Http\Controllers\Admin\AnnouncementController::class, 'create'])->name('announcements.create');
@@ -547,6 +566,11 @@ Route::get('/enrollment/sections', [\App\Http\Controllers\Admin\EnrollmentContro
          Route::get('/settings/export/{type}', [\App\Http\Controllers\Admin\SettingsController::class, 'export'])->name('settings.export');
          Route::post('/settings/regenerate-api-key', [\App\Http\Controllers\Admin\SettingsController::class, 'regenerateApiKey'])->name('settings.regenerate-api-key');
          Route::post('/settings/toggle-enrollment', [\App\Http\Controllers\Admin\SettingsController::class, 'toggleEnrollment'])->name('settings.toggle-enrollment');
+         Route::get('/settings/logs', [\App\Http\Controllers\Admin\SettingsController::class, 'getLogs'])->name('settings.logs');
+         Route::get('/settings/logs/download', [\App\Http\Controllers\Admin\SettingsController::class, 'downloadLogs'])->name('settings.logs.download');
+         Route::post('/settings/logs/clear', [\App\Http\Controllers\Admin\SettingsController::class, 'clearLogs'])->name('settings.logs.clear');
+         Route::post('/settings/email', [\App\Http\Controllers\Admin\SettingsController::class, 'updateEmail'])->name('settings.email');
+         Route::get('/settings/health', [\App\Http\Controllers\Admin\SettingsController::class, 'getHealth'])->name('settings.health');
     
    
           Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');

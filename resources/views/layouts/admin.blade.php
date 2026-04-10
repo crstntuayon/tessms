@@ -137,9 +137,15 @@
                     
                     <!-- Mobile User Avatar -->
                     <div class="flex items-center gap-2">
-                        <img src="{{ auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name ?? 'Admin') . '&background=2563eb&color=fff' }}" 
-                             alt="Admin" 
-                             class="w-9 h-9 rounded-full border-2 border-slate-200 object-cover">
+                        @if(auth()->user()->photo)
+                            <img src="{{ asset('storage/' . auth()->user()->photo) }}" 
+                                 alt="Admin" 
+                                 class="w-9 h-9 rounded-full border-2 border-slate-200 object-cover">
+                        @else
+                            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-slate-200 flex items-center justify-center text-white font-bold text-sm">
+                                {{ strtoupper(substr(auth()->user()->first_name ?? 'A', 0, 1)) }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </header>

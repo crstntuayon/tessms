@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Continuing Student Enrollment - Tugawe Elementary School</title>
+    <title>Continuing Pupil Enrollment - Tugawe Elementary School</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -50,9 +50,9 @@
                 <div class="flex items-start gap-3">
                     <i class="fas fa-info-circle text-amber-600 mt-0.5"></i>
                     <div>
-                        <p class="text-sm font-semibold text-amber-800">For New Students & Transferees</p>
+                        <p class="text-sm font-semibold text-amber-800">For New Pupils & Transferees</p>
                         <p class="text-xs text-amber-700 mt-1">
-                            If you are a new student (Kindergarten) or transferee, please 
+                            If you are a new pupil (Kindergarten) or transferee, please 
                             <a href="{{ route('login') }}?mode=register" class="underline font-semibold hover:text-amber-900">register here</a> instead.
                         </p>
                     </div>
@@ -64,8 +64,8 @@
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
                     <i class="fas fa-user-check text-white text-2xl"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-white mb-2">Continuing Student Enrollment</h1>
-                <p class="text-white/80">For old students enrolling in the new school year</p>
+                <h1 class="text-3xl font-bold text-white mb-2">Continuing Pupil Enrollment</h1>
+                <p class="text-white/80">For old pupils enrolling in the new school year</p>
                 @if($currentSchoolYear)
                     <div class="mt-3 inline-flex items-center gap-2 bg-white/20 px-4 py-1.5 rounded-full">
                         <i class="fas fa-calendar-alt text-white/90"></i>

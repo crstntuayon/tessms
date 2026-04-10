@@ -39,6 +39,31 @@ class ProfileController extends Controller
 
         $teacher = Teacher::where('user_id', $user->id)->first();
 
+        // Validate photo if uploaded
+        if ($request->hasFile('photo')) {
+            $request->validate([
+                'photo' => 'image|mimes:jpeg,png,jpg|max:2048',
+            ]);
+        }
+
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            // Delete old photo if exists
+            if ($user->photo && \Storage::disk('public')->exists($user->photo)) {
+                \Storage::disk('public')->delete($user->photo);
+            }
+            $photoPath = $request->file('photo')->store('profile-photos', 'public');
+            $user->photo = $photoPath;
+            $user->save();
+        } elseif ($request->input('remove_photo') === '1') {
+            // Remove photo
+            if ($user->photo && \Storage::disk('public')->exists($user->photo)) {
+                \Storage::disk('public')->delete($user->photo);
+            }
+            $user->photo = null;
+            $user->save();
+        }
+
         // ✅ UPDATE USERS TABLE
         $user->update([
             'first_name' => $request->first_name,
@@ -52,7 +77,9 @@ class ProfileController extends Controller
         // ✅ UPDATE TEACHERS TABLE
         $teacher->update($request->except([
             '_token',
-            '_method'
+            '_method',
+            'photo',
+            'remove_photo'
         ]));
 
         return redirect()->route('teacher.profile')->with('success', 'Profile updated!');

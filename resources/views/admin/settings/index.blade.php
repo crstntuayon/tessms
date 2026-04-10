@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Settings | Tugawe Elementary</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
@@ -40,16 +42,9 @@
             background: #f8fafc;
         }
 
-        .main-content::-webkit-scrollbar { 
-            width: 8px; 
-        }
-        .main-content::-webkit-scrollbar-track { 
-            background: transparent; 
-        }
-        .main-content::-webkit-scrollbar-thumb { 
-            background: #cbd5e1; 
-            border-radius: 4px; 
-        }
+        .main-content::-webkit-scrollbar { width: 8px; }
+        .main-content::-webkit-scrollbar-track { background: transparent; }
+        .main-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
         @media (max-width: 1024px) {
             .main-wrapper { margin-left: 0; }
@@ -148,9 +143,7 @@
         }
 
         /* Form Elements */
-        .form-group {
-            margin-bottom: 24px;
-        }
+        .form-group { margin-bottom: 24px; }
 
         .form-label {
             display: block;
@@ -160,9 +153,7 @@
             margin-bottom: 8px;
         }
 
-        .form-label span {
-            color: #ef4444;
-        }
+        .form-label span { color: #ef4444; }
 
         .form-input {
             width: 100%;
@@ -183,9 +174,7 @@
             box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
-        .form-input::placeholder {
-            color: #94a3b8;
-        }
+        .form-input::placeholder { color: #94a3b8; }
 
         .form-select {
             width: 100%;
@@ -243,9 +232,7 @@
             transition: all 0.2s ease;
         }
 
-        .toggle-wrapper:hover {
-            background: #f1f5f9;
-        }
+        .toggle-wrapper:hover { background: #f1f5f9; }
 
         .toggle-info h4 {
             font-weight: 600;
@@ -286,9 +273,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .toggle-switch.active::after {
-            transform: translateX(24px);
-        }
+        .toggle-switch.active::after { transform: translateX(24px); }
 
         /* File Upload */
         .file-upload {
@@ -433,9 +418,7 @@
             gap: 10px;
         }
 
-        .section-title i {
-            color: #6366f1;
-        }
+        .section-title i { color: #6366f1; }
 
         /* Danger Zone */
         .danger-zone {
@@ -479,13 +462,9 @@
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .toast.show {
-            transform: translateX(0);
-        }
+        .toast.show { transform: translateX(0); }
 
-        .toast.error {
-            border-left-color: #ef4444;
-        }
+        .toast.error { border-left-color: #ef4444; }
 
         /* Animations */
         .animate-fade-in {
@@ -500,29 +479,80 @@
 
         .stagger-1 { animation-delay: 0.1s; }
         .stagger-2 { animation-delay: 0.2s; }
-        .stagger-3 { animation-delay: 0.3s; }
+
+        /* Activity Log */
+        .log-item {
+            padding: 12px 16px;
+            border-radius: 12px;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .log-item:hover { background: #f8fafc; }
+
+        .log-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Health Metrics */
+        .health-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .health-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .health-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
 
         /* Responsive */
         @media (max-width: 1024px) {
-            .settings-layout {
-                flex-direction: column;
-            }
-            .settings-sidebar {
-                width: 100%;
-                margin-bottom: 24px;
-            }
+            .settings-layout { flex-direction: column; }
+            .settings-sidebar { width: 100%; margin-bottom: 24px; }
             .settings-nav {
                 flex-direction: row;
                 overflow-x: auto;
                 padding: 12px;
             }
-            .nav-item {
-                white-space: nowrap;
-            }
+            .nav-item { white-space: nowrap; }
         }
+
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="antialiased text-slate-800">
+<body class="antialiased text-slate-800" x-data="settingsApp()">
 
     <!-- Toast Notification -->
     @if(session('success'))
@@ -595,6 +625,10 @@
                                         <i class="fas fa-paint-brush"></i>
                                         Appearance
                                     </button>
+                                    <button class="nav-item" onclick="switchTab('logs')">
+                                        <i class="fas fa-clipboard-list"></i>
+                                        Activity Logs
+                                    </button>
                                     <button class="nav-item" onclick="switchTab('backup')">
                                         <i class="fas fa-database"></i>
                                         Backup & Data
@@ -610,7 +644,7 @@
                         <!-- Settings Content Area -->
                         <div class="flex-1 min-w-0">
                             
-                            <!-- General Settings -->
+                            <!-- GENERAL SETTINGS -->
                             <div id="general" class="settings-content active">
                                 <form action="{{ route('admin.settings.update') }}" method="POST">
                                     @csrf
@@ -706,7 +740,7 @@
                                 </form>
                             </div>
 
-                            <!-- School Info -->
+                            <!-- SCHOOL INFO -->
                             <div id="school" class="settings-content">
                                 <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
                                     @csrf
@@ -767,13 +801,14 @@
                                             <i class="fas fa-cloud-upload-alt"></i>
                                             <p>Click to upload school logo</p>
                                             <span>Recommended: 400x400px, PNG or JPG</span>
-                                            <input type="file" id="school_logo" name="school_logo" accept="image/*" style="display: none;">
+                                            <input type="file" id="school_logo" name="school_logo" accept="image/*" style="display: none;" onchange="updateFileName(this)">
                                         </div>
+                                        <p id="fileNameDisplay" class="text-sm text-slate-500 mt-2 hidden"></p>
 
                                         @if($settings['school_logo'] ?? false)
                                         <div class="mt-4 flex items-center gap-4">
                                             <img src="{{ asset('storage/' . $settings['school_logo']) }}" alt="School Logo" class="w-24 h-24 object-contain border rounded-lg">
-                                            <button type="button" class="text-red-600 hover:text-red-700 font-semibold text-sm">
+                                            <button type="button" class="text-red-600 hover:text-red-700 font-semibold text-sm" onclick="removeLogo()">
                                                 <i class="fas fa-trash"></i> Remove Logo
                                             </button>
                                         </div>
@@ -788,7 +823,7 @@
                                 </form>
                             </div>
 
-                            <!-- Academic Year -->
+                            <!-- ACADEMIC YEAR -->
                             <div id="academic" class="settings-content">
                                 <form action="{{ route('admin.settings.update') }}" method="POST">
                                     @csrf
@@ -847,6 +882,45 @@
                                         </div>
                                     </div>
 
+                                    <div class="section-card">
+                                        <h3 class="section-title">
+                                            <i class="fas fa-door-open"></i>
+                                            Enrollment Configuration
+                                        </h3>
+
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div class="form-group">
+                                                <label class="form-label">Enrollment Start Date</label>
+                                                <input type="date" name="enrollment_start_date" class="form-input" 
+                                                    value="{{ $settings['enrollment_start_date'] ?? '' }}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">Enrollment End Date</label>
+                                                <input type="date" name="enrollment_end_date" class="form-input" 
+                                                    value="{{ $settings['enrollment_end_date'] ?? '' }}">
+                                            </div>
+                                        </div>
+
+                                        <div class="toggle-wrapper mt-4">
+                                            <div class="toggle-info">
+                                                <h4>Allow Late Enrollment</h4>
+                                                <p>Accept enrollment applications after the deadline</p>
+                                            </div>
+                                            <div class="toggle-switch {{ ($settings['allow_late_enrollment'] ?? false) ? 'active' : '' }}" 
+                                                 onclick="toggleSwitch(this)" data-name="allow_late_enrollment"></div>
+                                        </div>
+
+                                        <div class="toggle-wrapper">
+                                            <div class="toggle-info">
+                                                <h4>Enrollment Enabled</h4>
+                                                <p>Allow new enrollment applications</p>
+                                            </div>
+                                            <div class="toggle-switch {{ ($settings['enrollment_enabled'] ?? true) ? 'active' : '' }}" 
+                                                 onclick="toggleSwitch(this)" data-name="enrollment_enabled"></div>
+                                        </div>
+                                    </div>
+
                                     <div class="flex justify-end gap-3">
                                         <button type="submit" class="btn-primary">
                                             <i class="fas fa-save"></i> Save Changes
@@ -855,7 +929,7 @@
                                 </form>
                             </div>
 
-                            <!-- Notifications -->
+                            <!-- NOTIFICATIONS -->
                             <div id="notifications" class="settings-content">
                                 <form action="{{ route('admin.settings.update') }}" method="POST">
                                     @csrf
@@ -935,9 +1009,91 @@
                                         </button>
                                     </div>
                                 </form>
+
+                                <!-- Email/SMTP Configuration -->
+                                <form action="{{ route('admin.settings.email') }}" method="POST" class="mt-6">
+                                    @csrf
+                                    <div class="section-card">
+                                        <h3 class="section-title">
+                                            <i class="fas fa-server"></i>
+                                            SMTP / Email Configuration
+                                        </h3>
+
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div class="form-group">
+                                                <label class="form-label">Mail Driver</label>
+                                                <select name="mail_driver" class="form-select">
+                                                    <option value="smtp" {{ ($settings['mail_driver'] ?? '') == 'smtp' ? 'selected' : '' }}>SMTP</option>
+                                                    <option value="sendmail" {{ ($settings['mail_driver'] ?? '') == 'sendmail' ? 'selected' : '' }}>Sendmail</option>
+                                                    <option value="mailgun" {{ ($settings['mail_driver'] ?? '') == 'mailgun' ? 'selected' : '' }}>Mailgun</option>
+                                                    <option value="ses" {{ ($settings['mail_driver'] ?? '') == 'ses' ? 'selected' : '' }}>Amazon SES</option>
+                                                    <option value="log" {{ ($settings['mail_driver'] ?? '') == 'log' ? 'selected' : '' }}>Log (Testing)</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">Mail Host</label>
+                                                <input type="text" name="mail_host" class="form-input" 
+                                                    value="{{ $settings['mail_host'] ?? '' }}"
+                                                    placeholder="e.g., smtp.gmail.com">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">Mail Port</label>
+                                                <input type="number" name="mail_port" class="form-input" 
+                                                    value="{{ $settings['mail_port'] ?? '587' }}"
+                                                    placeholder="e.g., 587">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">Encryption</label>
+                                                <select name="mail_encryption" class="form-select">
+                                                    <option value="tls" {{ ($settings['mail_encryption'] ?? '') == 'tls' ? 'selected' : '' }}>TLS</option>
+                                                    <option value="ssl" {{ ($settings['mail_encryption'] ?? '') == 'ssl' ? 'selected' : '' }}>SSL</option>
+                                                    <option value="" {{ ($settings['mail_encryption'] ?? '') == '' ? 'selected' : '' }}>None</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">Username</label>
+                                                <input type="text" name="mail_username" class="form-input" 
+                                                    value="{{ $settings['mail_username'] ?? '' }}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">Password</label>
+                                                <input type="password" name="mail_password" class="form-input" 
+                                                    value="{{ $settings['mail_password'] ?? '' }}"
+                                                    placeholder="Leave blank to keep current">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">From Address</label>
+                                                <input type="email" name="mail_from_address" class="form-input" 
+                                                    value="{{ $settings['mail_from_address'] ?? '' }}"
+                                                    placeholder="noreply@school.edu.ph">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">From Name</label>
+                                                <input type="text" name="mail_from_name" class="form-input" 
+                                                    value="{{ $settings['mail_from_name'] ?? 'Tugawe Elementary School' }}">
+                                            </div>
+                                        </div>
+
+                                        <div class="flex justify-end gap-3 mt-4">
+                                            <button type="button" class="btn-secondary" onclick="testEmailConnection()">
+                                                <i class="fas fa-paper-plane"></i> Test Connection
+                                            </button>
+                                            <button type="submit" class="btn-primary">
+                                                <i class="fas fa-save"></i> Save Email Settings
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
 
-                            <!-- Security -->
+                            <!-- SECURITY -->
                             <div id="security" class="settings-content">
                                 <form action="{{ route('admin.settings.update') }}" method="POST">
                                     @csrf
@@ -1024,7 +1180,7 @@
                                 </form>
                             </div>
 
-                            <!-- Appearance -->
+                            <!-- APPEARANCE -->
                             <div id="appearance" class="settings-content">
                                 <form action="{{ route('admin.settings.update') }}" method="POST">
                                     @csrf
@@ -1117,7 +1273,117 @@
                                 </form>
                             </div>
 
-                            <!-- Backup & Data -->
+                            <!-- ACTIVITY LOGS -->
+                            <div id="logs" class="settings-content">
+                                <!-- Stats Cards -->
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                    <div class="health-card">
+                                        <div class="health-value text-indigo-600">{{ $activityStats['total'] ?? 0 }}</div>
+                                        <div class="health-label">Total (24h)</div>
+                                    </div>
+                                    <div class="health-card">
+                                        <div class="health-value text-emerald-600">{{ $activityStats['created'] ?? 0 }}</div>
+                                        <div class="health-label">Created</div>
+                                    </div>
+                                    <div class="health-card">
+                                        <div class="health-value text-blue-600">{{ $activityStats['updated'] ?? 0 }}</div>
+                                        <div class="health-label">Updated</div>
+                                    </div>
+                                    <div class="health-card">
+                                        <div class="health-value text-rose-600">{{ $activityStats['deleted'] ?? 0 }}</div>
+                                        <div class="health-label">Deleted</div>
+                                    </div>
+                                </div>
+
+                                <!-- Filters -->
+                                <div class="section-card">
+                                    <div class="flex flex-col md:flex-row gap-3">
+                                        <input type="text" 
+                                               x-model="logSearch" 
+                                               @input.debounce.300ms="fetchLogs()"
+                                               class="form-input flex-1" 
+                                               placeholder="Search logs...">
+                                        <select x-model="logAction" @change="fetchLogs()" class="form-select" style="width: auto; min-width: 150px;">
+                                            <option value="all">All Actions</option>
+                                            <option value="created">Created</option>
+                                            <option value="updated">Updated</option>
+                                            <option value="deleted">Deleted</option>
+                                            <option value="login">Login</option>
+                                            <option value="logout">Logout</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
+                                        </select>
+                                        <button type="button" class="btn-primary" @click="fetchLogs()">
+                                            <i class="fas fa-sync"></i> Refresh
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Logs List -->
+                                <div class="section-card">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="section-title mb-0">
+                                            <i class="fas fa-history"></i>
+                                            Recent Activity
+                                        </h3>
+                                        <div class="flex gap-2">
+                                            <button type="button" class="btn-secondary text-sm py-2 px-4" @click="clearOldLogs()">
+                                                <i class="fas fa-broom"></i> Clear Old
+                                            </button>
+                                            <a href="{{ route('admin.settings.logs.download') }}" class="btn-secondary text-sm py-2 px-4">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div x-show="logsLoading" class="text-center py-8">
+                                        <i class="fas fa-spinner fa-spin text-2xl text-indigo-600"></i>
+                                        <p class="text-slate-500 mt-2">Loading logs...</p>
+                                    </div>
+
+                                    <div x-show="!logsLoading && logs.length === 0" class="text-center py-8 text-slate-500">
+                                        <i class="fas fa-inbox text-4xl mb-3"></i>
+                                        <p>No activity logs found</p>
+                                    </div>
+
+                                    <template x-for="log in logs" :key="log.id">
+                                        <div class="log-item border-b border-slate-100 last:border-0">
+                                            <div class="log-icon" 
+                                                 :class="{
+                                                     'bg-emerald-100 text-emerald-600': log.action === 'created' || log.action === 'approved',
+                                                     'bg-blue-100 text-blue-600': log.action === 'updated',
+                                                     'bg-rose-100 text-rose-600': log.action === 'deleted' || log.action === 'rejected',
+                                                     'bg-indigo-100 text-indigo-600': log.action === 'login',
+                                                     'bg-slate-100 text-slate-600': log.action === 'logout'
+                                                 }">
+                                                <i class="fas" :class="log.action_icon"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-slate-900" x-text="log.description"></p>
+                                                <div class="flex items-center gap-3 mt-1">
+                                                    <span class="text-xs text-slate-500">
+                                                        <i class="fas fa-user mr-1"></i>
+                                                        <span x-text="log.user_name"></span>
+                                                    </span>
+                                                    <span class="text-xs text-slate-400" x-text="log.created_at"></span>
+                                                    <span class="text-xs text-slate-400" x-show="log.ip_address" x-text="log.ip_address"></span>
+                                                </div>
+                                            </div>
+                                            <span class="px-2 py-1 rounded-full text-xs font-medium"
+                                                  :class="{
+                                                      'bg-emerald-100 text-emerald-700': log.action === 'created' || log.action === 'approved',
+                                                      'bg-blue-100 text-blue-700': log.action === 'updated',
+                                                      'bg-rose-100 text-rose-700': log.action === 'deleted' || log.action === 'rejected',
+                                                      'bg-indigo-100 text-indigo-700': log.action === 'login',
+                                                      'bg-slate-100 text-slate-600': log.action === 'logout'
+                                                  }"
+                                                  x-text="log.action"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- BACKUP & DATA -->
                             <div id="backup" class="settings-content">
                                 <div class="section-card">
                                     <h3 class="section-title">
@@ -1136,10 +1402,12 @@
                                     </div>
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                        <button type="button" class="btn-primary" onclick="createBackup()">
-                                            <i class="fas fa-download"></i> Download Backup Now
+                                        <button type="button" class="btn-primary" @click="createBackup()" :disabled="backupLoading">
+                                            <i class="fas fa-download" x-show="!backupLoading"></i>
+                                            <i class="fas fa-spinner fa-spin" x-show="backupLoading"></i>
+                                            <span x-text="backupLoading ? 'Creating...' : 'Download Backup Now'"></span>
                                         </button>
-                                        <button type="button" class="btn-secondary" onclick="scheduleBackup()">
+                                        <button type="button" class="btn-secondary" onclick="document.getElementById('scheduleBackupModal').classList.remove('hidden')">
                                             <i class="fas fa-calendar"></i> Schedule Auto-Backup
                                         </button>
                                     </div>
@@ -1149,8 +1417,12 @@
                                             <h4>Auto-Backup</h4>
                                             <p>Automatically backup database daily</p>
                                         </div>
-                                        <div class="toggle-switch {{ ($settings['auto_backup'] ?? false) ? 'active' : '' }}" 
-                                             onclick="toggleSwitch(this)" data-name="auto_backup"></div>
+                                        <form action="{{ route('admin.settings.update') }}" method="POST" style="display:inline">
+                                            @csrf
+                                            @method('PUT')
+                                            <div class="toggle-switch {{ ($settings['auto_backup'] ?? false) ? 'active' : '' }}" 
+                                                 onclick="toggleSwitch(this)" data-name="auto_backup"></div>
+                                        </form>
                                     </div>
                                 </div>
 
@@ -1161,18 +1433,18 @@
                                     </h3>
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <button type="button" class="btn-secondary" onclick="exportData('students')">
+                                        <a href="{{ route('admin.settings.export', 'students') }}" class="btn-secondary justify-center">
                                             <i class="fas fa-users"></i> Export Students
-                                        </button>
-                                        <button type="button" class="btn-secondary" onclick="exportData('teachers')">
+                                        </a>
+                                        <a href="{{ route('admin.settings.export', 'teachers') }}" class="btn-secondary justify-center">
                                             <i class="fas fa-chalkboard-teacher"></i> Export Teachers
-                                        </button>
-                                        <button type="button" class="btn-secondary" onclick="exportData('grades')">
+                                        </a>
+                                        <a href="{{ route('admin.settings.export', 'grades') }}" class="btn-secondary justify-center">
                                             <i class="fas fa-graduation-cap"></i> Export Grades
-                                        </button>
-                                        <button type="button" class="btn-secondary" onclick="exportData('attendance')">
+                                        </a>
+                                        <a href="{{ route('admin.settings.export', 'attendance') }}" class="btn-secondary justify-center">
                                             <i class="fas fa-calendar-check"></i> Export Attendance
-                                        </button>
+                                        </a>
                                     </div>
                                 </div>
 
@@ -1182,19 +1454,117 @@
                                         Danger Zone
                                     </div>
                                     <p>These actions are irreversible. Please proceed with caution.</p>
-                                    <div class="flex gap-3">
-                                        <button type="button" class="btn-danger" onclick="clearCache()">
-                                            <i class="fas fa-broom"></i> Clear Cache
+                                    <div class="flex flex-wrap gap-3">
+                                        <button type="button" class="btn-danger" @click="clearCache()" :disabled="cacheLoading">
+                                            <i class="fas fa-broom" x-show="!cacheLoading"></i>
+                                            <i class="fas fa-spinner fa-spin" x-show="cacheLoading"></i>
+                                            <span x-text="cacheLoading ? 'Clearing...' : 'Clear Cache'"></span>
                                         </button>
-                                        <button type="button" class="btn-danger" onclick="resetSettings()">
-                                            <i class="fas fa-undo"></i> Reset to Default
+                                        <button type="button" class="btn-danger" @click="resetSettings()" :disabled="resetLoading">
+                                            <i class="fas fa-undo" x-show="!resetLoading"></i>
+                                            <i class="fas fa-spinner fa-spin" x-show="resetLoading"></i>
+                                            <span x-text="resetLoading ? 'Resetting...' : 'Reset to Default'"></span>
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Advanced -->
+                            <!-- ADVANCED -->
                             <div id="advanced" class="settings-content">
+                                
+                                <!-- System Health -->
+                                <div class="section-card">
+                                    <h3 class="section-title">
+                                        <i class="fas fa-heartbeat"></i>
+                                        System Health
+                                    </h3>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                        <!-- Disk Usage -->
+                                        <div class="health-card">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <i class="fas fa-hdd text-2xl text-indigo-600"></i>
+                                                <span class="text-xs font-medium px-2 py-1 rounded-full"
+                                                      :class="{
+                                                          'bg-emerald-100 text-emerald-700': health.disk?.status === 'good',
+                                                          'bg-amber-100 text-amber-700': health.disk?.status === 'warning',
+                                                          'bg-rose-100 text-rose-700': health.disk?.status === 'critical'
+                                                      }"
+                                                      x-text="health.disk?.status?.toUpperCase() || 'Loading...'"></span>
+                                            </div>
+                                            <div class="health-value" x-text="health.disk?.percent + '%' || '--'">--</div>
+                                            <div class="health-label">Disk Usage</div>
+                                            <div class="progress-bar">
+                                                <div class="progress-bar-fill"
+                                                     :class="{
+                                                         'bg-emerald-500': health.disk?.status === 'good',
+                                                         'bg-amber-500': health.disk?.status === 'warning',
+                                                         'bg-rose-500': health.disk?.status === 'critical'
+                                                     }"
+                                                     :style="'width:' + (health.disk?.percent || 0) + '%'"></div>
+                                            </div>
+                                            <p class="text-xs text-slate-400 mt-1" x-text="health.disk?.used + ' / ' + health.disk?.total || ''"></p>
+                                        </div>
+
+                                        <!-- Database -->
+                                        <div class="health-card">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <i class="fas fa-database text-2xl" 
+                                                   :class="health.database?.connected ? 'text-emerald-600' : 'text-rose-600'"></i>
+                                                <span class="text-xs font-medium px-2 py-1 rounded-full"
+                                                      :class="health.database?.connected ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
+                                                      x-text="health.database?.connected ? 'CONNECTED' : 'DISCONNECTED'"></span>
+                                            </div>
+                                            <div class="health-value text-sm" x-text="health.database?.name || '--'"></div>
+                                            <div class="health-label">Database</div>
+                                            <p class="text-xs text-slate-400 mt-1" x-text="health.database?.version ? 'v' + health.database.version : ''"></p>
+                                        </div>
+
+                                        <!-- Queue -->
+                                        <div class="health-card">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <i class="fas fa-tasks text-2xl text-blue-600"></i>
+                                            </div>
+                                            <div class="health-value" x-text="(health.queue?.pending || 0)"></div>
+                                            <div class="health-label">Pending Jobs</div>
+                                            <p class="text-xs text-slate-400 mt-1">
+                                                <span x-text="health.queue?.failed || 0"></span> failed
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div class="bg-slate-50 rounded-xl p-4 text-center">
+                                            <i class="fab fa-php text-2xl text-indigo-600 mb-2"></i>
+                                            <div class="text-sm font-semibold" x-text="health.php?.version || '{{ phpversion() }}'"></div>
+                                            <div class="text-xs text-slate-500">PHP</div>
+                                        </div>
+                                        <div class="bg-slate-50 rounded-xl p-4 text-center">
+                                            <i class="fab fa-laravel text-2xl text-rose-600 mb-2"></i>
+                                            <div class="text-sm font-semibold" x-text="health.laravel?.version || '{{ app()->version() }}'"></div>
+                                            <div class="text-xs text-slate-500">Laravel</div>
+                                        </div>
+                                        <div class="bg-slate-50 rounded-xl p-4 text-center">
+                                            <i class="fas fa-memory text-2xl text-emerald-600 mb-2"></i>
+                                            <div class="text-sm font-semibold" x-text="health.php?.max_upload || '{{ ini_get('upload_max_filesize') }}'"></div>
+                                            <div class="text-xs text-slate-500">Max Upload</div>
+                                        </div>
+                                        <div class="bg-slate-50 rounded-xl p-4 text-center">
+                                            <i class="fas fa-clock text-2xl text-amber-600 mb-2"></i>
+                                            <div class="text-sm font-semibold" x-text="health.php?.max_execution || '{{ ini_get('max_execution_time') }}s'"></div>
+                                            <div class="text-xs text-slate-500">Max Execution</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-center mt-4">
+                                        <button type="button" class="btn-secondary" @click="refreshHealth()" :disabled="healthLoading">
+                                            <i class="fas fa-sync" :class="{'fa-spin': healthLoading}"></i>
+                                            Refresh Health
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- API Settings -->
                                 <div class="section-card">
                                     <h3 class="section-title">
                                         <i class="fas fa-code"></i>
@@ -1204,10 +1574,14 @@
                                     <div class="form-group">
                                         <label class="form-label">API Key</label>
                                         <div class="flex gap-2">
-                                            <input type="text" class="form-input font-mono" 
+                                            <input type="text" id="apiKeyDisplay" class="form-input font-mono" 
                                                 value="{{ $settings['api_key'] ?? '************************' }}" readonly>
-                                            <button type="button" class="btn-secondary" onclick="regenerateApiKey()">
-                                                <i class="fas fa-sync"></i> Regenerate
+                                            <button type="button" class="btn-secondary" @click="regenerateApiKey()" :disabled="apiKeyLoading">
+                                                <i class="fas fa-sync" :class="{'fa-spin': apiKeyLoading}"></i>
+                                                <span x-text="apiKeyLoading ? '...' : 'Regenerate'"></span>
+                                            </button>
+                                            <button type="button" class="btn-secondary" onclick="copyApiKey()">
+                                                <i class="fas fa-copy"></i> Copy
                                             </button>
                                         </div>
                                     </div>
@@ -1217,35 +1591,16 @@
                                             <h4>API Access</h4>
                                             <p>Enable external API access</p>
                                         </div>
-                                        <div class="toggle-switch {{ ($settings['api_enabled'] ?? false) ? 'active' : '' }}" 
-                                             onclick="toggleSwitch(this)" data-name="api_enabled"></div>
+                                        <form action="{{ route('admin.settings.update') }}" method="POST" style="display:inline">
+                                            @csrf
+                                            @method('PUT')
+                                            <div class="toggle-switch {{ ($settings['api_enabled'] ?? false) ? 'active' : '' }}" 
+                                                 onclick="toggleSwitch(this)" data-name="api_enabled"></div>
+                                        </form>
                                     </div>
                                 </div>
 
-                                <div class="section-card">
-                                    <h3 class="section-title">
-                                        <i class="fas fa-terminal"></i>
-                                        System Logs
-                                    </h3>
-
-                                    <div class="bg-slate-900 rounded-xl p-4 font-mono text-sm text-green-400 overflow-x-auto">
-                                        <p class="opacity-50">// Recent system logs will appear here</p>
-                                        <p>[2024-03-22 14:32:15] INFO: System backup completed successfully</p>
-                                        <p>[2024-03-22 13:45:22] INFO: User admin logged in from 192.168.1.1</p>
-                                        <p>[2024-03-22 12:20:00] INFO: Database optimized</p>
-                                        <p>[2024-03-22 10:15:33] WARNING: Failed login attempt for user 'admin'</p>
-                                    </div>
-
-                                    <div class="flex gap-3 mt-4">
-                                        <button type="button" class="btn-secondary" onclick="viewLogs()">
-                                            <i class="fas fa-eye"></i> View Full Logs
-                                        </button>
-                                        <button type="button" class="btn-secondary" onclick="downloadLogs()">
-                                            <i class="fas fa-download"></i> Download Logs
-                                        </button>
-                                    </div>
-                                </div>
-
+                                <!-- System Information -->
                                 <div class="section-card">
                                     <h3 class="section-title">
                                         <i class="fas fa-info-circle"></i>
@@ -1269,6 +1624,22 @@
                                             <span class="text-slate-500">Environment</span>
                                             <span class="font-semibold">{{ config('app.env') }}</span>
                                         </div>
+                                        <div class="flex justify-between py-2 border-b border-slate-100">
+                                            <span class="text-slate-500">Debug Mode</span>
+                                            <span class="font-semibold">{{ config('app.debug') ? 'Enabled' : 'Disabled' }}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-slate-100">
+                                            <span class="text-slate-500">Timezone</span>
+                                            <span class="font-semibold">{{ config('app.timezone') }}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-slate-100">
+                                            <span class="text-slate-500">Log File Size</span>
+                                            <span class="font-semibold" x-text="health.logs?.size || 'Checking...'"></span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-slate-100">
+                                            <span class="text-slate-500">Memory Limit</span>
+                                            <span class="font-semibold">{{ ini_get('memory_limit') }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1281,29 +1652,269 @@
         </div>
     </div>
 
+    <!-- Schedule Backup Modal -->
+    <div id="scheduleBackupModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="document.getElementById('scheduleBackupModal').classList.add('hidden')"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden p-6">
+            <h3 class="text-lg font-bold mb-4">Schedule Auto-Backup</h3>
+            <p class="text-slate-500 text-sm mb-4">Auto-backup feature will be available in a future update. You can manually create backups anytime from the Backup & Data tab.</p>
+            <div class="flex justify-end gap-3">
+                <button type="button" class="btn-secondary" onclick="document.getElementById('scheduleBackupModal').classList.add('hidden')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="resetModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="document.getElementById('resetModal').classList.add('hidden')"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-6 py-4 bg-rose-50 border-b border-rose-100">
+                <h3 class="text-lg font-bold text-rose-800"><i class="fas fa-exclamation-triangle mr-2"></i>Reset All Settings?</h3>
+            </div>
+            <div class="p-6">
+                <p class="text-slate-600 mb-4">This will reset ALL settings to their default values. This action cannot be undone.</p>
+                <form id="resetForm" action="{{ route('admin.settings.reset') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="confirm_reset" value="1">
+                    <div class="flex justify-end gap-3">
+                        <button type="button" class="btn-secondary" onclick="document.getElementById('resetModal').classList.add('hidden')">Cancel</button>
+                        <button type="submit" class="btn-danger">Yes, Reset Everything</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // CSRF token for AJAX
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        // Alpine.js Data
+        function settingsApp() {
+            return {
+                // Logs
+                logs: [],
+                logsLoading: false,
+                logSearch: '',
+                logAction: 'all',
+                
+                // Loading states
+                backupLoading: false,
+                cacheLoading: false,
+                resetLoading: false,
+                apiKeyLoading: false,
+                healthLoading: false,
+                
+                // Health data
+                health: @json($health ?? []),
+                
+                init() {
+                    // Load health on init
+                    this.refreshHealth();
+                    // Load logs if on logs tab
+                    if (document.getElementById('logs')?.classList.contains('active')) {
+                        this.fetchLogs();
+                    }
+                },
+                
+                // Fetch activity logs
+                async fetchLogs() {
+                    this.logsLoading = true;
+                    try {
+                        const params = new URLSearchParams();
+                        if (this.logAction !== 'all') params.append('action', this.logAction);
+                        if (this.logSearch) params.append('search', this.logSearch);
+                        
+                        const response = await fetch(`{{ route('admin.settings.logs') }}?${params.toString()}`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.logs = data.logs;
+                        }
+                    } catch (error) {
+                        console.error('Failed to fetch logs:', error);
+                    } finally {
+                        this.logsLoading = false;
+                    }
+                },
+                
+                // Clear old logs
+                async clearOldLogs() {
+                    if (!confirm('Clear logs older than 30 days?')) return;
+                    
+                    try {
+                        const response = await fetch('{{ route('admin.settings.logs.clear') }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ days: 30 })
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.showToast(data.message, 'success');
+                            this.fetchLogs();
+                        } else {
+                            this.showToast(data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showToast('Failed to clear logs', 'error');
+                    }
+                },
+                
+                // Create backup
+                async createBackup() {
+                    this.backupLoading = true;
+                    try {
+                        const response = await fetch('{{ route('admin.settings.backup') }}', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': csrfToken }
+                        });
+                        
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'backup_' + new Date().toISOString().slice(0,10) + '.sql';
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                            this.showToast('Backup downloaded successfully!', 'success');
+                        } else {
+                            this.showToast('Backup failed. Check server logs.', 'error');
+                        }
+                    } catch (error) {
+                        this.showToast('Backup failed: ' + error.message, 'error');
+                    } finally {
+                        this.backupLoading = false;
+                    }
+                },
+                
+                // Clear cache
+                async clearCache() {
+                    if (!confirm('Clear all application caches?')) return;
+                    
+                    this.cacheLoading = true;
+                    try {
+                        const response = await fetch('{{ route('admin.settings.clear-cache') }}', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': csrfToken }
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.showToast(data.message, 'success');
+                        } else {
+                            this.showToast(data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showToast('Failed to clear cache', 'error');
+                    } finally {
+                        this.cacheLoading = false;
+                    }
+                },
+                
+                // Reset settings
+                resetSettings() {
+                    document.getElementById('resetModal').classList.remove('hidden');
+                },
+                
+                // Regenerate API key
+                async regenerateApiKey() {
+                    if (!confirm('Regenerate API key? The old key will stop working immediately.')) return;
+                    
+                    this.apiKeyLoading = true;
+                    try {
+                        const response = await fetch('{{ route('admin.settings.regenerate-api-key') }}', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': csrfToken }
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            document.getElementById('apiKeyDisplay').value = data.api_key;
+                            this.showToast('API key regenerated successfully!', 'success');
+                        } else {
+                            this.showToast(data.message, 'error');
+                        }
+                    } catch (error) {
+                        this.showToast('Failed to regenerate API key', 'error');
+                    } finally {
+                        this.apiKeyLoading = false;
+                    }
+                },
+                
+                // Refresh health metrics
+                async refreshHealth() {
+                    this.healthLoading = true;
+                    try {
+                        const response = await fetch('{{ route('admin.settings.health') }}');
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.health = data.health;
+                        }
+                    } catch (error) {
+                        console.error('Failed to fetch health:', error);
+                    } finally {
+                        this.healthLoading = false;
+                    }
+                },
+                
+                // Show toast notification
+                showToast(message, type = 'success') {
+                    const toast = document.createElement('div');
+                    toast.className = `toast ${type === 'error' ? 'error' : ''} show`;
+                    toast.innerHTML = `
+                        <div class="w-10 h-10 ${type === 'error' ? 'bg-red-100' : 'bg-emerald-100'} rounded-full flex items-center justify-center">
+                            <i class="fas ${type === 'error' ? 'fa-exclamation text-red-600' : 'fa-check text-emerald-600'}"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-900">${type === 'error' ? 'Error!' : 'Success!'}</p>
+                            <p class="text-sm text-slate-500">${message}</p>
+                        </div>
+                    `;
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                        setTimeout(() => toast.remove(), 400);
+                    }, 4000);
+                }
+            };
+        }
+
         // Tab switching
         function switchTab(tabId) {
-            // Hide all contents
             document.querySelectorAll('.settings-content').forEach(content => {
                 content.classList.remove('active');
             });
-            
-            // Remove active from all nav items
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
-            
-            // Show selected content
             document.getElementById(tabId).classList.add('active');
-            
-            // Add active to clicked nav item
             event.target.classList.add('active');
+            
+            // If switching to logs tab, fetch logs
+            if (tabId === 'logs' && typeof Alpine !== 'undefined') {
+                const el = document.querySelector('[x-data="settingsApp()"]');
+                if (el && el._x_dataStack) {
+                    el._x_dataStack[0].fetchLogs();
+                }
+            }
         }
 
         // Toggle switch
         function toggleSwitch(element) {
             element.classList.toggle('active');
+            // Remove existing hidden input if any
+            const existing = element.querySelector('input[type="hidden"]');
+            if (existing) existing.remove();
+            // Add new hidden input
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = element.dataset.name;
@@ -1325,43 +1936,31 @@
             }
         }
 
-        function createBackup() {
-            alert('Creating backup... This may take a moment.');
-            // Add AJAX call here
-        }
-
-        function scheduleBackup() {
-            alert('Backup scheduling modal would open here');
-        }
-
-        function exportData(type) {
-            alert('Exporting ' + type + ' data...');
-        }
-
-        function clearCache() {
-            if(confirm('Are you sure you want to clear system cache?')) {
-                alert('Cache cleared successfully!');
+        function updateFileName(input) {
+            const display = document.getElementById('fileNameDisplay');
+            if (input.files && input.files[0]) {
+                display.textContent = 'Selected: ' + input.files[0].name;
+                display.classList.remove('hidden');
             }
         }
 
-        function resetSettings() {
-            if(confirm('⚠️ WARNING: This will reset ALL settings to default values. This action cannot be undone.\\n\\nAre you sure?')) {
-                alert('Settings reset to default');
+        function removeLogo() {
+            if(confirm('Remove school logo?')) {
+                // This would need a dedicated route - for now just alert
+                alert('Logo removal requires a dedicated endpoint. Please contact your developer.');
             }
         }
 
-        function regenerateApiKey() {
-            if(confirm('Regenerate API key? The old key will stop working immediately.')) {
-                alert('New API key generated');
-            }
+        function testEmailConnection() {
+            alert('Email connection test will be implemented with your SMTP provider.');
         }
 
-        function viewLogs() {
-            alert('Opening system logs viewer...');
-        }
-
-        function downloadLogs() {
-            alert('Downloading system logs...');
+        function copyApiKey() {
+            const input = document.getElementById('apiKeyDisplay');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value);
+            alert('API key copied to clipboard!');
         }
 
         // Color picker sync

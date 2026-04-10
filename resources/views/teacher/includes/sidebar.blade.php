@@ -42,9 +42,13 @@ $sections = $teacher
     <div class="p-4 mx-4 mt-4">
         <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-4 border border-indigo-100">
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg">
-                    {{ strtoupper(substr(auth()->user()->name ?? 'T', 0, 1)) }}
-                </div>
+                @if(auth()->user()->photo)
+                    <img src="{{ asset('storage/' . auth()->user()->photo) }}" alt="Profile" class="w-12 h-12 rounded-full object-cover shadow-lg">
+                @else
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg">
+                        {{ strtoupper(substr(auth()->user()->name ?? 'T', 0, 1)) }}
+                    </div>
+                @endif
                 <div class="flex-1 min-w-0">
                     <p class="font-semibold text-slate-900 text-sm truncate">{{ auth()->user()->name ?? 'Teacher' }}</p>
                     <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email ?? 'teacher@tugaweelem.edu' }}</p>

@@ -276,9 +276,13 @@
         <div class="flex items-center gap-2">
             <h1 class="text-lg font-bold gradient-text">Edit Profile</h1>
         </div>
-        <div class="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-sm avatar-glow">
-            {{ substr($user->first_name ?? 'T', 0, 1) }}{{ substr($user->last_name ?? 'P', 0, 1) }}
-        </div>
+        @if($user->photo)
+            <img src="{{ asset('storage/' . $user->photo) }}" alt="Profile" class="w-9 h-9 rounded-full object-cover avatar-glow">
+        @else
+            <div class="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-sm avatar-glow">
+                {{ substr($user->first_name ?? 'T', 0, 1) }}{{ substr($user->last_name ?? 'P', 0, 1) }}
+            </div>
+        @endif
     </div>
 
     {{-- Mobile Sidebar Overlay --}}
@@ -301,16 +305,20 @@
                     <p class="text-sm text-slate-500 mt-1 font-medium">Update your personal and professional information</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-lg avatar-glow ring-4 ring-white/50">
-                        {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
-                    </div>
+                    @if($user->photo)
+                        <img src="{{ asset('storage/' . $user->photo) }}" alt="Profile" class="w-11 h-11 rounded-full object-cover avatar-glow ring-4 ring-white/50">
+                    @else
+                        <div class="w-11 h-11 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-lg avatar-glow ring-4 ring-white/50">
+                            {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
+                        </div>
+                    @endif
                 </div>
             </header>
 
             {{-- Scrollable Form Area --}}
             <main class="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-4 lg:p-6 xl:p-8 bg-gradient-to-br from-slate-50 via-white to-slate-100">
                 
-                <form id="profile-form" action="{{ route('teacher.profile.update') }}" method="POST" class="space-y-6">
+                <form id="profile-form" action="{{ route('teacher.profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                     @csrf
                     @method('PUT')
 
@@ -348,6 +356,49 @@
                                 Account Information
                             </h2>
                         </div>
+
+                        {{-- Profile Photo Upload --}}
+                        <div class="mb-8 p-6 bg-gradient-to-br from-primary-50 to-white rounded-2xl border border-primary-100">
+                            <div class="flex flex-col sm:flex-row items-center gap-6">
+                                {{-- Current Photo / Preview --}}
+                                <div class="relative group">
+                                    <div id="photoPreviewContainer" class="w-28 h-28 rounded-2xl overflow-hidden shadow-lg border-4 border-white {{ $user->photo ? '' : 'hidden' }}">
+                                        <img id="photoPreview" src="{{ $user->photo ? asset('storage/' . $user->photo) : '' }}" 
+                                             alt="Profile Photo" class="w-full h-full object-cover">
+                                    </div>
+                                    <div id="photoPlaceholder" class="w-28 h-28 rounded-2xl gradient-bg flex items-center justify-center text-white font-bold text-2xl shadow-lg border-4 border-white {{ $user->photo ? 'hidden' : '' }}">
+                                        {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
+                                    </div>
+                                    {{-- Hover overlay --}}
+                                    <div class="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                                         onclick="document.getElementById('photoInput').click()">
+                                        <i class="fas fa-camera text-white text-xl"></i>
+                                    </div>
+                                </div>
+
+                                {{-- Upload Controls --}}
+                                <div class="flex-1 text-center sm:text-left">
+                                    <h4 class="text-sm font-bold text-slate-800 mb-1">Profile Photo</h4>
+                                    <p class="text-xs text-slate-500 mb-3">Upload a clear photo of yourself. Max 2MB. JPG, PNG only.</p>
+                                    <div class="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
+                                        <label for="photoInput" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-md shadow-primary-500/20">
+                                            <i class="fas fa-upload"></i>
+                                            <span>Choose Photo</span>
+                                        </label>
+                                        @if($user->photo)
+                                            <button type="button" onclick="removePhoto()" class="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-sm font-semibold rounded-xl transition-colors border border-rose-200">
+                                                <i class="fas fa-trash-alt"></i>
+                                                <span>Remove</span>
+                                            </button>
+                                        @endif
+                                    </div>
+                                    <input type="file" id="photoInput" name="photo" accept="image/jpeg,image/png,image/jpg" class="hidden" onchange="previewPhoto(this)">
+                                    <input type="hidden" name="remove_photo" id="removePhotoFlag" value="0">
+                                    <p id="photoFileName" class="text-xs text-primary-600 font-medium mt-2"></p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                             <div class="space-y-2">
                                 <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">First Name</label>
@@ -736,6 +787,39 @@
             }, 8000);
         }
     });
+
+    // Photo preview
+    function previewPhoto(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+
+            if (file.size > maxSize) {
+                alert('Photo must be less than 2MB');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photoPreview').src = e.target.result;
+                document.getElementById('photoPreviewContainer').classList.remove('hidden');
+                document.getElementById('photoPlaceholder').classList.add('hidden');
+                document.getElementById('photoFileName').textContent = file.name;
+                document.getElementById('removePhotoFlag').value = '0';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Remove photo
+    function removePhoto() {
+        document.getElementById('photoInput').value = '';
+        document.getElementById('photoPreviewContainer').classList.add('hidden');
+        document.getElementById('photoPlaceholder').classList.remove('hidden');
+        document.getElementById('photoFileName').textContent = '';
+        document.getElementById('removePhotoFlag').value = '1';
+    }
 </script>
 
 </body>

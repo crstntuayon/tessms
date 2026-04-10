@@ -159,7 +159,7 @@ class RegisteredUserController extends Controller
                 'report_card_path' => null,
                 'good_moral_path' => null,
                 'transfer_credential_path' => null,
-                'registration_status' => 'pending_documents',
+                'registration_status' => 'pending',
             ]);
             
             // Handle document uploads

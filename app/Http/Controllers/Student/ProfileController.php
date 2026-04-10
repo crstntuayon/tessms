@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
@@ -25,11 +26,15 @@ class ProfileController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public/profile_photos', $filename);
+            // Delete old photo if exists
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                Storage::disk('public')->delete($user->photo);
+            }
 
-            $user->photo = 'profile_photos/' . $filename; // update the users table
+            // Store new photo on public disk
+            $path = $request->file('photo')->store('profile-photos', 'public');
+
+            $user->photo = $path;
             $user->save();
         }
 
@@ -98,8 +103,8 @@ class ProfileController extends Controller
             }
         }
 
-        if ($allUploaded && $student->registration_status === 'pending_documents') {
-            $student->registration_status = 'documents_complete';
+        if ($allUploaded && $student->registration_status === 'pending') {
+            $student->registration_status = 'complete';
             $student->save();
         }
     }
@@ -152,5 +157,65 @@ class ProfileController extends Controller
             'Content-Type' => $mimeType,
             'Content-Disposition' => 'inline; filename="' . $fileName . '"'
         ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('success', 'Password updated successfully!');
+    }
+
+    public function destroyAccount(Request $request)
+    {
+        $user = auth()->user();
+        $student = $user->student;
+
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['password' => 'Password is incorrect.']);
+        }
+
+        // Delete photo if exists
+        if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+            Storage::disk('public')->delete($user->photo);
+        }
+
+        // Delete student documents
+        if ($student) {
+            $docFields = ['birth_certificate_path', 'report_card_path', 'good_moral_path', 'transfer_credential_path'];
+            foreach ($docFields as $field) {
+                if ($student->$field && Storage::disk('public')->exists($student->$field)) {
+                    Storage::disk('public')->delete($student->$field);
+                }
+            }
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        if ($student) {
+            $student->delete();
+        }
+        $user->delete();
+
+        return redirect('/')->with('success', 'Your account has been deleted.');
     }
 }

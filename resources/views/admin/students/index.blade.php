@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Students | Tugawe Elementary</title>
+    <title>Admin - Pupils | Tugawe Elementary</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -337,10 +337,10 @@
                             <i class="fas fa-bars text-slate-600"></i>
                         </button>
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Students Management</h2>
+                            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Pupils Management</h2>
                             <p class="text-sm text-slate-500 font-medium flex items-center gap-2 mt-0.5">
                                 <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                Manage and view all enrolled students
+                                Manage and view all enrolled pupils
                             </p>
                         </div>
                     </div>
@@ -421,8 +421,8 @@
                                 <i class="fas fa-users text-lg"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-bold text-slate-900">Student List</h3>
-                                <p class="text-sm text-slate-500">Showing all {{ $students->count() }} enrolled students</p>
+                                <h3 class="text-lg font-bold text-slate-900">Pupil List</h3>
+                                <p class="text-sm text-slate-500">Showing all {{ $students->count() }} enrolled pupils</p>
                             </div>
                         </div>
                         
@@ -443,7 +443,7 @@
         <th class="w-12">
             <input type="checkbox" class="custom-checkbox" id="selectAll" onclick="toggleSelectAll()">
         </th>
-        <th>Student Information</th>
+        <th>Pupil Information</th>
         <th>Grade & Section</th>
         <th>Status</th>
         <th>Contact</th>
@@ -560,11 +560,11 @@
             <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fas fa-user-slash text-3xl text-slate-400"></i>
             </div>
-            <h3 class="text-lg font-semibold text-slate-700 mb-2">No students found</h3>
-            <p class="text-slate-500 mb-6">Get started by adding your first student</p>
+            <h3 class="text-lg font-semibold text-slate-700 mb-2">No pupils found</h3>
+            <p class="text-slate-500 mb-6">Get started by adding your first pupil</p>
             <a href="{{ route('admin.students.create') }}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30">
                 <i class="fas fa-plus"></i>
-                Add New Student
+                Add New Pupil
             </a>
         </td>
     </tr>
@@ -578,7 +578,7 @@
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-slate-500">Showing</span>
                             <span class="text-sm font-semibold text-slate-900">{{ $students->count() }}</span>
-                            <span class="text-sm text-slate-500">students</span>
+                            <span class="text-sm text-slate-500">pupils</span>
                         </div>
                         
                         <div class="flex items-center gap-2">
@@ -612,7 +612,7 @@
                         </div>
                         <div>
                             <p class="text-2xl font-bold text-slate-900">{{ $genderDistribution['Male'] ?? 0 }}</p>
-                            <p class="text-sm text-slate-500 font-medium">Male Students</p>
+                            <p class="text-sm text-slate-500 font-medium">Male Pupils</p>
                         </div>
                     </div>
                     
@@ -622,7 +622,7 @@
                         </div>
                         <div>
                             <p class="text-2xl font-bold text-slate-900">{{ $genderDistribution['Female'] ?? 0 }}</p>
-                            <p class="text-sm text-slate-500 font-medium">Female Students</p>
+                            <p class="text-sm text-slate-500 font-medium">Female Pupils</p>
                         </div>
                     </div>
                     
@@ -658,8 +658,8 @@
                 <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
                 </div>
-                <h3 class="text-lg font-bold text-slate-900 mb-2">Delete Student?</h3>
-                <p class="text-sm text-slate-500">Are you sure you want to delete this student? This action cannot be undone.</p>
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Delete Pupil?</h3>
+                <p class="text-sm text-slate-500">Are you sure you want to delete this pupil? This action cannot be undone.</p>
             </div>
             <div class="flex gap-3">
                 <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">

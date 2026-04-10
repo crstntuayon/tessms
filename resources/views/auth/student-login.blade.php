@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Login - Tugawe Elementary School</title>
+    <title>Pupil Login - Tugawe Elementary School</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -71,8 +71,8 @@
                 <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <i class="fas fa-user-graduate text-3xl text-white"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-slate-800 mb-1">Student Login</h1>
-                <p class="text-slate-500 text-sm">Welcome back! Ready to learn? 🎒</p>
+                <h1 class="text-2xl font-bold text-slate-800 mb-1">Pupil Login</h1>
+                <p class="text-slate-500 text-sm">Welcome back! Ready to learn?</p>
             </div>
             
             <!-- Error Messages -->

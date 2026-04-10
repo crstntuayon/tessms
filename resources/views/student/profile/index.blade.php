@@ -97,8 +97,8 @@
                         <div class="relative -mt-16 mb-4 flex justify-center">
                             <div class="relative group">
                                 <div class="w-32 h-32 rounded-2xl bg-white p-1 shadow-xl">
-                                    @if(isset($student) && $student->photo)
-                                        <img src="{{ asset('storage/' . $student->photo) }}" 
+                                    @if(isset($student) && $student->user && $student->user->photo)
+                                        <img src="{{ asset('storage/' . $student->user->photo) }}" 
                                              class="w-full h-full rounded-xl object-cover" 
                                              alt="Profile Photo">
                                     @else
@@ -180,7 +180,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                     <h3 class="font-bold text-slate-900 mb-4">Account Settings</h3>
                     <div class="space-y-2">
-                        <button @click="showPasswordModal = true" 
+                        <button @click="showPasswordModal = true"
                                 class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all duration-200 group">
                             <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
                                 <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,6 +190,18 @@
                             <div class="text-left">
                                 <p class="font-medium text-sm">Change Password</p>
                                 <p class="text-xs text-slate-400">Update your security credentials</p>
+                            </div>
+                        </button>
+                        <button @click="showDeleteModal = true"
+                                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 group">
+                            <div class="w-10 h-10 rounded-lg bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
+                                <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <p class="font-medium text-sm">Delete Account</p>
+                                <p class="text-xs text-slate-400">Permanently remove your account</p>
                             </div>
                         </button>
                     </div>
@@ -648,22 +660,35 @@ function formatDateWithAge(date) {
                 </button>
             </div>
             
-            <form @submit.prevent="updatePassword">
+            <form action="{{ route('student.profile.password') }}" method="POST">
+                @csrf
                 <div class="p-6 space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Current Password</label>
-                        <input type="password" x-model="passwordForm.current" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all" placeholder="Enter current password" required>
+                        <input type="password" name="current_password" required
+                               class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                               placeholder="Enter current password">
+                        @error('current_password')
+                            <p class="text-rose-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">New Password</label>
-                        <input type="password" x-model="passwordForm.new" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all" placeholder="Enter new password" required>
+                        <input type="password" name="password" required minlength="8"
+                               class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                               placeholder="Enter new password (min 8 chars)">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Confirm New Password</label>
-                        <input type="password" x-model="passwordForm.confirm" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all" placeholder="Confirm new password" required>
+                        <input type="password" name="password_confirmation" required
+                               class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                               placeholder="Confirm new password">
+                        @error('password')
+                            <p class="text-rose-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
-                
+
                 <div class="px-6 py-4 bg-slate-50 flex gap-3">
                     <button type="button" @click="showPasswordModal = false" class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-100 transition-colors">Cancel</button>
                     <button type="submit" class="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">Update Password</button>
@@ -731,6 +756,7 @@ function formatDateWithAge(date) {
                 activeTab: 'personal',
                 editMode: false,
                 showPasswordModal: false,
+                showDeleteModal: false,
                 showPhotoModal: false,
                 fileName: '',
                 toast: { show: false, message: '', type: 'success', progress: 100, duration: 3000 },
@@ -844,16 +870,7 @@ function formatDateWithAge(date) {
                     this.editMode = false;
                     this.showToast('Profile updated successfully!', 'success');
                 },
-                updatePassword() {
-                    if (this.passwordForm.new !== this.passwordForm.confirm) {
-                        this.showToast('Passwords do not match!', 'error');
-                        return;
-                    }
-                    // TODO: Implement password update
-                    this.showPasswordModal = false;
-                    this.passwordForm = { current: '', new: '', confirm: '' };
-                    this.showToast('Password updated successfully!', 'success');
-                },
+                // Password form is submitted via standard form POST to student.profile.password route
                 openDocumentModal(url, title, fileType) {
                     // Close first to reset
                     this.documentModal.open = false;
@@ -1022,6 +1039,71 @@ function formatDateWithAge(date) {
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div x-show="showDeleteModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div x-show="showDeleteModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="showDeleteModal = false"
+             class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        
+        <div x-show="showDeleteModal"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+             class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            
+            <div class="px-6 py-4 bg-rose-50 border-b border-rose-100 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-rose-800 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Delete Account
+                </h3>
+                <button @click="showDeleteModal = false" class="text-rose-400 hover:text-rose-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <form action="{{ route('student.profile.delete') }}" method="POST" class="block">
+                @csrf
+                @method('DELETE')
+                <div class="p-6 space-y-4">
+                    <div class="bg-rose-50 border border-rose-100 rounded-xl p-4">
+                        <p class="text-sm text-rose-700 leading-relaxed">
+                            <strong class="text-rose-800">Warning:</strong> This action cannot be undone. Deleting your account will permanently remove all your data, including profile information, enrollment records, grades, and uploaded documents.
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                            Enter your password to confirm
+                        </label>
+                        <input type="password" name="password" required
+                               class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all"
+                               placeholder="Your current password">
+                        @error('password')
+                            <p class="text-rose-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 bg-slate-50 flex gap-3">
+                    <button type="button" @click="showDeleteModal = false" class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-100 transition-colors">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2.5 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition-colors shadow-lg shadow-rose-200">Delete Account</button>
+                </div>
+            </form>
         </div>
     </div>
 

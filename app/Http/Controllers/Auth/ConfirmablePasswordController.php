@@ -35,6 +35,16 @@ class ConfirmablePasswordController extends Controller
 
         $request->session()->put('auth.password_confirmed_at', time());
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = $request->user();
+        $roleName = strtolower($user->role?->name ?? '');
+        $dashboardRoute = match ($roleName) {
+            'system admin', 'admin' => 'admin.dashboard',
+            'teacher' => 'teacher.dashboard',
+            'student' => 'student.dashboard',
+            'registrar' => 'registrar.dashboard',
+            default => 'login',
+        };
+
+        return redirect()->intended(route($dashboardRoute, absolute: false));
     }
 }

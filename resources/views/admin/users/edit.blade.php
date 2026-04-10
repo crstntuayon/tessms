@@ -265,9 +265,15 @@
                         <div class="text-center">
                             <!-- Avatar Upload -->
                             <div class="avatar-upload w-32 h-32 mx-auto mb-4 relative">
-                                <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->first_name . '+' . $user->last_name) . '&background=3b82f6&color=fff&size=128' }}" 
-                                     alt="User Avatar" 
-                                     class="w-full h-full rounded-full object-cover border-4 border-white shadow-lg">
+                                @if($user->photo)
+                                    <img src="{{ asset('storage/' . $user->photo) }}" 
+                                         alt="User Avatar" 
+                                         class="w-full h-full rounded-full object-cover border-4 border-white shadow-lg">
+                                @else
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($user->first_name . '+' . $user->last_name) }}&background=3b82f6&color=fff&size=128" 
+                                         alt="User Avatar" 
+                                         class="w-full h-full rounded-full object-cover border-4 border-white shadow-lg">
+                                @endif
                                 <div class="avatar-overlay">
                                     <i class="fa-solid fa-camera text-white text-2xl"></i>
                                 </div>

@@ -103,8 +103,8 @@ if ($currentStudent) {
             
             <div class="relative flex items-center gap-3">
                 <div class="relative shrink-0">
-                    @if($student->profile_photo)
-                        <img src="{{ asset('storage/' . $student->profile_photo) }}" 
+                    @if($student->user && $student->user->photo)
+                        <img src="{{ asset('storage/' . $student->user->photo) }}" 
                              class="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-md group-hover:ring-indigo-200 transition-all" 
                              alt="{{ $student->user->first_name ?? 'Student' }}">
                     @else
@@ -152,8 +152,8 @@ if ($currentStudent) {
              x-transition
              class="flex justify-center mt-4 mb-2">
             <div class="relative">
-                @if($student->profile_photo)
-                    <img src="{{ asset('storage/' . $student->profile_photo) }}" 
+                @if($student->user && $student->user->photo)
+                    <img src="{{ asset('storage/' . $student->user->photo) }}" 
                          class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-md" 
                          alt="{{ $student->user->first_name ?? 'Student' }}">
                 @else

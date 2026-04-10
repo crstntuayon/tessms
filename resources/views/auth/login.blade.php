@@ -11,7 +11,7 @@
         ->latest()
         ->take(6)
         ->get();
-    $teachers = Teacher::all();
+    $teachers = Teacher::with('user')->get();
     $students = Student::whereHas('enrollments', function($q) {
         $q->where('status', 'enrolled');
     })->get();
@@ -454,7 +454,7 @@ img {
                 <div class="max-w-2xl">
                     <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-50 border border-teal-100 mb-6">
                         <span class="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
-                        <span class="text-sm font-semibold text-teal-700">Department of Education • Region VII</span>
+                        <span class="text-sm font-semibold text-teal-700">Department of Education • Negros Island Region</span>
                     </div>
                     
                     <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 leading-[1.1] mb-6 text-balance">
@@ -476,7 +476,7 @@ img {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
                             </svg>
-                            Student Portal
+                            Pupil Portal
                         </a>
                         <button onclick="openAuthPanel('login')" class="px-8 py-4 rounded-full font-semibold text-slate-700 bg-white border-2 border-slate-200 hover:border-teal-500 hover:text-teal-600 inline-flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -932,7 +932,7 @@ function imageSlider() {
                     <div class="relative inline-block mb-6">
                         <div class="absolute inset-0 bg-gradient-to-br from-teal-400 to-orange-400 rounded-3xl rotate-6 opacity-20 group-hover:rotate-12 transition-transform"></div>
                         <div class="relative w-40 h-40 mx-auto rounded-3xl overflow-hidden bg-slate-100 shadow-2xl border-4 border-white">
-                            <img src="{{ $principal->photo ? asset('storage/'.$principal->photo) : asset('images/photo-placeholder.png') }}" 
+                            <img src="{{ $principal->user?->photo ? asset('storage/'.$principal->user->photo) : asset('images/photo-placeholder.png') }}" 
                                  alt="{{ $principal->first_name }} {{ $principal->last_name }}"
                                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                         </div>
@@ -956,7 +956,7 @@ function imageSlider() {
                     <div class="relative mb-4 mx-auto w-24 h-24">
                         <div class="absolute inset-0 bg-gradient-to-br from-teal-200 to-orange-200 rounded-2xl rotate-3 opacity-0 group-hover:opacity-100 group-hover:rotate-6 transition-all duration-300"></div>
                         <div class="relative w-24 h-24 mx-auto rounded-2xl overflow-hidden bg-slate-100 shadow-lg border-2 border-white">
-                            <img src="{{ $teacher->photo ? asset('storage/'.$teacher->photo) : asset('images/photo-placeholder.png') }}"
+                            <img src="{{ $teacher->user?->photo ? asset('storage/'.$teacher->user->photo) : asset('images/photo-placeholder.png') }}"
                                  alt="{{ $teacher->first_name }} {{ $teacher->last_name }}"
                                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                         </div>
@@ -1001,7 +1001,7 @@ function imageSlider() {
                 <div>
                     <h2 class="text-4xl md:text-5xl font-bold mb-6">Get in touch</h2>
                     <p class="text-slate-400 text-lg mb-10 leading-relaxed">
-                        For inquiries regarding enrollment, student records, or other school matters, 
+                        For inquiries regarding enrollment, pupil records, or other school matters, 
                         please contact us or visit the school administration office.
                     </p>
                     
@@ -1112,7 +1112,7 @@ function imageSlider() {
                     </div>
                     <div>
                         <h2 class="font-bold text-slate-900 text-lg">Tugawe ES Portal</h2>
-                        <p class="text-xs text-slate-500">Student Management System</p>
+                        <p class="text-xs text-slate-500">Pupil Management System</p>
                     </div>
                 </div>
                 <button onclick="closeAuthPanel()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all duration-200 hover:rotate-90">
@@ -1135,7 +1135,7 @@ function imageSlider() {
                     </div>
                     <div>
                         <h3 id="authTitle" class="text-xl font-bold text-slate-900 transition-all duration-300">Staff Portal</h3>
-                        <p id="authSubtitle" class="text-sm text-slate-500 transition-all duration-300">Sign in for Teachers, Admins & Registrar</p>
+                        <p id="authSubtitle" class="text-sm text-slate-500 transition-all duration-300">Sign in for Admins and Teachers only.</p>
                     </div>
                 </div>
             </div>
@@ -1148,7 +1148,7 @@ function imageSlider() {
                         Sign In
                     </button>
                     <button onclick="switchAuthMode('register')" id="registerTab" class="relative z-10 flex-1 py-2.5 text-sm font-semibold text-slate-500 transition-colors duration-300 text-center">
-                        Student Sign Up
+                        Pupil Sign Up
                     </button>
                 </div>
             </div>
@@ -1223,12 +1223,12 @@ function imageSlider() {
                                     <i class="fas fa-user-graduate text-indigo-600"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-semibold text-indigo-900">Are you a student?</p>
-                                    <p class="text-xs text-indigo-700">Click the button to access student login</p>
+                                    <p class="text-sm font-semibold text-indigo-900">Are you a pupil?</p>
+                                    <p class="text-xs text-indigo-700">Click the button to access pupil login</p>
                                 </div>
                             </div>
                             <a href="{{ route('student.login') }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                Student Login
+                                Pupil Login
                             </a>
                         </div>
                     </div>
@@ -1259,8 +1259,8 @@ function imageSlider() {
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-orange-900">Student Registration Only</p>
-                                <p class="text-xs text-orange-700">This portal is exclusively for enrolled students.</p>
+                                <p class="text-sm font-bold text-orange-900">Pupil Registration Only</p>
+                                <p class="text-xs text-orange-700">This portal is exclusively for enrolled pupils.</p>
                             </div>
                         </div>
                     </div>
@@ -1286,9 +1286,9 @@ function imageSlider() {
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
             </svg>
-            Student Registration
+            Pupil Registration
         </h2>
-        <p class="text-teal-100 mt-1 text-sm">Complete the form below to register a new student</p>
+        <p class="text-teal-100 mt-1 text-sm">Complete the form below to register a new pupil</p>
     </div>
 
     <div class="p-8 space-y-8">
@@ -1303,13 +1303,14 @@ function imageSlider() {
             <div class="flex max-w-md">
                 <span class="inline-flex items-center px-4 py-3 bg-teal-50 border-2 border-r-0 border-teal-200 rounded-l-lg text-teal-700 font-semibold text-sm">120231</span>
                 <input type="text" name="lrn_suffix" maxlength="6" placeholder="Last 6 digits"
+                       value="{{ old('lrn_suffix') }}"
                        class="flex-1 px-4 py-3 border-2 border-slate-200 rounded-r-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-mono text-lg tracking-wider placeholder:text-slate-400">
             </div>
             <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                Enter the last 6 digits of the student's LRN
+                Enter the last 6 digits of the pupil's LRN
             </p>
         </div>
 
@@ -1324,16 +1325,19 @@ function imageSlider() {
                 <div class="group">
                     <label class="block text-sm font-medium text-slate-700 mb-2">First Name <span class="text-red-500">*</span></label>
                     <input type="text" name="first_name" placeholder="Juan" required 
+                           value="{{ old('first_name') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all group-hover:border-slate-300">
                 </div>
                 <div class="group">
                     <label class="block text-sm font-medium text-slate-700 mb-2">Middle Name</label>
                     <input type="text" name="middle_name" placeholder="Dela Cruz" 
+                           value="{{ old('middle_name') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all group-hover:border-slate-300">
                 </div>
                 <div class="group">
                     <label class="block text-sm font-medium text-slate-700 mb-2">Last Name <span class="text-red-500">*</span></label>
                     <input type="text" name="last_name" placeholder="Santos" required 
+                           value="{{ old('last_name') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all group-hover:border-slate-300">
                 </div>
             </div>
@@ -1341,12 +1345,12 @@ function imageSlider() {
             <div class="max-w-xs">
                 <label class="block text-sm font-medium text-slate-700 mb-2">Suffix</label>
                 <select name="suffix" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
-                    <option value="">None</option>
-                    <option value="Jr.">Jr.</option>
-                    <option value="Sr.">Sr.</option>
-                    <option value="II">II</option>
-                    <option value="III">III</option>
-                    <option value="IV">IV</option>
+                    <option value="" @selected(old('suffix') == '')>None</option>
+                    <option value="Jr." @selected(old('suffix') == 'Jr.')>Jr.</option>
+                    <option value="Sr." @selected(old('suffix') == 'Sr.')>Sr.</option>
+                    <option value="II" @selected(old('suffix') == 'II')>II</option>
+                    <option value="III" @selected(old('suffix') == 'III')>III</option>
+                    <option value="IV" @selected(old('suffix') == 'IV')>IV</option>
                 </select>
             </div>
 
@@ -1354,11 +1358,13 @@ function imageSlider() {
                 <div class="group">
                     <label class="block text-sm font-medium text-slate-700 mb-2">Birthdate <span class="text-red-500">*</span></label>
                     <input type="date" name="birthday" required 
+                           value="{{ old('birthday') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all text-slate-600">
                 </div>
                 <div class="group">
                     <label class="block text-sm font-medium text-slate-700 mb-2">Place of Birth <span class="text-red-500">*</span></label>
                     <input type="text" name="birth_place" placeholder="City, Province" required 
+                           value="{{ old('birth_place') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
             </div>
@@ -1369,29 +1375,33 @@ function imageSlider() {
                     <select name="gender" required 
                             class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
                         <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
+                        <option value="Male" @selected(old('gender') == 'Male')>Male</option>
+                        <option value="Female" @selected(old('gender') == 'Female')>Female</option>
+                        <option value="Other" @selected(old('gender') == 'Other')>Other</option>
                     </select>
                 </div>
                 <div class="group">
                     <label class="block text-sm font-medium text-slate-700 mb-2">Nationality <span class="text-red-500">*</span></label>
                     <input type="text" name="nationality" placeholder="Filipino" required 
+                           value="{{ old('nationality') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div class="group">
                     <label class="block text-sm font-medium text-slate-700 mb-2">Religion <span class="text-red-500">*</span></label>
                     <input type="text" name="religion" placeholder="Roman Catholic" required
+                           value="{{ old('religion') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div class="group">
     <label class="block text-sm font-medium text-slate-700 mb-2">Ethnicity <span class="text-red-500">*</span></label>
     <input type="text" name="ethnicity" placeholder="e.g., Cebuano, Tagalog" required
+           value="{{ old('ethnicity') }}"
            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
 </div>
 <div class="group">
     <label class="block text-sm font-medium text-slate-700 mb-2">Mother Tongue <span class="text-red-500">*</span></label>
     <input type="text" name="mother_tongue" placeholder="e.g., Cebuano, Filipino" required
+           value="{{ old('mother_tongue') }}"
            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
 </div>
             </div>
@@ -1414,11 +1424,13 @@ function imageSlider() {
                             Father's Name <span class="text-red-500">*</span>
                         </label>
                         <input type="text" name="father_name" placeholder="Full Name" required
+                               value="{{ old('father_name') }}"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Occupation <span class="text-red-500">*</span></label>
                         <input type="text" name="father_occupation" placeholder="e.g., Engineer" required
+                               value="{{ old('father_occupation') }}"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                 </div>
@@ -1432,11 +1444,13 @@ function imageSlider() {
                             Mother's Name <span class="text-red-500">*</span>
                         </label>
                         <input type="text" name="mother_name" placeholder="Full Name" required
+                               value="{{ old('mother_name') }}"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Occupation <span class="text-red-500">*</span></label>
                         <input type="text" name="mother_occupation" placeholder="e.g., Teacher" required
+                               value="{{ old('mother_occupation') }}"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                 </div>
@@ -1450,22 +1464,24 @@ function imageSlider() {
                             Guardian's Name <span class="text-red-500">*</span>
                         </label>
                         <input type="text" name="guardian_name" placeholder="Full Name" required
+                               value="{{ old('guardian_name') }}"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Relationship <span class="text-red-500">*</span></label>
                         <select name="guardian_relationship" required class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
                             <option value="">Select</option>
-                            <option value="Parent">Parent</option>
-                            <option value="Grandparent">Grandparent</option>
-                            <option value="Sibling">Sibling</option>
-                            <option value="Relative">Relative</option>
-                            <option value="Other">Other</option>
+                            <option value="Parent" @selected(old('guardian_relationship') == 'Parent')>Parent</option>
+                            <option value="Grandparent" @selected(old('guardian_relationship') == 'Grandparent')>Grandparent</option>
+                            <option value="Sibling" @selected(old('guardian_relationship') == 'Sibling')>Sibling</option>
+                            <option value="Relative" @selected(old('guardian_relationship') == 'Relative')>Relative</option>
+                            <option value="Other" @selected(old('guardian_relationship') == 'Other')>Other</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Contact Number</label>
                         <input type="tel" name="guardian_contact" placeholder="09XX XXX XXXX" 
+                               value="{{ old('guardian_contact') }}"
                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                 </div>
@@ -1482,6 +1498,7 @@ function imageSlider() {
             <div class="mb-4">
                 <label class="block text-sm font-medium text-slate-700 mb-2">Street Address <span class="text-red-500">*</span></label>
                 <input type="text" name="street_address" placeholder="House No., Street, Subdivision" required
+                       value="{{ old('street_address') }}"
                        class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
             </div>
             
@@ -1489,21 +1506,25 @@ function imageSlider() {
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Barangay <span class="text-red-500">*</span></label>
                     <input type="text" name="barangay" placeholder="Barangay" required
+                           value="{{ old('barangay') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">City <span class="text-red-500">*</span></label>
                     <input type="text" name="city" placeholder="City" required
+                           value="{{ old('city') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Province <span class="text-red-500">*</span></label>
                     <input type="text" name="province" placeholder="Province" required
+                           value="{{ old('province') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">ZIP Code <span class="text-red-500">*</span></label>
                     <input type="text" name="zip_code" placeholder="ZIP" maxlength="4" required
+                           value="{{ old('zip_code') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-mono">
                 </div>
             </div>
@@ -1523,7 +1544,7 @@ function imageSlider() {
                     class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
                 <option value="">Select Grade Level</option>
                 @foreach($gradeLevels as $level)
-                    <option value="{{ $level->id }}">{{ $level->name }}</option>
+                    <option value="{{ $level->id }}" @selected(old('grade_level_id') == $level->id)>{{ $level->name }}</option>
                 @endforeach
             </select>
         </div>
@@ -1531,9 +1552,9 @@ function imageSlider() {
             <label class="block text-sm font-medium text-slate-700 mb-2">Student Type <span class="text-red-500">*</span></label>
             <select name="type" id="studentType" required onchange="togglePreviousSchool()"
                     class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
-                <option value="new">New Student</option>
-                <option value="transferee">Transferee</option>
-                <option value="continuing">Continuing</option>
+                <option value="new" @selected(old('type') == 'new')>New Pupil</option>
+                <option value="transferee" @selected(old('type') == 'transferee')>Transferee</option>
+                <option value="continuing" @selected(old('type') == 'continuing')>Continuing</option>
             </select>
         </div>
     </div>
@@ -1550,6 +1571,7 @@ function imageSlider() {
                 </svg>
             </span>
             <input type="text" name="previous_school" id="previousSchoolInput" 
+                   value="{{ old('previous_school') }}"
                    placeholder="Name of previous school" 
                    class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
         </div>
@@ -1557,7 +1579,7 @@ function imageSlider() {
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            Required for transferee students
+            Required for transferee pupils
         </p>
     </div>
 </div>
@@ -1579,6 +1601,7 @@ function imageSlider() {
                             </svg>
                         </span>
                         <input type="text" name="username" placeholder="juan.santos" required 
+                               value="{{ old('username') }}"
                                class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                 </div>
@@ -1591,6 +1614,7 @@ function imageSlider() {
                             </svg>
                         </span>
                         <input type="email" name="email" placeholder="juan@example.com" required 
+                               value="{{ old('email') }}"
                                class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                     </div>
                 </div>
@@ -1625,7 +1649,7 @@ function imageSlider() {
 
             <!-- Photo Upload -->
             <div class="mt-6">
-                <label class="block text-sm font-medium text-slate-700 mb-3">Student Photo</label>
+                <label class="block text-sm font-medium text-slate-700 mb-3">Pupil Photo</label>
                 <div class="flex items-center justify-center w-full">
                     <label for="photo" class="flex flex-col items-center justify-center w-full h-40 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -1649,21 +1673,21 @@ function imageSlider() {
 <div class="mt-6 bg-slate-50 p-6 rounded-xl border border-slate-200">
     <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
         <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">7</span>
-        Student Remarks <span class="text-slate-400 font-normal text-sm">(Optional)</span>
+        Pupil Remarks <span class="text-slate-400 font-normal text-sm">(Optional)</span>
     </h3>
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">Remark Code</label>
             <select name="remarks" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
-                <option value="">-- Select Remark (Optional) --</option>
-                <option value="TI">TI - Transferred In</option>
-                <option value="TO">TO - Transferred Out</option>
-                <option value="DO">DO - Dropped Out</option>
-                <option value="LE">LE - Late Enrollee</option>
-                <option value="CCT">CCT - CCT Recipient</option>
-                <option value="BA">BA - Balik Aral</option>
-                <option value="LWD">LWD - Learner With Disability</option>
+                <option value="" @selected(old('remarks') == '')>-- Select Remark (Optional) --</option>
+                <option value="TI" @selected(old('remarks') == 'TI')>TI - Transferred In</option>
+                <option value="TO" @selected(old('remarks') == 'TO')>TO - Transferred Out</option>
+                <option value="DO" @selected(old('remarks') == 'DO')>DO - Dropped Out</option>
+                <option value="LE" @selected(old('remarks') == 'LE')>LE - Late Enrollee</option>
+                <option value="CCT" @selected(old('remarks') == 'CCT')>CCT - CCT Recipient</option>
+                <option value="BA" @selected(old('remarks') == 'BA')>BA - Balik Aral</option>
+                <option value="LWD" @selected(old('remarks') == 'LWD')>LWD - Learner With Disability</option>
             </select>
         </div>
         
@@ -1688,7 +1712,7 @@ function imageSlider() {
     <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
         <p class="text-sm text-blue-800">
             <i class="fas fa-info-circle mr-2"></i>
-            <span id="documentRequirementsText">New Students: Birth Certificate, Report Card, Good Moral Certificate</span>
+            <span id="documentRequirementsText">New Pupils: Birth Certificate, Report Card, Good Moral Certificate</span>
         </p>
     </div>
     
@@ -1942,7 +1966,7 @@ function imageSlider() {
                         <div class="relative inline-block mb-6">
                             <div class="absolute inset-0 bg-gradient-to-br from-teal-400 to-orange-400 rounded-3xl rotate-3 opacity-20"></div>
                             <div class="relative w-32 h-32 mx-auto rounded-3xl overflow-hidden bg-slate-100 shadow-xl border-4 border-white">
-                                <img src="{{ $principal->photo ? asset('storage/'.$principal->photo) : asset('images/photo-placeholder.png') }}" 
+                                <img src="{{ $principal->user?->photo ? asset('storage/'.$principal->user->photo) : asset('images/photo-placeholder.png') }}" 
                                      class="w-full h-full object-cover">
                             </div>
                             <div class="absolute -bottom-2 -right-2 bg-teal-500 text-white p-2 rounded-xl shadow-lg">
@@ -1965,7 +1989,7 @@ function imageSlider() {
                                 <div class="relative mb-4 mx-auto w-20 h-20">
                                     <div class="absolute inset-0 bg-gradient-to-br from-teal-200 to-orange-200 rounded-2xl rotate-3 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                     <div class="relative w-20 h-20 mx-auto rounded-2xl overflow-hidden bg-slate-100 shadow-md border-2 border-white">
-                                        <img src="{{ $teacher->photo ? asset('storage/'.$teacher->photo) : asset('images/photo-placeholder.png') }}"
+                                        <img src="{{ $teacher->user?->photo ? asset('storage/'.$teacher->user->photo) : asset('images/photo-placeholder.png') }}"
                                              class="w-full h-full object-cover">
                                     </div>
                                 </div>
@@ -2243,21 +2267,29 @@ document.addEventListener('DOMContentLoaded', function () {
     @endif
 
     
-        @if($errors->any())
+@php
+$loginOnlyErrors = ['username', 'password'];
+$hasRegistrationErrors = false;
+foreach($errors->keys() as $key) {
+    if (!in_array($key, $loginOnlyErrors)) {
+        $hasRegistrationErrors = true;
+        break;
+    }
+}
+@endphp
+
+@if($hasRegistrationErrors)
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     openAuthPanel('register');
 });
 </script>
-@endif
-
-       
-@if($errors->has('username') || $errors->has('password'))
-   <script>
-     document.addEventListener('DOMContentLoaded', function() {
-        openAuthPanel('login');
-    });
-   </script>
+@elseif($errors->has('username') || $errors->has('password'))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    openAuthPanel('login');
+});
+</script>
 @endif
 
 </body>

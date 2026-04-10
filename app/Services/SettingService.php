@@ -32,11 +32,16 @@ class SettingService
             ],
             'academic' => [
                 'current_school_year', 'school_year_start', 'school_year_end',
-                'grading_system', 'passing_grade'
+                'grading_system', 'passing_grade', 'enrollment_start_date',
+                'enrollment_end_date', 'allow_late_enrollment'
             ],
             'notifications' => [
                 'notify_new_student', 'notify_attendance', 'notify_grades',
                 'notify_announcements', 'sms_enabled', 'sms_provider'
+            ],
+            'email' => [
+                'mail_driver', 'mail_host', 'mail_port', 'mail_username',
+                'mail_password', 'mail_encryption', 'mail_from_address', 'mail_from_name'
             ],
             'security' => [
                 'min_password_length', 'password_expiry', 'strong_passwords',
@@ -51,6 +56,9 @@ class SettingService
             ],
             'advanced' => [
                 'api_enabled', 'api_key'
+            ],
+            'enrollment' => [
+                'enrollment_enabled'
             ]
         ];
 
@@ -141,12 +149,25 @@ class SettingService
             ['key' => 'current_school_year', 'value' => '2024-2025', 'type' => 'string', 'group' => 'academic'],
             ['key' => 'grading_system', 'value' => 'quarterly', 'type' => 'string', 'group' => 'academic'],
             ['key' => 'passing_grade', 'value' => '75', 'type' => 'integer', 'group' => 'academic'],
+            ['key' => 'enrollment_start_date', 'value' => '', 'type' => 'string', 'group' => 'academic'],
+            ['key' => 'enrollment_end_date', 'value' => '', 'type' => 'string', 'group' => 'academic'],
+            ['key' => 'allow_late_enrollment', 'value' => '0', 'type' => 'boolean', 'group' => 'academic'],
 
             // Notifications
             ['key' => 'notify_new_student', 'value' => '1', 'type' => 'boolean', 'group' => 'notifications'],
             ['key' => 'notify_attendance', 'value' => '1', 'type' => 'boolean', 'group' => 'notifications'],
             ['key' => 'notify_grades', 'value' => '1', 'type' => 'boolean', 'group' => 'notifications'],
             ['key' => 'sms_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'notifications'],
+
+            // Email (SMTP)
+            ['key' => 'mail_driver', 'value' => 'smtp', 'type' => 'string', 'group' => 'email'],
+            ['key' => 'mail_host', 'value' => '', 'type' => 'string', 'group' => 'email'],
+            ['key' => 'mail_port', 'value' => '587', 'type' => 'integer', 'group' => 'email'],
+            ['key' => 'mail_username', 'value' => '', 'type' => 'string', 'group' => 'email'],
+            ['key' => 'mail_password', 'value' => '', 'type' => 'string', 'group' => 'email'],
+            ['key' => 'mail_encryption', 'value' => 'tls', 'type' => 'string', 'group' => 'email'],
+            ['key' => 'mail_from_address', 'value' => '', 'type' => 'string', 'group' => 'email'],
+            ['key' => 'mail_from_name', 'value' => 'Tugawe Elementary School', 'type' => 'string', 'group' => 'email'],
 
             // Security
             ['key' => 'min_password_length', 'value' => '8', 'type' => 'integer', 'group' => 'security'],
@@ -171,6 +192,9 @@ class SettingService
 
             // Advanced
             ['key' => 'api_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'advanced'],
+
+            // Enrollment
+            ['key' => 'enrollment_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'enrollment'],
         ];
 
         foreach ($defaults as $setting) {
@@ -188,13 +212,14 @@ class SettingService
             'maintenance_mode', 'user_registration', 'email_verification',
             'notify_new_student', 'notify_attendance', 'notify_grades', 'notify_announcements',
             'sms_enabled', 'strong_passwords', 'require_2fa', 'login_notifications',
-            'compact_mode', 'dark_mode', 'animations', 'auto_backup', 'api_enabled'
+            'compact_mode', 'dark_mode', 'animations', 'auto_backup', 'api_enabled',
+            'allow_late_enrollment', 'enrollment_enabled'
         ];
 
         // Integer fields
         $integers = [
             'passing_grade', 'min_password_length', 'password_expiry',
-            'session_timeout', 'max_login_attempts'
+            'session_timeout', 'max_login_attempts', 'mail_port'
         ];
 
         if (in_array($key, $booleans)) {
