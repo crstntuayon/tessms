@@ -147,6 +147,47 @@
     <!-- Main Content -->
     <div class="ml-72 p-6">
         
+        {{-- Calculate school days early so it's available for debug and display --}}
+        @php
+            // Generate school days for the month (Mon-Fri only, excluding non-school days)
+            // School year spans across calendar years (e.g., June 2024 - March 2025)
+            // For months June-Dec: use start_date year, for Jan-Mar: use end_date year
+            $monthNum = date('n', strtotime($selectedMonth));
+            if ($activeSchoolYear) {
+                $startYear = \Carbon\Carbon::parse($activeSchoolYear->start_date)->year;
+                // If end_date is not set, assume it's the next year (typical school year)
+                $endYear = $activeSchoolYear->end_date 
+                    ? \Carbon\Carbon::parse($activeSchoolYear->end_date)->year 
+                    : $startYear + 1;
+                // Months 1-3 (Jan-Mar) use end year, months 6-12 (June-Dec) use start year
+                $year = ($monthNum >= 1 && $monthNum <= 3) ? $endYear : $startYear;
+            } else {
+                $year = date('Y');
+            }
+            $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $monthNum, $year);
+            $schoolDays = [];
+            
+            // Get non-school days from configuration
+            $nonSchoolDays = [];
+            if (isset($schoolDaysConfig) && $schoolDaysConfig && $schoolDaysConfig->non_school_days) {
+                $nonSchoolDays = collect($schoolDaysConfig->non_school_days)->pluck('date')->map(function($date) {
+                    return \Carbon\Carbon::parse($date)->day;
+                })->toArray();
+            }
+            
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $date = \Carbon\Carbon::create($year, $monthNum, $day);
+                // Only add if it's a weekday AND not a non-school day
+                if (!$date->isWeekend() && !in_array($day, $nonSchoolDays)) {
+                    $schoolDays[] = $day;
+                }
+            }
+            
+            // Limit to max 25 school days for display
+            $displayDays = array_slice($schoolDays, 0, 25);
+            $dayLetters = ['M', 'T', 'W', 'TH', 'F'];
+        @endphp
+        
         <!-- Page Header -->
         <div class="mb-4 flex items-center justify-between no-print">
             <div>
@@ -203,6 +244,18 @@
             </div>
         @endif
 
+        @if($selectedSection && !$schoolDaysConfig)
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center no-print mb-4">
+                <i class="fas fa-exclamation-triangle text-amber-500 text-xl mb-2"></i>
+                <p class="text-amber-800 font-medium text-sm">School days not configured for {{ $selectedMonth }}</p>
+                <p class="text-amber-600 text-xs mt-1">
+                    <a href="{{ route('teacher.sections.attendance.school-days', $selectedSection) }}?month={{ $monthNum }}&year={{ $year }}" class="underline hover:text-amber-800">
+                        Click here to configure school days (holidays, suspensions, etc.)
+                    </a>
+                </p>
+            </div>
+        @endif
+
         <!-- SF2 Container -->
         <div class="sf2-container bg-white p-4 rounded-xl shadow-lg border border-slate-200 max-w-[1600px] mx-auto">
             
@@ -251,25 +304,6 @@
                 SCHOOL FORM 2 (SF2) DAILY ATTENDANCE REPORT OF LEARNERS<br>
                 <span class="text-[9px] font-normal">(This replaces Form 1, Form 2 & STS Form 4 - Absenteeism and Dropout Profile)</span>
             </div>
-
-            @php
-                // Generate school days for the month (Mon-Fri only)
-                $year = $activeSchoolYear ? \Carbon\Carbon::parse($activeSchoolYear->start_date)->year : date('Y');
-                $monthNum = date('n', strtotime($selectedMonth));
-                $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $monthNum, $year);
-                $schoolDays = [];
-                
-                for ($day = 1; $day <= $daysInMonth; $day++) {
-                    $date = \Carbon\Carbon::create($year, $monthNum, $day);
-                    if (!$date->isWeekend()) {
-                        $schoolDays[] = $day;
-                    }
-                }
-                
-                // Limit to max 25 school days for display
-                $displayDays = array_slice($schoolDays, 0, 25);
-                $dayLetters = ['M', 'T', 'W', 'TH', 'F'];
-            @endphp
 
             <!-- Main SF2 Table -->
             <table class="sf2-table">
@@ -333,11 +367,12 @@
                             foreach ($displayDays as $day) {
                                 $dateStr = sprintf('%04d-%02d-%02d', $year, $monthNum, $day);
                                 $attendance = $attendances->first(function($a) use ($student, $dateStr) {
-                                    return $a->student_id == $student->id && $a->date == $dateStr;
+                                    $attendanceDate = is_string($a->date) ? $a->date : $a->date->format('Y-m-d');
+                                    return $a->student_id == $student->id && $attendanceDate == $dateStr;
                                 });
                                 if ($attendance) {
                                     if ($attendance->status == 'absent') $absentCount++;
-                                    if ($attendance->status == 'tardy') $tardyCount++;
+                                    if ($attendance->status == 'late') $tardyCount++;
                                 }
                             }
                             $maleTotalAbsent += $absentCount;
@@ -345,20 +380,28 @@
                         @endphp
                         <tr>
                             <td class="text-center font-medium">{{ $index + 1 }}</td>
-                            <td class="text-left uppercase text-[8px] data-cell pl-2" title="{{ $fullName }}">{{ $fullName }}</td>
+                            <td class="text-left uppercase text-[8px] data-cell pl-2" title="{{ $fullName }}">{{ $fullName }} (ID:{{ $student->id }})</td>
                             @foreach($displayDays as $day)
                                 @php
                                     $dateStr = sprintf('%04d-%02d-%02d', $year, $monthNum, $day);
-                                    $attendance = $attendances->first(function($a) use ($student, $dateStr) {
-                                        return $a->student_id == $student->id && $a->date == $dateStr;
-                                    });
+                                    
+                                    // Find attendance for this student and date
+                                    $attendance = null;
+                                    foreach ($attendances as $a) {
+                                        $attendanceDate = is_string($a->date) ? $a->date : $a->date->format('Y-m-d');
+                                        if ($a->student_id == $student->id && $attendanceDate == $dateStr) {
+                                            $attendance = $a;
+                                            break;
+                                        }
+                                    }
+                                    
                                     $mark = '';
                                     if ($attendance) {
                                         if ($attendance->status == 'absent') $mark = 'x';
-                                        elseif ($attendance->status == 'tardy') $mark = '/';
+                                        elseif ($attendance->status == 'late') $mark = '/';
                                     }
                                 @endphp
-                                <td class="attendance-cell">{{ $mark }}</td>
+                                <td class="attendance-cell" title="{{ $dateStr }}">{{ $mark }}</td>
                             @endforeach
                             @for($i = 0; $i < $remainingCols; $i++)
                                 <td class="attendance-cell"></td>
@@ -381,7 +424,8 @@
                                 $dateStr = sprintf('%04d-%02d-%02d', $year, $monthNum, $day);
                                 $maleDailyAbsent = $attendances->filter(function($a) use ($maleEnrollments, $dateStr) {
                                     $studentIds = $maleEnrollments->pluck('student.id')->toArray();
-                                    return in_array($a->student_id, $studentIds) && $a->date == $dateStr && $a->status == 'absent';
+                                    $attendanceDate = is_string($a->date) ? $a->date : $a->date->format('Y-m-d');
+                                    return in_array($a->student_id, $studentIds) && $attendanceDate == $dateStr && $a->status == 'absent';
                                 })->count();
                                 $malePresent = $maleEnrollments->count() - $maleDailyAbsent;
                             @endphp
@@ -422,11 +466,12 @@
                             foreach ($displayDays as $day) {
                                 $dateStr = sprintf('%04d-%02d-%02d', $year, $monthNum, $day);
                                 $attendance = $attendances->first(function($a) use ($student, $dateStr) {
-                                    return $a->student_id == $student->id && $a->date == $dateStr;
+                                    $attendanceDate = is_string($a->date) ? $a->date : $a->date->format('Y-m-d');
+                                    return $a->student_id == $student->id && $attendanceDate == $dateStr;
                                 });
                                 if ($attendance) {
                                     if ($attendance->status == 'absent') $absentCount++;
-                                    if ($attendance->status == 'tardy') $tardyCount++;
+                                    if ($attendance->status == 'late') $tardyCount++;
                                 }
                             }
                             $femaleTotalAbsent += $absentCount;
@@ -434,20 +479,28 @@
                         @endphp
                         <tr>
                             <td class="text-center font-medium">{{ $maleEnrollments->count() + $index + 1 }}</td>
-                            <td class="text-left uppercase text-[8px] data-cell pl-2" title="{{ $fullName }}">{{ $fullName }}</td>
+                            <td class="text-left uppercase text-[8px] data-cell pl-2" title="{{ $fullName }}">{{ $fullName }} (ID:{{ $student->id }})</td>
                             @foreach($displayDays as $day)
                                 @php
                                     $dateStr = sprintf('%04d-%02d-%02d', $year, $monthNum, $day);
-                                    $attendance = $attendances->first(function($a) use ($student, $dateStr) {
-                                        return $a->student_id == $student->id && $a->date == $dateStr;
-                                    });
+                                    
+                                    // Find attendance for this student and date
+                                    $attendance = null;
+                                    foreach ($attendances as $a) {
+                                        $attendanceDate = is_string($a->date) ? $a->date : $a->date->format('Y-m-d');
+                                        if ($a->student_id == $student->id && $attendanceDate == $dateStr) {
+                                            $attendance = $a;
+                                            break;
+                                        }
+                                    }
+                                    
                                     $mark = '';
                                     if ($attendance) {
                                         if ($attendance->status == 'absent') $mark = 'x';
-                                        elseif ($attendance->status == 'tardy') $mark = '/';
+                                        elseif ($attendance->status == 'late') $mark = '/';
                                     }
                                 @endphp
-                                <td class="attendance-cell">{{ $mark }}</td>
+                                <td class="attendance-cell" title="{{ $dateStr }}">{{ $mark }}</td>
                             @endforeach
                             @for($i = 0; $i < $remainingCols; $i++)
                                 <td class="attendance-cell"></td>
@@ -470,7 +523,8 @@
                                 $dateStr = sprintf('%04d-%02d-%02d', $year, $monthNum, $day);
                                 $femaleDailyAbsent = $attendances->filter(function($a) use ($femaleEnrollments, $dateStr) {
                                     $studentIds = $femaleEnrollments->pluck('student.id')->toArray();
-                                    return in_array($a->student_id, $studentIds) && $a->date == $dateStr && $a->status == 'absent';
+                                    $attendanceDate = is_string($a->date) ? $a->date : $a->date->format('Y-m-d');
+                                    return in_array($a->student_id, $studentIds) && $attendanceDate == $dateStr && $a->status == 'absent';
                                 })->count();
                                 $femalePresent = $femaleEnrollments->count() - $femaleDailyAbsent;
                             @endphp
@@ -492,7 +546,8 @@
                                 $dateStr = sprintf('%04d-%02d-%02d', $year, $monthNum, $day);
                                 $totalDailyAbsent = $attendances->filter(function($a) use ($enrollments, $dateStr) {
                                     $studentIds = $enrollments->pluck('student.id')->toArray();
-                                    return in_array($a->student_id, $studentIds) && $a->date == $dateStr && $a->status == 'absent';
+                                    $attendanceDate = is_string($a->date) ? $a->date : $a->date->format('Y-m-d');
+                                    return in_array($a->student_id, $studentIds) && $attendanceDate == $dateStr && $a->status == 'absent';
                                 })->count();
                                 $totalPresent = $enrollments->count() - $totalDailyAbsent;
                             @endphp
@@ -569,7 +624,13 @@
                     </div>
                     
                     <div class="summary-box bg-gray-50">
-                        <p class="font-bold text-[9px] mb-1">No. of Days of Classes: <span class="border-b border-black w-8 inline-block text-center">{{ count($displayDays) }}</span></p>
+                        <p class="font-bold text-[9px] mb-1">No. of Days of Classes: <span class="border-b border-black w-8 inline-block text-center">{{ $schoolDaysConfig ? $schoolDaysConfig->total_school_days : count($displayDays) }}</span></p>
+                        @if($schoolDaysConfig && $schoolDaysConfig->getNonSchoolDaysCount() > 0)
+                        <p class="text-[8px] text-rose-600 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            {{ $schoolDaysConfig->getNonSchoolDaysCount() }} non-school day(s) configured (holidays/suspensions)
+                        </p>
+                        @endif
                         <p class="text-[8px] mt-1">Number of students with 5 consecutive days of absences: <span class="border-b border-black w-8 inline-block text-center">{{ $consecutiveAbsences ?? '' }}</span></p>
                     </div>
                 </div>

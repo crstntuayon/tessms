@@ -186,6 +186,13 @@ $sections = $teacher
                             <span>Grades</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('teacher.sections.core-values.index', $section) }}" 
+                           class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('teacher.sections.core-values*') && request()->route('section')?->id == $section->id ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50' }} transition-all">
+                            <i class="fas fa-heart text-xs w-4"></i>
+                            <span>Core Values</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
             @empty

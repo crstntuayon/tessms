@@ -269,19 +269,74 @@ public function sf2(Request $request)
             ->values();
     }
 
+    // Month and year for view (set early)
+    // School year spans across calendar years (e.g., June 2024 - March 2025)
+    // For months June-Dec: use start_date year, for Jan-Mar: use end_date year
+    $monthNum = date('n', strtotime($selectedMonth));
+    if ($activeSchoolYear) {
+        $startYear = Carbon::parse($activeSchoolYear->start_date)->year;
+        // If end_date is not set, assume it's the next year (typical school year)
+        $endYear = $activeSchoolYear->end_date 
+            ? Carbon::parse($activeSchoolYear->end_date)->year 
+            : $startYear + 1;
+        // Months 1-3 (Jan-Mar) use end year, months 6-12 (June-Dec) use start year
+        $year = ($monthNum >= 1 && $monthNum <= 3) ? $endYear : $startYear;
+    } else {
+        $year = date('Y');
+    }
+    
     // Get attendances for the selected month
     $attendances = collect();
+    $schoolDaysConfig = null;
+    
+    \Log::info('SF2 Debug', [
+        'has_selected_section' => (bool)$selectedSection,
+        'has_active_school_year' => (bool)$activeSchoolYear,
+        'enrollments_count' => $enrollments->count(),
+        'enrollments_is_empty' => $enrollments->isEmpty(),
+        'month_num' => $monthNum,
+        'year' => $year,
+    ]);
+    
     if ($selectedSection && $activeSchoolYear && $enrollments->isNotEmpty()) {
-        $year = Carbon::parse($activeSchoolYear->start_date)->year;
-        $monthNum = date('n', strtotime($selectedMonth));
+        // Get student IDs
+        $studentIds = $enrollments->pluck('student.id')->toArray();
         
-        $attendances = Attendance::whereIn(
-            'student_id',
-            $enrollments->pluck('student.id')
-        )
-        ->whereYear('date', $year)
-        ->whereMonth('date', $monthNum)
-        ->get();
+        \Log::info('SF2 Student IDs', ['student_ids' => $studentIds]);
+        
+        // Get attendances - filter by section and students for the selected month
+        $attendances = Attendance::where('section_id', $selectedSection->id)
+            ->whereIn('student_id', $studentIds)
+            ->whereMonth('date', $monthNum)
+            ->get();
+        
+        // Debug log
+        \Log::info('SF2 Attendance Query', [
+            'section_id' => $selectedSection->id,
+            'student_ids' => $studentIds,
+            'month' => $monthNum,
+            'count' => $attendances->count(),
+            'sample' => $attendances->first() ? [
+                'student_id' => $attendances->first()->student_id,
+                'date' => $attendances->first()->date,
+                'status' => $attendances->first()->status,
+            ] : null,
+        ]);
+        
+        // Get school days configuration
+        $schoolDaysConfig = \App\Models\AttendanceSchoolDay::where([
+            'section_id' => $selectedSection->id,
+            'school_year_id' => $activeSchoolYear->id,
+            'month' => $monthNum,
+            'year' => Carbon::now()->year,
+        ])->first();
+    } else {
+        \Log::warning('SF2 Skipped attendance query', [
+            'reason' => 'Missing required data',
+            'has_section' => (bool)$selectedSection,
+            'has_school_year' => (bool)$activeSchoolYear,
+            'has_enrollments' => $enrollments->isNotEmpty(),
+        ]);
     }
 
     // Calculate summary statistics
@@ -317,7 +372,10 @@ public function sf2(Request $request)
         'transferredInMale',
         'transferredInFemale',
         'averageDailyAttendance',
-        'attendancePercentage'
+        'attendancePercentage',
+        'schoolDaysConfig',
+        'monthNum',
+        'year'
     ));
 }
  

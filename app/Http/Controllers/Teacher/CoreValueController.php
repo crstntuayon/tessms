@@ -7,6 +7,7 @@ use App\Models\Section;
 use App\Models\Student;
 use App\Models\CoreValue;
 use App\Models\SchoolYear;
+use App\Services\FinalizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -14,13 +15,32 @@ use Illuminate\Support\Facades\Auth;
 
 class CoreValueController extends Controller
 {
+    protected $finalizationService;
+
+    public function __construct(FinalizationService $finalizationService)
+    {
+        $this->finalizationService = $finalizationService;
+    }
+
     /**
      * Display the core values rating page for a section
      */
     public function index(Section $section, Request $request)
     {
+        if ($section->teacher_id !== auth()->user()->teacher->id) {
+            abort(403);
+        }
+
         $currentQuarter = $request->get('quarter', $this->getCurrentQuarter());
         $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        // Check finalization status
+        $finalization = null;
+        $isEditable = true;
+        if ($activeSchoolYear) {
+            $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
+            $isEditable = !$finalization->is_locked;
+        }
         
         $students = $section->students()
             ->whereNotIn('status', ['completed', 'inactive'])
@@ -34,11 +54,25 @@ class CoreValueController extends Controller
             ->get()
             ->sortBy('user.last_name');
 
+        // Get all core values for all quarters to show completion status
+        $allCoreValues = [];
+        if ($activeSchoolYear) {
+            foreach ($students as $student) {
+                $allCoreValues[$student->id] = CoreValue::where('student_id', $student->id)
+                    ->where('school_year_id', $activeSchoolYear->id)
+                    ->get()
+                    ->groupBy('quarter');
+            }
+        }
+
         return view('teacher.core-values.index', compact(
             'section',
             'students',
             'currentQuarter',
-            'activeSchoolYear'
+            'activeSchoolYear',
+            'allCoreValues',
+            'finalization',
+            'isEditable'
         ));
     }
 
@@ -47,6 +81,19 @@ class CoreValueController extends Controller
      */
     public function store(Section $section, Request $request)
     {
+        // Check if section is finalized/locked
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear) {
+            $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
+            
+            if ($finalization->is_locked) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This section has been finalized and is locked. Contact the administrator if you need to make changes.'
+                ], 403);
+            }
+        }
+
         Log::info('Core Values Store Request', [
             'section_id' => $section->id,
             'teacher_id' => Auth::id(),
@@ -54,8 +101,6 @@ class CoreValueController extends Controller
         ]);
 
         try {
-            $activeSchoolYear = SchoolYear::where('is_active', true)->first();
-            
             if (!$activeSchoolYear) {
                 return response()->json([
                     'success' => false,
@@ -132,6 +177,111 @@ class CoreValueController extends Controller
     }
 
     /**
+     * Bulk save core values for multiple students
+     */
+    public function bulkStore(Section $section, Request $request)
+    {
+        // Check if section is finalized/locked
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear) {
+            $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
+            
+            if ($finalization->is_locked) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This section has been finalized and is locked.'
+                ], 403);
+            }
+        }
+
+        try {
+            if (!$activeSchoolYear) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active school year found.'
+                ], 422);
+            }
+
+            $validated = $request->validate([
+                'quarter' => 'required|integer|between:1,4',
+                'ratings_by_student' => 'required|array',
+                'ratings_by_student.*' => 'array',
+                'ratings_by_student.*.*.core_value' => 'required|in:Maka-Diyos,Makatao,Maka-Kalikasan,Maka-bansa',
+                'ratings_by_student.*.*.statement_key' => 'required|string|max:50',
+                'ratings_by_student.*.*.rating' => 'required|in:AO,SO,RO,NO',
+            ]);
+
+            DB::beginTransaction();
+
+            $quarter = $validated['quarter'];
+            $teacherId = Auth::id();
+
+            foreach ($validated['ratings_by_student'] as $studentId => $ratings) {
+                foreach ($ratings as $rating) {
+                    CoreValue::updateOrCreate(
+                        [
+                            'student_id' => $studentId,
+                            'core_value' => $rating['core_value'],
+                            'statement_key' => $rating['statement_key'],
+                            'quarter' => $quarter,
+                            'school_year_id' => $activeSchoolYear->id,
+                        ],
+                        [
+                            'behavior_statement' => $rating['behavior_statement'] ?? '',
+                            'rating' => $rating['rating'],
+                            'remarks' => $rating['remarks'] ?? null,
+                            'recorded_by' => $teacherId,
+                        ]
+                    );
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'All core values saved successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error bulk saving core values', ['error' => $e->getMessage()]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Finalize core values for this section
+     */
+    public function finalizeCoreValues(Request $request, Section $section)
+    {
+        if ($section->teacher_id !== auth()->user()->teacher->id) {
+            abort(403);
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            return back()->with('error', 'No active school year found.');
+        }
+
+        $result = $this->finalizationService->finalizeCoreValues(
+            $section->id,
+            $activeSchoolYear->id,
+            auth()->id()
+        );
+
+        if ($result['success']) {
+            return back()->with('success', $result['message']);
+        }
+
+        return back()->with('error', $result['message'])->with('validation_errors', $result['errors'] ?? []);
+    }
+
+    /**
      * Get current quarter based on date
      */
     private function getCurrentQuarter(): int
@@ -144,5 +294,41 @@ class CoreValueController extends Controller
             $month == 12 || $month <= 2 => 3,
             default => 4,
         };
+    }
+
+    /**
+     * Get completion status for all quarters
+     */
+    public function getCompletionStatus(Section $section)
+    {
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            return response()->json(['error' => 'No active school year'], 400);
+        }
+
+        $students = $section->students()
+            ->whereNotIn('status', ['completed', 'inactive'])
+            ->pluck('id');
+
+        $coreValues = ['Maka-Diyos', 'Makatao', 'Maka-Kalikasan', 'Maka-bansa'];
+        $completion = [];
+
+        foreach (range(1, 4) as $quarter) {
+            $totalExpected = $students->count() * count($coreValues);
+            $totalRecorded = CoreValue::whereIn('student_id', $students)
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->where('quarter', $quarter)
+                ->distinct('student_id', 'core_value')
+                ->count();
+
+            $completion["q{$quarter}"] = [
+                'expected' => $totalExpected,
+                'recorded' => $totalRecorded,
+                'percentage' => $totalExpected > 0 ? round(($totalRecorded / $totalExpected) * 100) : 0,
+                'complete' => $totalRecorded >= $totalExpected,
+            ];
+        }
+
+        return response()->json($completion);
     }
 }

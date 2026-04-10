@@ -254,6 +254,23 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
         [App\Http\Controllers\Teacher\GradeController::class, 'store'])
         ->name('sections.grades.store');
 
+    // Finalization Routes
+    Route::post('/sections/{section}/grades/finalize', [App\Http\Controllers\Teacher\GradeController::class, 'finalizeGrades'])
+        ->name('sections.grades.finalize');
+    Route::post('/sections/{section}/attendance/finalize', [App\Http\Controllers\Teacher\AttendanceController::class, 'finalizeAttendance'])
+        ->name('sections.attendance.finalize');
+    Route::post('/sections/{section}/core-values/finalize', [App\Http\Controllers\Teacher\CoreValueController::class, 'finalizeCoreValues'])
+        ->name('sections.core-values.finalize');
+
+    // Attendance School Days Configuration
+    Route::get('/sections/{section}/attendance/school-days', [App\Http\Controllers\Teacher\AttendanceController::class, 'schoolDaysConfig'])
+        ->name('sections.attendance.school-days');
+    Route::post('/sections/{section}/attendance/school-days', [App\Http\Controllers\Teacher\AttendanceController::class, 'updateSchoolDays'])
+        ->name('sections.attendance.school-days.update');
+    Route::post('/sections/{section}/attendance/non-school-day', [App\Http\Controllers\Teacher\AttendanceController::class, 'addNonSchoolDay'])
+        ->name('sections.attendance.non-school-day.add');
+    Route::post('/sections/{section}/attendance/non-school-day/remove', [App\Http\Controllers\Teacher\AttendanceController::class, 'removeNonSchoolDay'])
+        ->name('sections.attendance.non-school-day.remove');
 
         //SCHOOL FORMS ROUTES
     Route::get('/sf1', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf1'])->name('sf1');
@@ -546,6 +563,19 @@ Route::post('/school-year/regenerate-qr', [\App\Http\Controllers\Admin\SchoolYea
 
 Route::get('/school-year/qr-code/{qrCode}/download', [\App\Http\Controllers\Admin\SchoolYearController::class, 'downloadQrCode'])
     ->name('school-year.download-qr');
+
+// School Year Closure & Finalization Routes
+Route::get('/school-year/closure', [\App\Http\Controllers\Admin\SchoolYearController::class, 'closureDashboard'])
+    ->name('school-year.closure');
+Route::post('/school-year/set-deadline', [\App\Http\Controllers\Admin\SchoolYearController::class, 'setDeadline'])
+    ->name('school-year.set-deadline');
+Route::post('/school-year/unlock-section', [\App\Http\Controllers\Admin\SchoolYearController::class, 'unlockSection'])
+    ->name('school-year.unlock-section');
+Route::post('/school-year/relock-section', [\App\Http\Controllers\Admin\SchoolYearController::class, 'relockSection'])
+    ->name('school-year.relock-section');
+Route::post('/school-year/force-end', [\App\Http\Controllers\Admin\SchoolYearController::class, 'forceEndSchoolYear'])
+    ->name('school-year.force-end');
+
 // QR-based enrollment routes (for admin-generated QR codes)
 Route::get('/enrollment/form/{token}', [\App\Http\Controllers\Admin\EnrollmentController::class, 'showForm'])->name('enrollment.form.qr');
 Route::post('/enrollment/submit-qr', [\App\Http\Controllers\Admin\EnrollmentController::class, 'submit'])->name('enrollment.submit.qr');

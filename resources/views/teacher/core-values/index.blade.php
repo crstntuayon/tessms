@@ -94,6 +94,21 @@
     <!-- Main Content -->
     <div class="flex-1 ml-72 min-h-screen">
         
+        <!-- Finalization Warning -->
+        @if(!$isEditable)
+        <div class="bg-amber-50 border-b border-amber-200 p-4">
+            <div class="flex items-start gap-3 max-w-7xl mx-auto">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-lock text-amber-600 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-amber-900">Section Finalized</h3>
+                    <p class="text-sm text-amber-700">This section has been finalized and is locked. Contact the administrator if you need to make changes.</p>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Top Header -->
         <header class="bg-white/80 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-30">
             <div class="flex items-center justify-between px-8 py-4">
@@ -110,10 +125,17 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
+                    @if($isEditable)
                     <button onclick="saveAllRatings()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/30 flex items-center gap-2">
                         <i class="fas fa-save"></i>
                         Save All
                     </button>
+                    @else
+                    <button disabled class="bg-slate-300 text-slate-500 px-6 py-2.5 rounded-xl font-medium cursor-not-allowed flex items-center gap-2">
+                        <i class="fas fa-lock"></i>
+                        Locked
+                    </button>
+                    @endif
                 </div>
             </div>
         </header>
@@ -470,10 +492,17 @@
                             <i class="fas fa-circle text-xs"></i>
                             <span>No changes</span>
                         </span>
+                        @if($isEditable)
                         <button onclick="saveStudentRatings('{{ $student->id }}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50">
                             <i class="fas fa-save"></i>
                             Save Student
                         </button>
+                        @else
+                        <button disabled class="bg-slate-300 text-slate-500 px-5 py-2 rounded-xl text-sm font-medium cursor-not-allowed flex items-center gap-2">
+                            <i class="fas fa-lock"></i>
+                            Locked
+                        </button>
+                        @endif
                     </div>
                 </div>
                 @empty
@@ -484,6 +513,26 @@
                 </div>
                 @endforelse
             </div>
+
+            <!-- Finalize Button -->
+            @if($isEditable && !$finalization?->core_values_finalized)
+            <div class="mt-8 bg-white border border-slate-200 rounded-2xl p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900">Finalize Core Values</h3>
+                        <p class="text-sm text-slate-500">Once finalized, core values will be locked and cannot be edited.</p>
+                    </div>
+                    <form action="{{ route('teacher.sections.core-values.finalize', $section) }}" method="POST">
+                        @csrf
+                        <button type="submit" 
+                                class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/30"
+                                onclick="return confirm('Are you sure you want to finalize core values for this section? This action cannot be undone.')">
+                            <i class="fas fa-lock mr-2"></i>Finalize Core Values
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endif
 
             <!-- Rating Guide -->
             <div class="mt-8 bg-white border border-slate-200 rounded-2xl p-6">
@@ -538,6 +587,11 @@
 let pendingChanges = {};
 
 function markAsChanged(studentId) {
+    @if(!$isEditable)
+    showToast('This section is locked. Contact administrator to make changes.', 'warning');
+    return;
+    @endif
+    
     const card = document.querySelector(`[data-student-id="${studentId}"]`);
     updateStatus(card, 'Unsaved changes');
     showUnsavedIndicator(card);
@@ -563,6 +617,11 @@ function hideUnsavedIndicator(card) {
 }
 
 function setStatementRating(btn, rating, studentId, coreValue, statementKey) {
+    @if(!$isEditable)
+    showToast('This section is locked. Contact administrator to make changes.', 'warning');
+    return;
+    @endif
+    
     const row = btn.closest('.behavior-statement-row');
     const buttons = row.querySelectorAll('.statement-rating-btn');
     

@@ -9,14 +9,33 @@ use App\Models\GradeLevel;
 use App\Models\Subject;
 use App\Models\Setting;
 use App\Models\SchoolYear;
+use App\Services\FinalizationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GradeController extends Controller
 {
+    protected $finalizationService;
+
+    public function __construct(FinalizationService $finalizationService)
+    {
+        $this->finalizationService = $finalizationService;
+    }
+
     public function index(Request $request, Section $section)
     {
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        // Check finalization status
+        $finalization = null;
+        $isEditable = true;
+        if ($activeSchoolYear) {
+            $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
+            $isEditable = !$finalization->is_locked;
         }
 
         $students = $section->students()
@@ -66,7 +85,6 @@ class GradeController extends Controller
                 $existingGrades['pt_titles'] = $ptGrade ? (json_decode($ptGrade->titles, true) ?? []) : [];
                 $existingGrades['ww_total_items'] = $wwGrade ? (json_decode($wwGrade->total_items, true) ?? []) : [];
                 $existingGrades['pt_total_items'] = $ptGrade ? (json_decode($ptGrade->total_items, true) ?? []) : [];
-                // NEW: Load QE total items from first QE grade record
                 $existingGrades['qe_total_items'] = $qeGrade ? ($qeGrade->total_items ?? 100) : 100;
             }
         }
@@ -79,7 +97,9 @@ class GradeController extends Controller
             'filteredSubjects', 
             'selectedSubject',
             'grades',
-            'existingGrades'
+            'existingGrades',
+            'finalization',
+            'isEditable'
         ));
     }
 
@@ -92,6 +112,16 @@ class GradeController extends Controller
     {
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403);
+        }
+
+        // Check if section is finalized/locked
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear) {
+            $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
+            
+            if ($finalization->is_locked) {
+                return back()->with('error', 'This section has been finalized and is locked. Contact the administrator if you need to make changes.');
+            }
         }
 
         $request->validate([
@@ -108,7 +138,7 @@ class GradeController extends Controller
             'pt_titles' => 'nullable|array',
             'ww_total_items' => 'nullable|array',
             'pt_total_items' => 'nullable|array',
-            'qe_total_items' => 'nullable|numeric|min:1', // NEW: Validation for QE total items
+            'qe_total_items' => 'nullable|numeric|min:1',
         ]);
 
         $totalWeight = $request->ww_weight + $request->pt_weight + $request->qe_weight;
@@ -119,9 +149,6 @@ class GradeController extends Controller
         $subjectId = $request->subject_id;
         $quarter = $request->quarter;
 
-        // Get active school year from is_active flag
-        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
-        
         if (!$activeSchoolYear) {
             return back()->with('error', 'No active school year found.');
         }
@@ -145,7 +172,7 @@ class GradeController extends Controller
         }
 
         if ($request->has('qe')) {
-            $qeTotalItems = $request->qe_total_items ?? 100; // NEW: Get QE total items from request
+            $qeTotalItems = $request->qe_total_items ?? 100;
             foreach ($request->qe as $studentId => $score) {
                 if ($score !== null && $score !== '') {
                     $this->saveQuarterlyExam($section->id, $studentId, $subjectId, $quarter, $score, $qeTotalItems, $schoolYearId);
@@ -174,6 +201,33 @@ class GradeController extends Controller
     }
 
     /**
+     * Finalize grades for this section
+     */
+    public function finalizeGrades(Request $request, Section $section)
+    {
+        if ($section->teacher_id !== auth()->user()->teacher->id) {
+            abort(403);
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            return back()->with('error', 'No active school year found.');
+        }
+
+        $result = $this->finalizationService->finalizeGrades(
+            $section->id,
+            $activeSchoolYear->id,
+            auth()->id()
+        );
+
+        if ($result['success']) {
+            return back()->with('success', $result['message']);
+        }
+
+        return back()->with('error', $result['message'])->with('validation_errors', $result['errors'] ?? []);
+    }
+
+    /**
      * Save grade components (Written Work or Performance Tasks)
      */
     private function saveGradeComponents($sectionId, $studentId, $subjectId, $quarter, $componentType, $scores, $titles = [], $totalItems = [], $schoolYearId = null)
@@ -189,7 +243,6 @@ class GradeController extends Controller
         $totalScore = array_sum($validScores);
         $count = count($validScores);
 
-        // Calculate percentage score using individual total items
         $totalPossible = 0;
         foreach ($validScores as $index => $score) {
             $itemCount = isset($totalItems[$index]) && $totalItems[$index] > 0 ? $totalItems[$index] : 100;
@@ -219,7 +272,7 @@ class GradeController extends Controller
     }
 
     /**
-     * Save Quarterly Exam grade - UPDATED to include total_items
+     * Save Quarterly Exam grade
      */
     private function saveQuarterlyExam($sectionId, $studentId, $subjectId, $quarter, $score, $totalItems = 100, $schoolYearId = null)
     {
@@ -237,7 +290,7 @@ class GradeController extends Controller
             [
                 'school_year_id' => $schoolYearId,
                 'total_score' => $score,
-                'total_items' => $totalItems, // NEW: Save total items
+                'total_items' => $totalItems,
                 'percentage_score' => round($percentageScore, 2),
             ]
         );
@@ -384,6 +437,16 @@ class GradeController extends Controller
             abort(403);
         }
 
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        // Check finalization status
+        $finalization = null;
+        $isEditable = true;
+        if ($activeSchoolYear) {
+            $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
+            $isEditable = !$finalization->is_locked;
+        }
+
         $students = $section->students()
             ->whereNotIn('status', ['completed', 'inactive'])
             ->with('user')
@@ -391,10 +454,8 @@ class GradeController extends Controller
             ->get();
 
         $subjects = $section->gradeLevel->subjects ?? collect();
-        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
         $currentQuarter = Setting::get('current_quarter', 1);
 
-        // Get all existing grades for quick loading
         $grades = Grade::where('section_id', $section->id)
             ->where('school_year_id', $activeSchoolYear?->id)
             ->where('quarter', $currentQuarter)
@@ -409,7 +470,9 @@ class GradeController extends Controller
             'students',
             'subjects',
             'grades',
-            'currentQuarter'
+            'currentQuarter',
+            'finalization',
+            'isEditable'
         ));
     }
 
@@ -422,12 +485,21 @@ class GradeController extends Controller
             abort(403);
         }
 
+        // Check if section is finalized/locked
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear) {
+            $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
+            
+            if ($finalization->is_locked) {
+                return back()->with('error', 'This section has been finalized and is locked. Contact the administrator if you need to make changes.');
+            }
+        }
+
         $request->validate([
             'grades' => 'required|array',
             'quarter' => 'required|in:1,2,3,4',
         ]);
 
-        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
         if (!$activeSchoolYear) {
             return back()->with('error', 'No active school year found.');
         }

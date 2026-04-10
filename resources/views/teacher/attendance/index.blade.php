@@ -18,8 +18,119 @@
             }
         }
     </script>
+    <style>
+        @keyframes modal-pop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .modal-pop {
+            animation: modal-pop 0.3s ease-out;
+        }
+        .shake-animation {
+            animation: shake 0.5s ease-in-out;
+        }
+    </style>
 </head>
 <body class="bg-slate-50/50 min-h-screen">
+
+{{-- Error Modal for Inactive School Year - OUTSIDE main layout --}}
+@if(!$activeSchoolYear)
+<div id="inactiveSchoolYearModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform scale-100" style="animation: fade-in 0.3s ease-out;">
+        <div class="bg-red-50 rounded-t-2xl p-6 border-b border-red-100">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-red-900">No Active School Year</h3>
+                    <p class="text-sm text-red-600">Attendance cannot be recorded</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            <p class="text-slate-600 mb-4">
+                There is currently no active school year set in the system. Please contact the administrator to activate a school year before recording attendance.
+            </p>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-info-circle text-amber-600 mt-0.5"></i>
+                    <p class="text-sm text-amber-800">
+                        Attendance records can only be saved during an active school year period.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6 pt-0 flex gap-3">
+            <a href="{{ route('teacher.dashboard') }}" 
+               class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors text-center">
+                Go to Dashboard
+            </a>
+            <a href="{{ route('teacher.sections.index') }}" 
+               class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors text-center">
+                Back to Sections
+            </a>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- Save Attendance Modal with Sound --}}
+<div id="saveAttendanceModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div id="saveModalContent" class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 modal-pop">
+        {{-- Loading State --}}
+        <div id="saveModalLoading" class="p-8 text-center">
+            <div class="w-16 h-16 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin mx-auto mb-4"></div>
+            <h3 class="text-lg font-semibold text-slate-800">Saving Attendance...</h3>
+            <p class="text-sm text-slate-500 mt-1">Please wait</p>
+        </div>
+        
+        {{-- Success State --}}
+        <div id="saveModalSuccess" class="hidden">
+            <div class="bg-emerald-50 rounded-t-2xl p-6 border-b border-emerald-100 text-center">
+                <div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-emerald-600 text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-emerald-900">Saved Successfully!</h3>
+                <p class="text-sm text-emerald-600 mt-1">Attendance has been recorded</p>
+            </div>
+            <div class="p-6 text-center">
+                <p class="text-slate-600 mb-4" id="successMessage">Attendance for {{ \Carbon\Carbon::parse($date)->format('F d, Y') }} has been saved.</p>
+                <button onclick="closeSaveModal()" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors">
+                    Continue
+                </button>
+            </div>
+        </div>
+        
+        {{-- Error State --}}
+        <div id="saveModalError" class="hidden">
+            <div class="bg-red-50 rounded-t-2xl p-6 border-b border-red-100 text-center">
+                <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-times-circle text-red-600 text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-red-900">Save Failed!</h3>
+                <p class="text-sm text-red-600 mt-1">Unable to save attendance</p>
+            </div>
+            <div class="p-6 text-center">
+                <p class="text-slate-600 mb-4" id="errorMessage">An error occurred while saving attendance.</p>
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+                    <p class="text-sm text-amber-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Attendance can only be saved during an active school year.
+                    </p>
+                </div>
+                <button onclick="closeSaveModal()" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors">
+                    Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="flex">
     @include('teacher.includes.sidebar')
@@ -27,72 +138,67 @@
     <!-- Main Content -->
     <div class="ml-72 w-full min-h-screen p-8">
 
-
-    
-        
-        <!-- Breadcrumb & Header Section -->
-
-
         @if(session('success'))
-<div id="successAlert" class="mb-6 relative overflow-hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 animate-fade-in">
+        <div id="successAlert" class="mb-6 relative overflow-hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 animate-fade-in">
+            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-check text-emerald-600"></i>
+            </div>
+            <div>
+                <p class="font-semibold text-emerald-900">Success!</p>
+                <p class="text-sm text-emerald-700">{{ session('success') }}</p>
+            </div>
+            <button onclick="closeSuccess()" class="ml-auto w-8 h-8 rounded-full hover:bg-emerald-100 flex items-center justify-center transition-colors">
+                <i class="fas fa-times text-emerald-600"></i>
+            </button>
+            <div id="progressBar" class="absolute bottom-0 left-0 h-1 bg-emerald-500"></div>
+        </div>
+        @endif
 
-    <!-- Icon -->
-    <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-        <i class="fas fa-check text-emerald-600"></i>
-    </div>
+        @if(session('error'))
+        <div id="errorAlert" class="mb-6 relative overflow-hidden p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-exclamation-circle text-red-600"></i>
+            </div>
+            <div>
+                <p class="font-semibold text-red-900">Error!</p>
+                <p class="text-sm text-red-700">{{ session('error') }}</p>
+            </div>
+            <button onclick="this.closest('#errorAlert').remove()" class="ml-auto w-8 h-8 rounded-full hover:bg-red-100 flex items-center justify-center transition-colors">
+                <i class="fas fa-times text-red-600"></i>
+            </button>
+        </div>
+        @endif
 
-    <!-- Message -->
-    <div>
-        <p class="font-semibold text-emerald-900">Success!</p>
-        <p class="text-sm text-emerald-700">{{ session('success') }}</p>
-    </div>
-
-    <!-- Close Button -->
-    <button onclick="closeSuccess()" class="ml-auto w-8 h-8 rounded-full hover:bg-emerald-100 flex items-center justify-center transition-colors">
-        <i class="fas fa-times text-emerald-600"></i>
-    </button>
-
-    <!-- Countdown Bar -->
-    <div id="progressBar" class="absolute bottom-0 left-0 h-1 bg-emerald-500"></div>
-</div>
-@endif
-<script>
-function closeSuccess() {
-    const alert = document.getElementById('successAlert');
-    if (alert) {
-        alert.style.transition = 'all 0.4s ease';
-        alert.style.opacity = '0';
-        alert.style.transform = 'translateY(-10px)';
-        setTimeout(() => alert.remove(), 400);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    const alert = document.getElementById('successAlert');
-    const bar = document.getElementById('progressBar');
-
-    if (!alert || !bar) return;
-
-    let duration = 5000; // 5 seconds
-    let start = Date.now();
-
-    function animate() {
-        let elapsed = Date.now() - start;
-        let progress = Math.max(0, 100 - (elapsed / duration) * 100);
-
-        bar.style.width = progress + '%';
-
-        if (elapsed < duration) {
-            requestAnimationFrame(animate);
-        } else {
-            closeSuccess();
+        <script>
+        function closeSuccess() {
+            const alert = document.getElementById('successAlert');
+            if (alert) {
+                alert.style.transition = 'all 0.4s ease';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => alert.remove(), 400);
+            }
         }
-    }
-
-    bar.style.width = '100%';
-    animate();
-});
-</script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const alert = document.getElementById('successAlert');
+            const bar = document.getElementById('progressBar');
+            if (!alert || !bar) return;
+            let duration = 5000;
+            let start = Date.now();
+            function animate() {
+                let elapsed = Date.now() - start;
+                let progress = Math.max(0, 100 - (elapsed / duration) * 100);
+                bar.style.width = progress + '%';
+                if (elapsed < duration) {
+                    requestAnimationFrame(animate);
+                } else {
+                    closeSuccess();
+                }
+            }
+            bar.style.width = '100%';
+            animate();
+        });
+        </script>
 
         <div class="mb-8">
             <nav class="flex items-center gap-2 text-sm text-slate-500 mb-4">
@@ -122,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     </h1>
                 </div>
 
-                <!-- Quick Stats Cards -->
                 <div class="flex gap-3">
                     <div class="bg-white/80 backdrop-blur-sm px-4 py-3 rounded-2xl border border-slate-200 shadow-sm">
                         <div class="flex items-center gap-3">
@@ -150,8 +255,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             </div>
         </div>
-
-      
 
         <!-- Date Selector Card -->
         <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl shadow-slate-200/50 p-6 mb-6">
@@ -183,12 +286,24 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
 
         <!-- Attendance Form -->
-        <form method="POST" action="{{ route('teacher.sections.attendance.store', $section) }}" class="space-y-6">
+        <form id="attendanceForm" method="POST" action="{{ route('teacher.sections.attendance.store', $section) }}" class="space-y-6">
             @csrf
             <input type="hidden" name="date" value="{{ $date }}">
 
+            @if(!$activeSchoolYear)
+            <div class="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-lock text-red-600 text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-red-900">Attendance Recording Disabled</h3>
+                    <p class="text-sm text-red-700">There is no active school year. Please contact the administrator.</p>
+                </div>
+            </div>
+            @endif
+
             <!-- Bulk Actions Bar -->
-            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-4 border border-indigo-100 flex flex-wrap items-center justify-between gap-4">
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-4 border border-indigo-100 flex flex-wrap items-center justify-between gap-4 {{ !$activeSchoolYear ? 'opacity-50 pointer-events-none' : '' }}">
                 <div class="flex items-center gap-3">
                     <i class="fas fa-magic text-indigo-600"></i>
                     <span class="font-medium text-slate-700">Quick Actions:</span>
@@ -255,9 +370,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <td class="px-6 py-4">
                                     <div class="relative">
                                         <select name="attendance[{{ $student->id }}]" 
-                                                class="attendance-select w-full appearance-none pl-10 pr-10 py-3 rounded-xl border-2 font-medium transition-all duration-200 focus:outline-none focus:ring-4 cursor-pointer {{ $statusColors[$currentStatus] }}"
+                                                class="attendance-select w-full appearance-none pl-10 pr-10 py-3 rounded-xl border-2 font-medium transition-all duration-200 focus:outline-none focus:ring-4 cursor-pointer {{ $statusColors[$currentStatus] }} {{ !$activeSchoolYear ? 'opacity-50 cursor-not-allowed' : '' }}"
                                                 data-student="{{ $student->id }}"
-                                                onchange="updateSelectStyle(this)">
+                                                onchange="updateSelectStyle(this)"
+                                                {{ !$activeSchoolYear ? 'disabled' : '' }}>
                                             <option value="present" {{ $currentStatus == 'present' ? 'selected' : '' }} class="bg-white text-emerald-700">Present</option>
                                             <option value="absent" {{ $currentStatus == 'absent' ? 'selected' : '' }} class="bg-white text-red-700">Absent</option>
                                             <option value="late" {{ $currentStatus == 'late' ? 'selected' : '' }} class="bg-white text-amber-700">Late</option>
@@ -267,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex justify-center gap-2">
+                                    <div class="flex justify-center gap-2 {{ !$activeSchoolYear ? 'opacity-50 pointer-events-none' : '' }}">
                                         <button type="button" onclick="quickSet({{ $student->id }}, 'present')" 
                                                 class="w-10 h-10 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 transition-colors flex items-center justify-center tooltip" title="Present">
                                             <i class="fas fa-check"></i>
@@ -302,15 +418,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="bg-slate-50/80 border-t border-slate-100 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div class="text-sm text-slate-500">
                         <i class="fas fa-info-circle mr-2"></i>
-                        Changes will be saved for <strong>{{ \Carbon\Carbon::parse($date)->format('F d, Y') }}</strong>
+                        @if($activeSchoolYear)
+                            Changes will be saved for <strong>{{ \Carbon\Carbon::parse($date)->format('F d, Y') }}</strong>
+                        @else
+                            <span class="text-red-600">Cannot save - no active school year</span>
+                        @endif
                     </div>
                     <div class="flex gap-3">
                         <a href="{{ route('teacher.sections.show', $section) }}" 
                            class="px-6 py-3 rounded-xl border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors">
                             Cancel
                         </a>
-                        <button type="submit" 
-                                class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                        <button type="submit" id="saveAttendanceBtn"
+                                class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5 transition-all flex items-center gap-2 {{ !$activeSchoolYear ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                {{ !$activeSchoolYear ? 'disabled' : '' }}>
                             <i class="fas fa-save"></i>
                             Save Attendance
                         </button>
@@ -381,7 +502,6 @@ document.addEventListener('DOMContentLoaded', function () {
         margin-bottom: 6px;
     }
     
-    /* Custom scrollbar */
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
@@ -399,21 +519,204 @@ document.addEventListener('DOMContentLoaded', function () {
 </style>
 
 <script>
-    // Update select styling based on value
+    // Sound effects using Web Audio API
+    let audioContext = null;
+    
+    function initAudioContext() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        return audioContext;
+    }
+    
+    function playSuccessSound() {
+        const ctx = initAudioContext();
+        const now = ctx.currentTime;
+        const duration = 2.0;
+        
+        // Success - pleasant ascending chime with sustain
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now); // A5
+        osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1); // A6
+        
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.25, now + 0.05);
+        gain.gain.setValueAtTime(0.25, now + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        
+        osc.start(now);
+        osc.stop(now + duration);
+    }
+    
+    function playErrorSound() {
+        const ctx = initAudioContext();
+        const now = ctx.currentTime;
+        const duration = 2.0;
+        
+        // Error - triple beep with longer sustain
+        const interval = 0.4;
+        
+        // First beep
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(400, now);
+        gain1.gain.setValueAtTime(0, now);
+        gain1.gain.linearRampToValueAtTime(0.25, now + 0.02);
+        gain1.gain.setValueAtTime(0.25, now + 0.1);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + interval);
+        osc1.start(now);
+        osc1.stop(now + interval);
+        
+        // Second beep (lower)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(300, now + interval);
+        gain2.gain.setValueAtTime(0, now + interval);
+        gain2.gain.linearRampToValueAtTime(0.25, now + interval + 0.02);
+        gain2.gain.setValueAtTime(0.25, now + interval + 0.1);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + interval * 2);
+        osc2.start(now + interval);
+        osc2.stop(now + interval * 2);
+        
+        // Third beep (lowest) - sustains longer
+        const osc3 = ctx.createOscillator();
+        const gain3 = ctx.createGain();
+        osc3.connect(gain3);
+        gain3.connect(ctx.destination);
+        
+        osc3.type = 'sine';
+        osc3.frequency.setValueAtTime(200, now + interval * 2);
+        gain3.gain.setValueAtTime(0, now + interval * 2);
+        gain3.gain.linearRampToValueAtTime(0.25, now + interval * 2 + 0.02);
+        gain3.gain.setValueAtTime(0.25, now + interval * 2 + 0.3);
+        gain3.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc3.start(now + interval * 2);
+        osc3.stop(now + duration);
+    }
+    
+    // Initialize audio on first user interaction
+    document.addEventListener('click', function initAudio() {
+        initAudioContext();
+        document.removeEventListener('click', initAudio);
+    }, { once: true });
+
+    // Modal functions
+    function showSaveModal(type, message) {
+        const modal = document.getElementById('saveAttendanceModal');
+        const loading = document.getElementById('saveModalLoading');
+        const success = document.getElementById('saveModalSuccess');
+        const error = document.getElementById('saveModalError');
+        const content = document.getElementById('saveModalContent');
+        
+        modal.classList.remove('hidden');
+        loading.classList.add('hidden');
+        success.classList.add('hidden');
+        error.classList.add('hidden');
+        
+        if (type === 'loading') {
+            loading.classList.remove('hidden');
+        } else if (type === 'success') {
+            success.classList.remove('hidden');
+            if (message) document.getElementById('successMessage').textContent = message;
+            playSuccessSound();
+        } else if (type === 'error') {
+            error.classList.remove('hidden');
+            content.classList.add('shake-animation');
+            setTimeout(() => content.classList.remove('shake-animation'), 500);
+            if (message) document.getElementById('errorMessage').textContent = message;
+            playErrorSound();
+        }
+    }
+    
+    function closeSaveModal() {
+        document.getElementById('saveAttendanceModal').classList.add('hidden');
+    }
+
+    // Form submission handler
+    document.getElementById('attendanceForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        @if(!$activeSchoolYear)
+            showSaveModal('error', 'No active school year. Please contact the administrator.');
+            return;
+        @endif
+        
+        showSaveModal('loading');
+        
+        const formData = new FormData(this);
+        
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            // Always try to parse as JSON first
+            let data;
+            const contentType = response.headers.get('content-type');
+            
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                // If not JSON, check if it's a redirect (success) or error page
+                const text = await response.text();
+                if (text.includes('success') || text.includes('Success') || response.redirected) {
+                    data = { success: true, message: 'Attendance saved successfully!' };
+                } else if (text.includes('error') || text.includes('Error') || text.includes('No active school year')) {
+                    data = { success: false, message: 'Failed to save attendance. Date is outside the active school year.' };
+                } else {
+                    data = { success: response.ok, message: response.ok ? 'Saved!' : 'Error saving attendance.' };
+                }
+            }
+            
+            // ONLY show success if data.success is explicitly true
+            if (data.success === true) {
+                showSaveModal('success', data.message || 'Attendance saved successfully!');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                // Show error for any case where success is not true
+                showSaveModal('error', data.message || 'Failed to save attendance. The date may be outside the active school year.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showSaveModal('error', 'Network error. Please check your connection and try again.');
+        }
+    });
+
+    // Update select styling
     function updateSelectStyle(select) {
         const value = select.value;
         const icon = select.parentElement.querySelector('.status-icon');
         
-        // Remove all possible classes
         select.classList.remove('bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
         select.classList.remove('bg-red-50', 'text-red-700', 'border-red-200');
         select.classList.remove('bg-amber-50', 'text-amber-700', 'border-amber-200');
         icon.classList.remove('text-emerald-600', 'text-red-600', 'text-amber-600');
         
-        // Add appropriate classes
         if (value === 'present') {
             select.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
-            icon.classList.add('text-emerald-600');
             icon.className = 'fas fa-check-circle absolute left-3.5 top-1/2 -translate-y-1/2 status-icon text-emerald-600';
         } else if (value === 'absent') {
             select.classList.add('bg-red-50', 'text-red-700', 'border-red-200');
@@ -426,14 +729,12 @@ document.addEventListener('DOMContentLoaded', function () {
         updateCounts();
     }
 
-    // Quick set individual student
     function quickSet(studentId, status) {
         const select = document.querySelector(`select[name="attendance[${studentId}]"]`);
         if (select) {
             select.value = status;
             updateSelectStyle(select);
             
-            // Add a brief highlight effect to the row
             const row = select.closest('tr');
             row.style.backgroundColor = status === 'present' ? '#ecfdf5' : status === 'absent' ? '#fef2f2' : '#fffbeb';
             setTimeout(() => {
@@ -443,18 +744,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Set all students to a specific status
     function setAllStatus(status) {
         const selects = document.querySelectorAll('.attendance-select');
         selects.forEach((select, index) => {
             setTimeout(() => {
                 select.value = status;
                 updateSelectStyle(select);
-            }, index * 20); // Staggered animation
+            }, index * 20);
         });
     }
 
-    // Update summary counts
     function updateCounts() {
         const selects = document.querySelectorAll('.attendance-select');
         let present = 0, absent = 0, late = 0;
@@ -465,7 +764,6 @@ document.addEventListener('DOMContentLoaded', function () {
             else if (select.value === 'late') late++;
         });
         
-        // Animate the numbers
         animateValue('countPresent', parseInt(document.getElementById('countPresent').textContent), present, 300);
         animateValue('countAbsent', parseInt(document.getElementById('countAbsent').textContent), absent, 300);
         animateValue('countLate', parseInt(document.getElementById('countLate').textContent), late, 300);
@@ -496,7 +794,6 @@ document.addEventListener('DOMContentLoaded', function () {
         run();
     }
 
-    // Initialize on load
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.attendance-select').forEach(select => {
             updateSelectStyle(select);

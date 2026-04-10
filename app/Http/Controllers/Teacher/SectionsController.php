@@ -8,7 +8,19 @@ use App\Models\Section;
 
 class SectionsController extends Controller
 {
-    //
+    /**
+     * Display a specific section
+     */
+    public function show(Section $section)
+    {
+        $teacherId = auth()->user()->teacher->id ?? null;
+
+        if ($section->teacher_id != $teacherId) {
+            abort(403, 'Unauthorized');
+        }
+
+        return view('teacher.sections.show', compact('section'));
+    }
 
     public function index()
 {

@@ -271,12 +271,20 @@
                         </div>
                         <h3 class="font-bold text-xl text-slate-900">All School Years</h3>
                     </div>
-                   <div x-data="{ open: false }">
-    <!-- Button to trigger modal -->
-    <button @click="open = true" 
-        class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-0.5">
-        <i class="fas fa-plus mr-2"></i>Create New
-    </button>
+                   <div class="flex gap-3">
+                @if($activeSchoolYear)
+                <a href="{{ route('admin.school-year.closure') }}" 
+                   class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-rose-500/30 hover:shadow-xl hover:-translate-y-0.5">
+                    <i class="fas fa-calendar-check mr-2"></i>Closure Dashboard
+                </a>
+                @endif
+                
+                <div x-data="{ open: false }">
+                    <!-- Button to trigger modal -->
+                    <button @click="open = true" 
+                        class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-0.5">
+                        <i class="fas fa-plus mr-2"></i>Create New
+                    </button>
 
     <!-- Modal -->
     <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-cloak>
@@ -333,6 +341,7 @@
             </button>
         </div>
     </div>
+</div>
 </div>
 
 <!-- Include Alpine.js if not already -->
