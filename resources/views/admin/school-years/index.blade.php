@@ -143,14 +143,11 @@
                                 </button>
                             </form>
 
-                            <form action="{{ route('admin.school-year.end') }}" method="POST" class="inline">
-                                @csrf
-                                <button type="submit" 
-                                        class="inline-flex items-center px-6 py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-rose-500/30 hover:shadow-xl hover:-translate-y-0.5"
-                                        onclick="return confirm('End this school year? All students will be unenrolled.')">
-                                    <i class="fas fa-stop-circle mr-2"></i>End School Year
-                                </button>
-                            </form>
+                            <button type="button" 
+                                    onclick="showEndSchoolYearModal()"
+                                    class="inline-flex items-center px-6 py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-rose-500/30 hover:shadow-xl hover:-translate-y-0.5">
+                                <i class="fas fa-stop-circle mr-2"></i>End School Year
+                            </button>
                         </div>
                         
                         <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5">
@@ -227,14 +224,11 @@
                                 </button>
                             </form>
 
-                            <form action="{{ route('admin.school-year.end') }}" method="POST" class="inline">
-                                @csrf
-                                <button type="submit" 
-                                        class="inline-flex items-center px-6 py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-rose-500/30 hover:shadow-xl hover:-translate-y-0.5"
-                                        onclick="return confirm('End this school year? All students will be unenrolled.')">
-                                    <i class="fas fa-stop-circle mr-2"></i>End School Year
-                                </button>
-                            </form>
+                            <button type="button" 
+                                    onclick="showEndSchoolYearModal()"
+                                    class="inline-flex items-center px-6 py-3.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-rose-500/30 hover:shadow-xl hover:-translate-y-0.5">
+                                <i class="fas fa-stop-circle mr-2"></i>End School Year
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -441,6 +435,150 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
 
+    <!-- End School Year Modal -->
+    <div id="endSchoolYearModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div id="endSchoolYearModalContent" class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 transform transition-all">
+            
+            <!-- Initial State - Confirmation -->
+            <div id="endSyInitialState">
+                <div class="bg-rose-50 rounded-t-2xl p-6 border-b border-rose-100">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-rose-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-calendar-times text-rose-600 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-rose-900">End School Year</h3>
+                            <p class="text-sm text-rose-600">{{ $activeSchoolYear?->name ?? 'Current School Year' }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-exclamation-triangle text-amber-600 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <p class="text-sm text-amber-800 font-medium mb-1">Important Notice</p>
+                                <p class="text-sm text-amber-700">
+                                    Ending the school year will promote all students to the next grade level. 
+                                    This action requires all teachers to finalize their SF9 content first.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-graduation-cap text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-slate-700">SF9 Requirement</p>
+                                <p class="text-xs text-slate-500">All grades, attendance, and core values must be finalized</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user-graduate text-emerald-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-slate-700">Student Promotion</p>
+                                <p class="text-xs text-slate-500">Students will advance to the next grade level</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button onclick="closeEndSchoolYearModal()" 
+                                class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">
+                            Cancel
+                        </button>
+                        <button onclick="submitEndSchoolYear()" 
+                                class="flex-1 px-4 py-3 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-rose-500/30">
+                            <i class="fas fa-check mr-2"></i>Confirm End School Year
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="endSyLoadingState" class="hidden p-8 text-center">
+                <div class="w-16 h-16 rounded-full border-4 border-rose-200 border-t-rose-600 animate-spin mx-auto mb-4"></div>
+                <h3 class="text-lg font-semibold text-slate-800">Processing...</h3>
+                <p class="text-sm text-slate-500 mt-1">Validating finalization status and ending school year</p>
+            </div>
+            
+            <!-- Success State -->
+            <div id="endSySuccessState" class="hidden">
+                <div class="bg-emerald-50 rounded-t-2xl p-6 border-b border-emerald-100 text-center">
+                    <div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check-circle text-emerald-600 text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-emerald-900">School Year Ended!</h3>
+                    <p class="text-sm text-emerald-600 mt-1">Student promotion processing complete</p>
+                </div>
+                <div class="p-6 text-center">
+                    <p class="text-slate-600 mb-4" id="endSySuccessMessage">The school year has been successfully ended.</p>
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <div class="bg-emerald-50 rounded-xl p-3 text-center">
+                            <p class="text-2xl font-bold text-emerald-700" id="endSyPromotedCount">0</p>
+                            <p class="text-xs text-emerald-600">Promoted</p>
+                        </div>
+                        <div class="bg-amber-50 rounded-xl p-3 text-center">
+                            <p class="text-2xl font-bold text-amber-700" id="endSyRetainedCount">0</p>
+                            <p class="text-xs text-amber-600">Retained</p>
+                        </div>
+                        <div class="bg-blue-50 rounded-xl p-3 text-center">
+                            <p class="text-2xl font-bold text-blue-700" id="endSyGraduatedCount">0</p>
+                            <p class="text-xs text-blue-600">Graduated</p>
+                        </div>
+                    </div>
+                    <button onclick="closeEndSchoolYearModal(); window.location.reload();" 
+                            class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors">
+                        Continue
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Error State -->
+            <div id="endSyErrorState" class="hidden">
+                <div class="bg-red-50 rounded-t-2xl p-6 border-b border-red-100 text-center">
+                    <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-times-circle text-red-600 text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-red-900">Cannot End School Year</h3>
+                    <p class="text-sm text-red-600 mt-1">Some teachers have not finalized their content</p>
+                </div>
+                <div class="p-6">
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-info-circle text-amber-600 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <p class="text-sm text-amber-800 font-medium mb-1">SF9 Finalization Required</p>
+                                <p class="text-sm text-amber-700">
+                                    All teachers must finalize grades, attendance, and core values before the school year can end.
+                                    Please visit the <a href="{{ route('admin.school-year.closure') }}" class="font-semibold underline">Closure Dashboard</a> for details.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 mb-4 text-sm" id="endSyErrorMessage"></p>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button onclick="closeEndSchoolYearModal()" 
+                                class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">
+                            Close
+                        </button>
+                        <a href="{{ route('admin.school-year.closure') }}" 
+                           class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold rounded-xl transition-all text-center">
+                            <i class="fas fa-tasks mr-2"></i>View Closure Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
     <script>
         // Mobile menu toggle
         document.getElementById('mobileMenuBtn')?.addEventListener('click', function() {
@@ -498,6 +636,101 @@
                 }
             }, 5000);
         }); */
+
+        // End School Year Modal Functions
+        function showEndSchoolYearModal() {
+            document.getElementById('endSchoolYearModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            // Reset to initial state
+            document.getElementById('endSyInitialState').classList.remove('hidden');
+            document.getElementById('endSyLoadingState').classList.add('hidden');
+            document.getElementById('endSySuccessState').classList.add('hidden');
+            document.getElementById('endSyErrorState').classList.add('hidden');
+        }
+
+        function closeEndSchoolYearModal() {
+            document.getElementById('endSchoolYearModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function submitEndSchoolYear() {
+            // Show loading state
+            document.getElementById('endSyInitialState').classList.add('hidden');
+            document.getElementById('endSyLoadingState').classList.remove('hidden');
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            @if($activeSchoolYear)
+            formData.append('school_year_id', '{{ $activeSchoolYear->id }}');
+            @endif
+            
+            // Submit via fetch
+            fetch('{{ route('admin.school-year.end') }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    // If redirected, it likely succeeded
+                    return { success: true, message: 'School year ended successfully!' };
+                }
+                return response.json().catch(() => {
+                    return { success: true, message: 'School year ended successfully!' };
+                });
+            })
+            .then(data => {
+                document.getElementById('endSyLoadingState').classList.add('hidden');
+                
+                if (data.success === true || data.success === undefined) {
+                    // Show success
+                    document.getElementById('endSySuccessState').classList.remove('hidden');
+                    if (data.message) {
+                        document.getElementById('endSySuccessMessage').textContent = data.message;
+                    }
+                    // Update counts
+                    if (data.promoted_count !== undefined) {
+                        document.getElementById('endSyPromotedCount').textContent = data.promoted_count;
+                    }
+                    if (data.retained_count !== undefined) {
+                        document.getElementById('endSyRetainedCount').textContent = data.retained_count;
+                    }
+                    if (data.graduated_count !== undefined) {
+                        document.getElementById('endSyGraduatedCount').textContent = data.graduated_count;
+                    }
+                } else {
+                    // Show error
+                    document.getElementById('endSyErrorState').classList.remove('hidden');
+                    if (data.message) {
+                        document.getElementById('endSyErrorMessage').textContent = data.message;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('endSyLoadingState').classList.add('hidden');
+                document.getElementById('endSyErrorState').classList.remove('hidden');
+                document.getElementById('endSyErrorMessage').textContent = 'An error occurred. Please try again or visit the Closure Dashboard for more details.';
+            });
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEndSchoolYearModal();
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('endSchoolYearModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEndSchoolYearModal();
+            }
+        });
     </script>
 </div>
 @endsection

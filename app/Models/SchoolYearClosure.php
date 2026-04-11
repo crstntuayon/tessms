@@ -23,6 +23,9 @@ class SchoolYearClosure extends Model
         'auto_close_at',
         'admin_notes',
         'closure_summary',
+        'promoted_students_count',
+        'retained_students_count',
+        'graduated_students_count',
     ];
 
     protected $casts = [

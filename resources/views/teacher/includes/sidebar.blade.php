@@ -113,6 +113,19 @@ $sections = $teacher
                 </a>
             </li>
 
+            <!-- Events -->
+            <li>
+                <a href="{{ route('teacher.events.index') }}" 
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group
+                   {{ request()->routeIs('teacher.events*') ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600' }}">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center transition-all relative
+                        {{ request()->routeIs('teacher.events*') ? 'bg-white/20' : 'bg-indigo-50 group-hover:bg-indigo-100' }}">
+                        <i class="fas fa-calendar-alt {{ request()->routeIs('teacher.events*') ? 'text-white' : 'text-indigo-500' }}"></i>
+                    </div>
+                    <span>Events</span>
+                </a>
+            </li>
+
             <!-- School Forms -->
             <li x-data="{ open: {{ request()->routeIs('teacher.sf*') ? 'true' : 'false' }} }">
                 <button @click="open = !open"

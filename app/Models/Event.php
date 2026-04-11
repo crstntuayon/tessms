@@ -17,10 +17,17 @@ class Event extends Model
         'title',
         'description',
         'date',
+        'school_year_id',
     ];
 
     // Cast 'date' to a Carbon instance
     protected $casts = [
         'date' => 'date',
     ];
+
+    // Relationships
+    public function schoolYear()
+    {
+        return $this->belongsTo(SchoolYear::class);
+    }
 }

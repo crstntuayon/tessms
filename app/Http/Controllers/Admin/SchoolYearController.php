@@ -7,6 +7,7 @@ use App\Models\SchoolYear;
 use App\Models\Enrollment;
 use App\Models\Student;
 use App\Models\Section;
+use App\Models\Grade;
 use App\Models\SchoolYearQrCode;
 use App\Models\PromotionHistory;
 use App\Models\SchoolYearClosure;
@@ -267,20 +268,55 @@ class SchoolYearController extends Controller
         $activeSchoolYear = SchoolYear::findOrFail($request->school_year_id);
 
         if (!$activeSchoolYear->is_active) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This school year is not active.'
+                ], 422);
+            }
             return redirect()->back()->with('error', 'This school year is not active.');
         }
 
         // Check if all sections are finalized
         $canEnd = $this->finalizationService->canEndSchoolYear($activeSchoolYear->id);
 
-        if (!$canEnd['can_end']) {
-            return redirect()->route('admin.school-years.closure')
-                ->with('error', 'Cannot end school year. ' . $canEnd['pending_count'] . ' section(s) still pending finalization.');
-        }
-
+        // STRICT VALIDATION: Cannot end if not all sections are finalized
         if (!$canEnd['all_finalized']) {
-            return redirect()->route('admin.school-years.closure')
-                ->with('warning', 'Some sections are not finalized but deadline has passed. You may force end the school year with a reason.');
+            $pendingSections = $canEnd['pending_sections'] ?? collect();
+            $pendingDetails = [];
+            
+            foreach ($pendingSections as $pf) {
+                $sectionName = $pf->section->name ?? 'Unknown Section';
+                $teacherName = $pf->section->teacher->user->full_name ?? 'No Adviser';
+                $missing = [];
+                
+                if (!$pf->grades_finalized) $missing[] = 'grades';
+                if (!$pf->attendance_finalized) $missing[] = 'attendance';
+                if (!$pf->core_values_finalized) $missing[] = 'core values';
+                
+                $pendingDetails[] = [
+                    'section' => $sectionName,
+                    'teacher' => $teacherName,
+                    'missing' => $missing
+                ];
+            }
+            
+            $message = 'Cannot end school year. ' . $canEnd['pending_count'] . ' section(s) still pending finalization: ';
+            $message .= collect($pendingDetails)->map(function($d) {
+                return $d['section'] . ' (missing: ' . implode(', ', $d['missing']) . ')';
+            })->implode(', ');
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message,
+                    'pending_count' => $canEnd['pending_count'],
+                    'pending_details' => $pendingDetails
+                ], 422);
+            }
+            
+            return redirect()->route('admin.school-year.closure')
+                ->with('error', $message);
         }
 
         // Update closure record
@@ -290,13 +326,13 @@ class SchoolYearController extends Controller
             'closure_started_at' => now(),
         ]);
 
-        return $this->executeEndSchoolYear($activeSchoolYear);
+        return $this->executeEndSchoolYear($activeSchoolYear, $request);
     }
 
     /**
      * Execute the actual end school year logic
      */
-    private function executeEndSchoolYear(SchoolYear $activeSchoolYear)
+    private function executeEndSchoolYear(SchoolYear $activeSchoolYear, Request $request = null)
     {
         try {
             DB::beginTransaction();
@@ -307,10 +343,15 @@ class SchoolYearController extends Controller
 
             if (!$nextSchoolYear) {
                 DB::rollBack();
-                return redirect()->back()->with('error', 'Please create the next school year first.');
+                $message = 'Please create the next school year first.';
+                if ($request && ($request->ajax() || $request->wantsJson())) {
+                    return response()->json(['success' => false, 'message' => $message], 422);
+                }
+                return redirect()->back()->with('error', $message);
             }
 
             $GRADE_6_ID = 7; // Adjust according to your DB
+            $PASSING_GRADE = 75; // Minimum grade to pass
 
             $enrollments = Enrollment::where('school_year_id', $activeSchoolYear->id)
                 ->where('status', 'enrolled')
@@ -318,52 +359,138 @@ class SchoolYearController extends Controller
 
             $graduatedIds = [];
             $promotedCount = 0;
+            $retainedCount = 0;
+            $retainedDetails = [];
 
             foreach ($enrollments as $enrollment) {
-                // Graduate Grade 6
+                // Calculate student's general average across all subjects and quarters
+                $generalAverage = $this->calculateStudentGeneralAverage(
+                    $enrollment->student_id, 
+                    $activeSchoolYear->id
+                );
+
+                $isPassing = $generalAverage >= $PASSING_GRADE;
+
+                // Handle Grade 6 students (Graduation)
                 if ($enrollment->grade_level_id == $GRADE_6_ID) {
+                    // All Grade 6 students graduate, but track if they passed or failed
                     $graduatedIds[] = $enrollment->student_id;
+                    
+                    // Update current enrollment status based on passing/failing
+                    $enrollment->update([
+                        'status' => 'completed',
+                        'remarks' => $isPassing ? 'Graduated' : 'Graduated (Below 75% average)'
+                    ]);
                     continue;
                 }
 
-                $nextGradeLevelId = $enrollment->grade_level_id + 1;
+                // Determine if student is promoted or retained
+                if ($isPassing) {
+                    // PROMOTED: Student moves to next grade level
+                    $nextGradeLevelId = $enrollment->grade_level_id + 1;
 
-                // Skip if enrollment already exists for next year
-                if (Enrollment::where('student_id', $enrollment->student_id)
-                    ->where('school_year_id', $nextSchoolYear->id)
-                    ->exists()) {
-                    continue;
+                    // Skip if enrollment already exists for next year
+                    if (Enrollment::where('student_id', $enrollment->student_id)
+                        ->where('school_year_id', $nextSchoolYear->id)
+                        ->exists()) {
+                        continue;
+                    }
+
+                    $sectionId = $this->assignSection($nextGradeLevelId, $nextSchoolYear->id);
+
+                    // Create new enrollment for next year
+                    Enrollment::create([
+                        'student_id' => $enrollment->student_id,
+                        'school_year_id' => $nextSchoolYear->id,
+                        'grade_level_id' => $nextGradeLevelId,
+                        'section_id' => $sectionId,
+                        'type' => 'continuing',
+                        'status' => 'pending',
+                        'previous_school' => null,
+                        'enrollment_date' => now(),
+                    ]);
+
+                    // Record promotion history
+                    PromotionHistory::create([
+                        'student_id' => $enrollment->student_id,
+                        'from_school_year_id' => $activeSchoolYear->id,
+                        'to_school_year_id' => $nextSchoolYear->id,
+                        'from_grade_level_id' => $enrollment->grade_level_id,
+                        'to_grade_level_id' => $nextGradeLevelId,
+                    ]);
+
+                    // Update current enrollment status
+                    $enrollment->update([
+                        'status' => 'completed',
+                        'remarks' => 'Promoted (GA: ' . number_format($generalAverage, 2) . ')'
+                    ]);
+
+                    // Update student record
+                    Student::where('id', $enrollment->student_id)->update([
+                        'status' => 'inactive',
+                        'grade_level_id' => $nextGradeLevelId,
+                    ]);
+
+                    $promotedCount++;
+                } else {
+                    // RETAINED: Student stays in same grade level
+                    $currentGradeLevelId = $enrollment->grade_level_id;
+
+                    // Skip if enrollment already exists for next year
+                    if (Enrollment::where('student_id', $enrollment->student_id)
+                        ->where('school_year_id', $nextSchoolYear->id)
+                        ->exists()) {
+                        continue;
+                    }
+
+                    $sectionId = $this->assignSection($currentGradeLevelId, $nextSchoolYear->id);
+
+                    // Create new enrollment for next year (same grade level)
+                    Enrollment::create([
+                        'student_id' => $enrollment->student_id,
+                        'school_year_id' => $nextSchoolYear->id,
+                        'grade_level_id' => $currentGradeLevelId,
+                        'section_id' => $sectionId,
+                        'type' => 'retained', // Mark as retained student
+                        'status' => 'pending',
+                        'previous_school' => null,
+                        'enrollment_date' => now(),
+                    ]);
+
+                    // Record retention in promotion history (to_grade same as from_grade)
+                    PromotionHistory::create([
+                        'student_id' => $enrollment->student_id,
+                        'from_school_year_id' => $activeSchoolYear->id,
+                        'to_school_year_id' => $nextSchoolYear->id,
+                        'from_grade_level_id' => $currentGradeLevelId,
+                        'to_grade_level_id' => $currentGradeLevelId, // Same grade = retained
+                    ]);
+
+                    // Update current enrollment status
+                    $enrollment->update([
+                        'status' => 'completed',
+                        'remarks' => 'Retained (GA: ' . number_format($generalAverage, 2) . ')'
+                    ]);
+
+                    // Update student record (stay in same grade)
+                    Student::where('id', $enrollment->student_id)->update([
+                        'status' => 'inactive',
+                        'grade_level_id' => $currentGradeLevelId, // Keep same grade level
+                    ]);
+
+                    // Track retained students for reporting
+                    $retainedDetails[] = [
+                        'student_id' => $enrollment->student_id,
+                        'name' => $enrollment->student->full_name ?? 'Unknown',
+                        'grade_level' => $currentGradeLevelId,
+                        'general_average' => $generalAverage,
+                    ];
+
+                    $retainedCount++;
                 }
-
-                $sectionId = $this->assignSection($nextGradeLevelId, $nextSchoolYear->id);
-
-                Enrollment::create([
-                    'student_id' => $enrollment->student_id,
-                    'school_year_id' => $nextSchoolYear->id,
-                    'grade_level_id' => $nextGradeLevelId,
-                    'section_id' => $sectionId,
-                    'type' => 'continuing',
-                    'status' => 'pending',
-                    'previous_school' => null,
-                    'enrollment_date' => now(),
-                ]);
-
-                PromotionHistory::create([
-                    'student_id' => $enrollment->student_id,
-                    'from_school_year_id' => $activeSchoolYear->id,
-                    'to_school_year_id' => $nextSchoolYear->id,
-                    'from_grade_level_id' => $enrollment->grade_level_id,
-                    'to_grade_level_id' => $nextGradeLevelId,
-                ]);
-
-                Student::where('id', $enrollment->student_id)->update([
-                    'status' => 'inactive',
-                    'grade_level_id' => $nextGradeLevelId,
-                ]);
-
-                $promotedCount++;
             }
 
+            // Update graduated students' status
             if (!empty($graduatedIds)) {
                 Student::whereIn('id', $graduatedIds)->update(['status' => 'graduated']);
             }
@@ -374,27 +501,54 @@ class SchoolYearController extends Controller
 
             $activeSchoolYear->update(['is_active' => false]);
 
-            // Update closure record
+            // Update closure record with detailed summary
+            $closureSummary = "{$promotedCount} promoted, {$retainedCount} retained, " . count($graduatedIds) . " graduated.";
+            
             $closure = SchoolYearClosure::where('school_year_id', $activeSchoolYear->id)->first();
             if ($closure) {
                 $closure->update([
                     'status' => 'closed',
                     'closure_completed_at' => now(),
                     'closed_by' => auth()->id(),
-                    'closure_summary' => "{$promotedCount} students promoted, " . count($graduatedIds) . " graduated.",
+                    'closure_summary' => $closureSummary,
+                    'retained_students_count' => $retainedCount,
+                    'promoted_students_count' => $promotedCount,
+                    'graduated_students_count' => count($graduatedIds),
                 ]);
             }
 
             DB::commit();
 
-            return redirect()->route('admin.school-years.index')->with('success',
-                "{$promotedCount} students promoted, " . count($graduatedIds) . " graduated 🎓."
-            );
+            $successMessage = "{$promotedCount} promoted, {$retainedCount} retained, " . count($graduatedIds) . " graduated 🎓.";
+
+            // Return JSON for AJAX requests
+            if ($request && ($request->ajax() || $request->wantsJson())) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $successMessage,
+                    'promoted_count' => $promotedCount,
+                    'retained_count' => $retainedCount,
+                    'graduated_count' => count($graduatedIds),
+                    'retained_details' => $retainedDetails,
+                ]);
+            }
+
+            return redirect()->route('admin.school-years.index')->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('End school year failed', ['error' => $e->getMessage()]);
-            return redirect()->back()->with('error', 'Failed to end school year.');
+            
+            $errorMessage = 'Failed to end school year.';
+            
+            if ($request && ($request->ajax() || $request->wantsJson())) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', $errorMessage);
         }
     }
 
@@ -493,5 +647,26 @@ class SchoolYearController extends Controller
             Log::error('Create school year failed', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to create school year.');
         }
+    }
+
+    /**
+     * Calculate student's general average across all subjects for the school year
+     * This averages all final grades from all quarters and all subjects
+     */
+    private function calculateStudentGeneralAverage(int $studentId, int $schoolYearId): float
+    {
+        // Get all final grades for the student in this school year
+        $grades = Grade::where('student_id', $studentId)
+            ->where('school_year_id', $schoolYearId)
+            ->where('component_type', 'final_grade')
+            ->whereNotNull('final_grade')
+            ->pluck('final_grade');
+
+        if ($grades->isEmpty()) {
+            return 0; // No grades found
+        }
+
+        // Calculate average of all final grades
+        return round($grades->avg(), 2);
     }
 }

@@ -281,6 +281,16 @@ if ($currentStudent) {
                         <span class="flex-1 whitespace-nowrap transition-all duration-300" 
                               :class="{ 'opacity-0 w-0 hidden': sidebarCollapsed && window.innerWidth >= 1024 && !mobileOpen, 'opacity-100': (!sidebarCollapsed && window.innerWidth >= 1024) || mobileOpen }">Announcements</span>
                     </a>
+
+                    <!-- Events -->
+                    <a href="{{ route('student.events.index') }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 group {{ request()->routeIs('student.events*') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50' }}">
+                        <svg class="w-5 h-5 {{ request()->routeIs('student.events*') ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600' }} transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span class="flex-1 whitespace-nowrap transition-all duration-300" 
+                              :class="{ 'opacity-0 w-0 hidden': sidebarCollapsed && window.innerWidth >= 1024 && !mobileOpen, 'opacity-100': (!sidebarCollapsed && window.innerWidth >= 1024) || mobileOpen }">Events</span>
+                    </a>
                 </div>
             </div>
 

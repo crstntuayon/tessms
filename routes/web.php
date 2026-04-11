@@ -456,6 +456,10 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth'])->group(function
     
     // Attendance Quick Actions
     Route::post('/sections/{section}/attendance/mark-all', [App\Http\Controllers\Teacher\AttendanceController::class, 'markAll'])->name('attendance.mark-all');
+    
+    // Teacher Events (view only)
+    Route::get('/events', [App\Http\Controllers\Teacher\EventController::class, 'index'])->name('events.index');
+    Route::get('/events/{event}', [App\Http\Controllers\Teacher\EventController::class, 'show'])->name('events.show');
 });
 
 Route::prefix('student')->name('student.')->middleware(['auth'])->group(function () {
@@ -465,6 +469,10 @@ Route::prefix('student')->name('student.')->middleware(['auth'])->group(function
     Route::get('/announcements', [App\Http\Controllers\Student\AnnouncementController::class, 'index'])->name('announcements');
     Route::get('/announcements/{announcement}', [App\Http\Controllers\Student\AnnouncementController::class, 'show'])->name('announcements.show');
     Route::post('/announcements/{announcement}/read', [App\Http\Controllers\Student\AnnouncementController::class, 'markAsRead'])->name('announcements.read');
+    
+    // Student Events (view only)
+    Route::get('/events', [App\Http\Controllers\Student\EventController::class, 'index'])->name('events.index');
+    Route::get('/events/{event}', [App\Http\Controllers\Student\EventController::class, 'show'])->name('events.show');
 });
 
 // Notification Routes (for all authenticated users)

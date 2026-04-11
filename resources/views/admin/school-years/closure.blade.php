@@ -162,16 +162,12 @@
             </div>
             <div class="flex gap-3">
                 @if($canEnd['all_finalized'])
-                <form action="{{ route('admin.school-year.end') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="school_year_id" value="{{ $activeSchoolYear->id }}">
-                    <button type="submit" 
-                            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/30"
-                            onclick="return confirm('Are you sure you want to end the school year? This will promote all students to the next grade level.')">
-                        <i class="fas fa-check-circle mr-2"></i>
-                        End School Year
-                    </button>
-                </form>
+                <button type="button" 
+                        onclick="showEndSchoolYearModal()"
+                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/30">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    End School Year
+                </button>
                 @elseif($canEnd['can_end'])
                 <button type="button" 
                         onclick="document.getElementById('forceEndModal').classList.remove('hidden')"
@@ -180,8 +176,9 @@
                     Force End School Year
                 </button>
                 @else
-                <button type="button" disabled
-                        class="inline-flex items-center px-6 py-3 bg-slate-300 text-slate-500 font-semibold rounded-xl cursor-not-allowed">
+                <button type="button" 
+                        onclick="showCannotEndModal()"
+                        class="inline-flex items-center px-6 py-3 bg-slate-300 text-slate-600 font-semibold rounded-xl cursor-pointer hover:bg-slate-400 transition-colors">
                     <i class="fas fa-lock mr-2"></i>
                     End School Year
                 </button>
@@ -470,11 +467,281 @@
     </div>
 </div>
 
+<!-- End School Year Modal -->
+<div id="endSchoolYearModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div id="endSchoolYearModalContent" class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 transform transition-all">
+        
+        <!-- Initial State - Confirmation -->
+        <div id="endSyInitialState">
+            <div class="bg-emerald-50 rounded-t-2xl p-6 border-b border-emerald-100">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-calendar-check text-emerald-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-emerald-900">End School Year</h3>
+                        <p class="text-sm text-emerald-600">{{ $activeSchoolYear?->name ?? 'Current School Year' }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-exclamation-triangle text-amber-600 mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            <p class="text-sm text-amber-800 font-medium mb-1">Final Confirmation</p>
+                            <p class="text-sm text-amber-700">
+                                All sections have been finalized. You are about to end the school year and promote all students.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-3 mb-6">
+                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check-double text-emerald-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-slate-700">All SF9 Components Finalized</p>
+                            <p class="text-xs text-slate-500">Grades, attendance, and core values are complete</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-user-graduate text-blue-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-slate-700">Student Promotion</p>
+                            <p class="text-xs text-slate-500">All students will advance to the next grade level</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="closeEndSchoolYearModal()" 
+                            class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">
+                        Cancel
+                    </button>
+                    <button onclick="submitEndSchoolYear()" 
+                            class="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/30">
+                        <i class="fas fa-check mr-2"></i>Confirm End School Year
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="endSyLoadingState" class="hidden p-8 text-center">
+            <div class="w-16 h-16 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin mx-auto mb-4"></div>
+            <h3 class="text-lg font-semibold text-slate-800">Processing...</h3>
+            <p class="text-sm text-slate-500 mt-1">Ending school year and promoting students</p>
+        </div>
+        
+        <!-- Success State -->
+        <div id="endSySuccessState" class="hidden">
+            <div class="bg-emerald-50 rounded-t-2xl p-6 border-b border-emerald-100 text-center">
+                <div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-emerald-600 text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-emerald-900">School Year Ended!</h3>
+                <p class="text-sm text-emerald-600 mt-1">Student promotion processing complete</p>
+            </div>
+            <div class="p-6 text-center">
+                <p class="text-slate-600 mb-4" id="endSySuccessMessage">The school year has been successfully ended.</p>
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <div class="bg-emerald-50 rounded-xl p-3 text-center">
+                        <p class="text-2xl font-bold text-emerald-700" id="endSyPromotedCount">0</p>
+                        <p class="text-xs text-emerald-600">Promoted</p>
+                    </div>
+                    <div class="bg-amber-50 rounded-xl p-3 text-center">
+                        <p class="text-2xl font-bold text-amber-700" id="endSyRetainedCount">0</p>
+                        <p class="text-xs text-amber-600">Retained</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-xl p-3 text-center">
+                        <p class="text-2xl font-bold text-blue-700" id="endSyGraduatedCount">0</p>
+                        <p class="text-xs text-blue-600">Graduated</p>
+                    </div>
+                </div>
+                <button onclick="window.location.href='{{ route('admin.school-years.index') }}'" 
+                        class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors">
+                    Continue
+                </button>
+            </div>
+        </div>
+        
+        <!-- Error State -->
+        <div id="endSyErrorState" class="hidden">
+            <div class="bg-red-50 rounded-t-2xl p-6 border-b border-red-100 text-center">
+                <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-times-circle text-red-600 text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-red-900">Cannot End School Year</h3>
+                <p class="text-sm text-red-600 mt-1">An error occurred while processing</p>
+            </div>
+            <div class="p-6">
+                <p class="text-slate-600 mb-4" id="endSyErrorMessage"></p>
+                <button onclick="closeEndSchoolYearModal()" 
+                        class="w-full px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Cannot End Modal -->
+<div id="cannotEndModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
+        <div class="bg-amber-50 rounded-t-2xl p-6 border-b border-amber-100">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-lock text-amber-600 text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-amber-900">Cannot End School Year</h3>
+                    <p class="text-sm text-amber-600">SF9 Finalization Required</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="bg-slate-50 rounded-xl p-4 mb-4">
+                <p class="text-sm text-slate-700 mb-2">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    The school year cannot be ended until all teachers have finalized their SF9 content:
+                </p>
+                <ul class="text-sm text-slate-600 space-y-1 ml-6">
+                    <li><i class="fas fa-graduation-cap text-slate-400 mr-1"></i> Grades</li>
+                    <li><i class="fas fa-calendar-check text-slate-400 mr-1"></i> Attendance</li>
+                    <li><i class="fas fa-heart text-slate-400 mr-1"></i> Core Values</li>
+                </ul>
+            </div>
+            <p class="text-sm text-slate-600 mb-4">
+                <strong>{{ $canEnd['pending_count'] ?? 0 }}</strong> section(s) still pending finalization.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="document.getElementById('cannotEndModal').classList.add('hidden')" 
+                        class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">
+                    Close
+                </button>
+                <button onclick="document.getElementById('cannotEndModal').classList.add('hidden'); document.getElementById('setDeadlineModal').classList.remove('hidden');" 
+                        class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold rounded-xl transition-all">
+                    <i class="fas fa-calendar-alt mr-2"></i>Set Deadline
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function showUnlockModal(sectionId, sectionName) {
     document.getElementById('unlockSectionId').value = sectionId;
     document.getElementById('unlockSectionName').textContent = sectionName;
     document.getElementById('unlockModal').classList.remove('hidden');
 }
+
+// End School Year Modal Functions
+function showEndSchoolYearModal() {
+    document.getElementById('endSchoolYearModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    // Reset to initial state
+    document.getElementById('endSyInitialState').classList.remove('hidden');
+    document.getElementById('endSyLoadingState').classList.add('hidden');
+    document.getElementById('endSySuccessState').classList.add('hidden');
+    document.getElementById('endSyErrorState').classList.add('hidden');
+}
+
+function closeEndSchoolYearModal() {
+    document.getElementById('endSchoolYearModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function showCannotEndModal() {
+    document.getElementById('cannotEndModal').classList.remove('hidden');
+}
+
+function submitEndSchoolYear() {
+    // Show loading state
+    document.getElementById('endSyInitialState').classList.add('hidden');
+    document.getElementById('endSyLoadingState').classList.remove('hidden');
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('_token', '{{ csrf_token() }}');
+    formData.append('school_year_id', '{{ $activeSchoolYear->id }}');
+    
+    // Submit via fetch
+    fetch('{{ route('admin.school-year.end') }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.redirected) {
+            return { success: true, message: 'School year ended successfully!' };
+        }
+        return response.json().catch(() => {
+            return { success: true, message: 'School year ended successfully!' };
+        });
+    })
+    .then(data => {
+        document.getElementById('endSyLoadingState').classList.add('hidden');
+        
+        if (data.success === true || data.success === undefined) {
+            // Show success
+            document.getElementById('endSySuccessState').classList.remove('hidden');
+            if (data.message) {
+                document.getElementById('endSySuccessMessage').textContent = data.message;
+            }
+            // Update counts
+            if (data.promoted_count !== undefined) {
+                document.getElementById('endSyPromotedCount').textContent = data.promoted_count;
+            }
+            if (data.retained_count !== undefined) {
+                document.getElementById('endSyRetainedCount').textContent = data.retained_count;
+            }
+            if (data.graduated_count !== undefined) {
+                document.getElementById('endSyGraduatedCount').textContent = data.graduated_count;
+            }
+        } else {
+            // Show error
+            document.getElementById('endSyErrorState').classList.remove('hidden');
+            if (data.message) {
+                document.getElementById('endSyErrorMessage').textContent = data.message;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('endSyLoadingState').classList.add('hidden');
+        document.getElementById('endSyErrorState').classList.remove('hidden');
+        document.getElementById('endSyErrorMessage').textContent = 'An error occurred. Please try again.';
+    });
+}
+
+// Close modals on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeEndSchoolYearModal();
+        document.getElementById('cannotEndModal').classList.add('hidden');
+    }
+});
+
+// Close modals when clicking outside
+document.getElementById('endSchoolYearModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeEndSchoolYearModal();
+    }
+});
+document.getElementById('cannotEndModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.add('hidden');
+    }
+});
 </script>
 @endsection
