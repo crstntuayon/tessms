@@ -155,10 +155,8 @@
                 <h1 class="text-2xl font-bold text-slate-800">School Form 10 (SF10-ES)</h1>
                 <p class="text-slate-500">Learner's Permanent Academic Record</p>
             </div>
-            <div class="flex gap-3">
-                <div class="px-4 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">
-                    <i class="fas fa-calendar-alt mr-2"></i>{{ $schoolYear }}
-                </div>
+            <div class="px-4 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">
+                <i class="fas fa-calendar-alt mr-2"></i>{{ $schoolYear }}
             </div>
         </div>
 
@@ -321,94 +319,175 @@
                                 </div>
                             </div>
 
-                            <!-- Grades Table -->
-                            <table class="sf10-table">
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2" style="width: 32%; text-align: left; padding-left: 6px;">LEARNING AREAS</th>
-                                        <th colspan="4">QUARTERLY RATING</th>
-                                        <th rowspan="2" style="width: 8%;">FINAL RATING</th>
-                                        <th rowspan="2" style="width: 10%;">REMARKS</th>
-                                    </tr>
-                                    <tr>
-                                        <th style="width: 8%;">1</th>
-                                        <th style="width: 8%;">2</th>
-                                        <th style="width: 8%;">3</th>
-                                        <th style="width: 8%;">4</th>
-                                    </tr>
-                                </thead>
-                               <tbody>
-    @php
-        $totalFinal = 0;
-        $subjectCount = 0;
-    @endphp
-    
-    @forelse($subjectsForGrade as $subject)
-        @php
-            // Get grades for this subject from grouped data
-            $subjectGrades = $gradeRecords[$subject->id] ?? collect();
+                            @php
+                                $isKindergartenGrade = (stripos($gradeLevel, 'kinder') !== false);
+                                $kinderConfig = config('kindergarten.domains');
+                                $kinderDomainData = $kinderDomainsByGrade[$gradeLevel] ?? collect();
+                                
+                                // Helper to get kindergarten rating
+                                $getKinderRatingSF10 = function($domainKey, $indicatorKey, $quarter) use ($kinderDomainData) {
+                                    $domainData = $kinderDomainData->get($domainKey);
+                                    if (!$domainData) return '';
+                                    $indicatorData = $domainData->get($indicatorKey);
+                                    if (!$indicatorData) return '';
+                                    $record = $indicatorData->firstWhere('quarter', $quarter);
+                                    return $record ? $record->rating : '';
+                                };
+                            @endphp
+                            
+                            @if($isKindergartenGrade)
+                                <!-- KINDERGARTEN: Developmental Domains -->
+                                <table class="sf10-table">
+                                    <thead>
+                                        <tr style="background-color: #f3f4f6;">
+                                            <th rowspan="2" style="width: 50%; text-align: left; padding-left: 8px; vertical-align: middle;">{{ $lang == 'cebuano' ? 'MGA KAHILIAN (DOMAINS)' : 'DOMAINS' }}</th>
+                                            <th colspan="4" style="text-align: center; border-bottom: 1px solid #000;">{{ $lang == 'cebuano' ? 'MARKAHAN (QUARTER)' : 'QUARTER' }}</th>
+                                        </tr>
+                                        <tr style="background-color: #f3f4f6;">
+                                            <th style="width: 12.5%; text-align: center;">1</th>
+                                            <th style="width: 12.5%; text-align: center;">2</th>
+                                            <th style="width: 12.5%; text-align: center;">3</th>
+                                            <th style="width: 12.5%; text-align: center;">4</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($kinderConfig as $domainKey => $domainData)
+                                            <tr style="background-color: #e5e7eb;">
+                                                <td colspan="5" class="font-bold text-[9px]" style="text-align: left; padding-left: 8px; text-transform: uppercase; background-color: #f3f4f6;">
+                                                    {{ $domainData['name'][$lang] ?? $domainData['name']['cebuano'] }}
+                                                </td>
+                                            </tr>
+                                            @if(isset($domainData['subdomains']))
+                                                {{-- Domains with subdomains --}}
+                                                @foreach($domainData['subdomains'] as $subdomainKey => $subdomainData)
+                                                    @foreach($subdomainData['indicators'] as $indicatorKey => $indicatorText)
+                                                    <tr style="{{ $loop->parent->even && $loop->even ? 'background-color: #f9fafb;' : '' }}">
+                                                        <td class="text-left pl-4 text-[7.5pt]" style="font-size: 7.5pt; text-align: justify; text-justify: inter-word; padding: 4px 8px; line-height: 1.4;">{{ $indicatorText[$lang] ?? $indicatorText['cebuano'] }}</td>
+                                                        <td class="text-center font-bold" style="vertical-align: middle;">{{ $getKinderRatingSF10($domainKey, $indicatorKey, 1) }}</td>
+                                                        <td class="text-center font-bold" style="vertical-align: middle;">{{ $getKinderRatingSF10($domainKey, $indicatorKey, 2) }}</td>
+                                                        <td class="text-center font-bold" style="vertical-align: middle;">{{ $getKinderRatingSF10($domainKey, $indicatorKey, 3) }}</td>
+                                                        <td class="text-center font-bold" style="vertical-align: middle;">{{ $getKinderRatingSF10($domainKey, $indicatorKey, 4) }}</td>
+                                                    </tr>
+                                                    @endforeach
+                                                @endforeach
+                                            @elseif(isset($domainData['indicators']))
+                                                {{-- Domains without subdomains --}}
+                                                @foreach($domainData['indicators'] as $indicatorKey => $indicatorText)
+                                                <tr style="{{ $loop->even ? 'background-color: #f9fafb;' : '' }}">
+                                                    <td class="text-left pl-4 text-[7.5pt]" style="font-size: 7.5pt; text-align: justify; text-justify: inter-word; padding: 4px 8px; line-height: 1.4;">{{ $indicatorText[$lang] ?? $indicatorText['cebuano'] }}</td>
+                                                    <td class="text-center font-bold" style="vertical-align: middle;">{{ $getKinderRatingSF10($domainKey, $indicatorKey, 1) }}</td>
+                                                    <td class="text-center font-bold" style="vertical-align: middle;">{{ $getKinderRatingSF10($domainKey, $indicatorKey, 2) }}</td>
+                                                    <td class="text-center font-bold" style="vertical-align: middle;">{{ $getKinderRatingSF10($domainKey, $indicatorKey, 3) }}</td>
+                                                    <td class="text-center font-bold" style="vertical-align: middle;">{{ $getKinderRatingSF10($domainKey, $indicatorKey, 4) }}</td>
+                                                </tr>
+                                                @endforeach
+                                            @endif
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center py-2 text-slate-400 text-[8px]">No kindergarten domain data available</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                
+                                <!-- Rating Scale for SF10 Kindergarten -->
+                                <div class="p-2 border-t-2 border-black text-[7px] bg-gray-50">
+                                    @if($lang == 'cebuano')
+                                        <p class="font-bold mb-1">MARKAHAN: B = Sinugdan (Beginning) | D = Nagpalambo (Developing) | C = Kusgan (Consistent)</p>
+                                    @else
+                                        <p class="font-bold mb-1">RATING SCALE: B = Beginning (Sinugdan) | D = Developing (Nagpalambo) | C = Consistent (Kusgan)</p>
+                                    @endif
+                                </div>
+                            @else
+                                <!-- GRADES 1-6: Regular Subject Grades -->
+                                <table class="sf10-table">
+                                    <thead>
+                                        <tr>
+                                            <th rowspan="2" style="width: 32%; text-align: left; padding-left: 6px;">LEARNING AREAS</th>
+                                            <th colspan="4">QUARTERLY RATING</th>
+                                            <th rowspan="2" style="width: 8%;">FINAL RATING</th>
+                                            <th rowspan="2" style="width: 10%;">REMARKS</th>
+                                        </tr>
+                                        <tr>
+                                            <th style="width: 8%;">1</th>
+                                            <th style="width: 8%;">2</th>
+                                            <th style="width: 8%;">3</th>
+                                            <th style="width: 8%;">4</th>
+                                        </tr>
+                                    </thead>
+                                   <tbody>
+            @php
+                $totalFinal = 0;
+                $subjectCount = 0;
+            @endphp
             
-            // Extract quarter grades (same pattern as SF9)
-            $q1 = $subjectGrades->get(1)?->final_grade;
-            $q2 = $subjectGrades->get(2)?->final_grade;
-            $q3 = $subjectGrades->get(3)?->final_grade;
-            $q4 = $subjectGrades->get(4)?->final_grade;
+            @forelse($subjectsForGrade as $subject)
+                @php
+                    // Get grades for this subject from grouped data
+                    $subjectGrades = $gradeRecords[$subject->id] ?? collect();
+                    
+                    // Extract quarter grades (same pattern as SF9)
+                    $q1 = $subjectGrades->get(1)?->final_grade;
+                    $q2 = $subjectGrades->get(2)?->final_grade;
+                    $q3 = $subjectGrades->get(3)?->final_grade;
+                    $q4 = $subjectGrades->get(4)?->final_grade;
+                    
+                    // Get year-end final grade (quarter = NULL or 0)
+                    $yearEndGrade = $subjectGrades->get(null)?->final_grade ?? $subjectGrades->get(0)?->final_grade;
+                    
+                    // If no year-end grade, calculate average of available quarters
+                    $final = $yearEndGrade;
+                    if (!$final) {
+                        $quarters = array_filter([$q1, $q2, $q3, $q4], fn($q) => $q !== null);
+                        if (count($quarters) > 0) {
+                            $final = round(array_sum($quarters) / count($quarters));
+                        }
+                    }
+                    
+                    if ($final !== null) {
+                        $totalFinal += $final;
+                        $subjectCount++;
+                    }
+                    
+                    $remark = '';
+                    if ($final !== null) {
+                        $remark = $final >= 75 ? 'Passed' : 'Failed';
+                    }
+                @endphp
+                <tr>
+                    <td class="text-left pl-2 text-[9px]">{{ $subject->name }}</td>
+                    <td>{{ $q1 ?? '' }}</td>
+                    <td>{{ $q2 ?? '' }}</td>
+                    <td>{{ $q3 ?? '' }}</td>
+                    <td>{{ $q4 ?? '' }}</td>
+                    <td class="font-bold">{{ $final ?? '' }}</td>
+                    <td class="text-[8px]">{{ $remark }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="7" class="text-center py-2 text-slate-400 text-[8px]">No subjects found for {{ $gradeLevel }}</td>
+                </tr>
+            @endforelse
             
-            // Get year-end final grade (quarter = NULL or 0)
-            $yearEndGrade = $subjectGrades->get(null)?->final_grade ?? $subjectGrades->get(0)?->final_grade;
-            
-            // If no year-end grade, calculate average of available quarters
-            $final = $yearEndGrade;
-            if (!$final) {
-                $quarters = array_filter([$q1, $q2, $q3, $q4], fn($q) => $q !== null);
-                if (count($quarters) > 0) {
-                    $final = round(array_sum($quarters) / count($quarters));
-                }
-            }
-            
-            if ($final !== null) {
-                $totalFinal += $final;
-                $subjectCount++;
-            }
-            
-            $remark = '';
-            if ($final !== null) {
-                $remark = $final >= 75 ? 'Passed' : 'Failed';
-            }
-        @endphp
-        <tr>
-            <td class="text-left pl-2 text-[9px]">{{ $subject->name }}</td>
-            <td>{{ $q1 ?? '' }}</td>
-            <td>{{ $q2 ?? '' }}</td>
-            <td>{{ $q3 ?? '' }}</td>
-            <td>{{ $q4 ?? '' }}</td>
-            <td class="font-bold">{{ $final ?? '' }}</td>
-            <td class="text-[8px]">{{ $remark }}</td>
-        </tr>
-    @empty
-        <tr>
-            <td colspan="7" class="text-center py-2 text-slate-400 text-[8px]">No subjects found for {{ $gradeLevel }}</td>
-        </tr>
-    @endforelse
-    
-    @if($subjectCount > 0)
-        @php
-            $generalAverage = round($totalFinal / $subjectCount);
-        @endphp
-        <tr class="bg-gray-100 font-bold">
-            <td colspan="5" class="text-right pr-3 text-[9px]">GENERAL AVERAGE</td>
-            <td class="text-[10px] border-2 border-black">{{ $generalAverage }}</td>
-            <td class="text-[9px]">{{ $generalAverage >= 75 ? 'Promoted' : 'Retained' }}</td>
-        </tr>
-    @else
-        <tr class="bg-gray-100 font-bold">
-            <td colspan="5" class="text-right pr-3 text-[9px]">GENERAL AVERAGE</td>
-            <td class="text-[10px] border-2 border-black"></td>
-            <td class="text-[9px]"></td>
-        </tr>
-    @endif
-</tbody>
-                            </table>
+            @if($subjectCount > 0)
+                @php
+                    $generalAverage = round($totalFinal / $subjectCount);
+                @endphp
+                <tr class="bg-gray-100 font-bold">
+                    <td colspan="5" class="text-right pr-3 text-[9px]">GENERAL AVERAGE</td>
+                    <td class="text-[10px] border-2 border-black">{{ $generalAverage }}</td>
+                    <td class="text-[9px]">{{ $generalAverage >= 75 ? 'Promoted' : 'Retained' }}</td>
+                </tr>
+            @else
+                <tr class="bg-gray-100 font-bold">
+                    <td colspan="5" class="text-right pr-3 text-[9px]">GENERAL AVERAGE</td>
+                    <td class="text-[10px] border-2 border-black"></td>
+                    <td class="text-[9px]"></td>
+                </tr>
+            @endif
+            </tbody>
+                                </table>
+                            @endif
 
                             <!-- Remedial Classes -->
                             <div class="p-2 border-t-2 border-black text-[8px] bg-gray-50">

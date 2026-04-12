@@ -252,6 +252,7 @@
                         <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Grades</th>
                         <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Attendance</th>
                         <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Core Values</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Kindergarten</th>
                         <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -307,6 +308,26 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-center">
+                            @php
+                                $isKindergartenSection = stripos($item['section']->gradeLevel->name ?? '', 'kinder') !== false;
+                            @endphp
+                            @if($isKindergartenSection)
+                                @if($item['finalization'] && $item['finalization']->grades_finalized)
+                                <span class="inline-flex items-center px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                                    <i class="fas fa-check mr-1"></i> Done
+                                </span>
+                                @else
+                                <span class="inline-flex items-center px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium">
+                                    <i class="fas fa-clock mr-1"></i> Pending
+                                </span>
+                                @endif
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-400 rounded-full text-xs font-medium">
+                                    <i class="fas fa-minus mr-1"></i> N/A
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-center">
                             <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium {{ $item['status']['class'] }}">
                                 {{ $item['status']['text'] }}
                             </span>
@@ -320,7 +341,8 @@
                                         $grades = $item['finalization']->grades_finalized;
                                         $attendance = $item['finalization']->attendance_finalized;
                                         $coreValues = $item['finalization']->core_values_finalized;
-                                        $finalizedCount = ($grades ? 1 : 0) + ($attendance ? 1 : 0) + ($coreValues ? 1 : 0);
+                                        $isKinder = stripos($item['section']->gradeLevel->name ?? '', 'kinder') !== false;
+                                        $finalizedCount = ($grades ? 1 : 0) + ($attendance ? 1 : 0) + ($coreValues ? 1 : 0) + ($isKinder && $grades ? 1 : 0);
                                     @endphp
                                     
                                     {{-- Individual Component Unlock Buttons --}}
@@ -351,10 +373,19 @@
                                         </button>
                                     @endif
                                     
+                                    @if($isKinder && $grades)
+                                        <button type="button"
+                                            onclick="unlockComponent({{ $sectionId }}, '{{ addslashes($sectionName) }}', 'kindergarten')"
+                                            class="inline-flex items-center px-2 py-1 bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-lg text-xs font-medium transition-colors"
+                                            title="Unlock Kindergarten Assessments">
+                                            <i class="fas fa-child"></i>
+                                        </button>
+                                    @endif
+                                    
                                     {{-- Unlock All Button --}}
                                     @if($finalizedCount > 1)
                                         <button type="button"
-                                            onclick="unlockAll({{ $sectionId }}, '{{ addslashes($sectionName) }}', {{ json_encode(['grades' => $grades, 'attendance' => $attendance, 'core_values' => $coreValues]) }})"
+                                            onclick="unlockAll({{ $sectionId }}, '{{ addslashes($sectionName) }}', {{ json_encode(['grades' => $grades, 'attendance' => $attendance, 'core_values' => $coreValues, 'kindergarten' => $isKinder && $grades]) }})"
                                             class="inline-flex items-center px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg text-xs font-medium transition-colors"
                                             title="Unlock All Components">
                                             <i class="fas fa-unlock-alt mr-1"></i> All
@@ -512,6 +543,7 @@
                 <li data-component="grades"><i class="fas fa-graduation-cap text-emerald-500 mr-1"></i> Grades</li>
                 <li data-component="attendance"><i class="fas fa-calendar-check text-blue-500 mr-1"></i> Attendance</li>
                 <li data-component="core_values"><i class="fas fa-heart text-purple-500 mr-1"></i> Core Values</li>
+                <li data-component="kindergarten"><i class="fas fa-child text-pink-500 mr-1"></i> Kindergarten</li>
             </ul>
         </div>
         
@@ -720,7 +752,8 @@
 const componentConfig = {
     grades: { name: 'Grades', bg: 'bg-emerald-100', text: 'text-emerald-600', btn: 'from-emerald-500 to-teal-500' },
     attendance: { name: 'Attendance', bg: 'bg-blue-100', text: 'text-blue-600', btn: 'from-blue-500 to-indigo-500' },
-    core_values: { name: 'Core Values', bg: 'bg-purple-100', text: 'text-purple-600', btn: 'from-purple-500 to-pink-500' }
+    core_values: { name: 'Core Values', bg: 'bg-purple-100', text: 'text-purple-600', btn: 'from-purple-500 to-pink-500' },
+    kindergarten: { name: 'Kindergarten', bg: 'bg-pink-100', text: 'text-pink-600', btn: 'from-pink-500 to-rose-500', icon: 'fa-child' }
 };
 
 // Show unlock modal for individual component
@@ -754,6 +787,7 @@ function unlockComponent(sectionId, sectionName, component) {
     if (component === 'grades') iconDiv.innerHTML = '<i class="fas fa-graduation-cap ' + config.text + ' text-xl"></i>';
     if (component === 'attendance') iconDiv.innerHTML = '<i class="fas fa-calendar-check ' + config.text + ' text-xl"></i>';
     if (component === 'core_values') iconDiv.innerHTML = '<i class="fas fa-heart ' + config.text + ' text-xl"></i>';
+    if (component === 'kindergarten') iconDiv.innerHTML = '<i class="fas fa-child ' + config.text + ' text-xl"></i>';
     
     document.getElementById('unlockModalInfo').className = config.bg.replace('100', '50') + ' border rounded-xl p-4 mb-4';
     document.getElementById('unlockModalSubmit').className = 'flex-1 px-4 py-3 bg-gradient-to-r ' + config.btn + ' hover:opacity-90 text-white font-medium rounded-xl transition-all';
@@ -795,6 +829,7 @@ function unlockAll(sectionId, sectionName, components) {
     list.querySelector('li[data-component="grades"]').classList.toggle('hidden', !components.grades);
     list.querySelector('li[data-component="attendance"]').classList.toggle('hidden', !components.attendance);
     list.querySelector('li[data-component="core_values"]').classList.toggle('hidden', !components.core_values);
+    list.querySelector('li[data-component="kindergarten"]').classList.toggle('hidden', !components.kindergarten);
     
     // Show modal
     document.getElementById('unlockModal').classList.remove('hidden');

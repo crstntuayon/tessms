@@ -165,6 +165,11 @@ public function getAgeAttribute()
         return $this->hasMany(CoreValue::class);
     }
 
+    public function kindergartenDomains()
+    {
+        return $this->hasMany(KindergartenDomain::class);
+    }
+
   
     
 }

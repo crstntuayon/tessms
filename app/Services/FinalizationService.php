@@ -53,6 +53,125 @@ class FinalizationService
     }
 
     /**
+     * Validate if kindergarten assessments can be finalized for a section
+     */
+    public function validateKindergartenFinalization(int $sectionId, int $schoolYearId): array
+    {
+        $section = Section::with(['students' => function($query) {
+            $query->whereNotIn('status', ['completed', 'inactive']);
+        }])->findOrFail($sectionId);
+        
+        $students = $section->students;
+        
+        $errors = [];
+        $warnings = [];
+
+        if ($students->isEmpty()) {
+            $errors[] = 'No active students found in this section.';
+            return ['valid' => false, 'errors' => $errors, 'warnings' => $warnings];
+        }
+
+        // Get all kindergarten domains from config
+        $kinderConfig = config('kindergarten.domains');
+        $studentIds = $students->pluck('id')->toArray();
+        
+        // Bulk fetch all kindergarten assessments in a single query
+        $existingRatings = \App\Models\KindergartenDomain::where('school_year_id', $schoolYearId)
+            ->whereIn('student_id', $studentIds)
+            ->whereIn('quarter', [1, 2, 3, 4])
+            ->whereNotNull('rating')
+            ->get()
+            ->keyBy(function ($rating) {
+                return "{$rating->student_id}-{$rating->domain}-{$rating->indicator_key}-{$rating->quarter}";
+            });
+
+        // Check for missing ratings using the pre-loaded collection
+        foreach ($students as $student) {
+            foreach ($kinderConfig as $domainKey => $domainData) {
+                // Check indicators in subdomains
+                if (isset($domainData['subdomains'])) {
+                    foreach ($domainData['subdomains'] as $subdomainKey => $subdomainData) {
+                        foreach ($subdomainData['indicators'] as $indicatorKey => $indicatorText) {
+                            for ($quarter = 1; $quarter <= 4; $quarter++) {
+                                $key = "{$student->id}-{$domainKey}-{$indicatorKey}-{$quarter}";
+                                if (!$existingRatings->has($key)) {
+                                    $errors[] = "Missing rating for {$student->user->full_name} - {$domainData['name']['cebuano']} (Q{$quarter})";
+                                }
+                            }
+                        }
+                    }
+                }
+                // Check direct indicators
+                elseif (isset($domainData['indicators'])) {
+                    foreach ($domainData['indicators'] as $indicatorKey => $indicatorText) {
+                        for ($quarter = 1; $quarter <= 4; $quarter++) {
+                            $key = "{$student->id}-{$domainKey}-{$indicatorKey}-{$quarter}";
+                            if (!$existingRatings->has($key)) {
+                                $errors[] = "Missing rating for {$student->user->full_name} - {$domainData['name']['cebuano']} (Q{$quarter})";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Limit errors to prevent overwhelming output
+        if (count($errors) > 10) {
+            $remaining = count($errors) - 10;
+            $errors = array_slice($errors, 0, 10);
+            $errors[] = "... and {$remaining} more missing ratings.";
+        }
+
+        return [
+            'valid' => empty($errors),
+            'errors' => $errors,
+            'warnings' => $warnings,
+        ];
+    }
+
+    /**
+     * Finalize kindergarten assessments for a section
+     */
+    public function finalizeKindergarten(int $sectionId, int $schoolYearId, int $userId): array
+    {
+        $validation = $this->validateKindergartenFinalization($sectionId, $schoolYearId);
+        
+        if (!$validation['valid']) {
+            return [
+                'success' => false,
+                'message' => 'Cannot finalize kindergarten assessments. Please fix the errors.',
+                'errors' => $validation['errors'],
+            ];
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $finalization = $this->getOrCreateFinalization($sectionId, $schoolYearId);
+            $finalization->update([
+                'grades_finalized' => true,
+                'grades_finalized_at' => now(),
+            ]);
+
+            $this->checkAndUpdateFullFinalization($finalization, $userId);
+
+            DB::commit();
+
+            return [
+                'success' => true,
+                'message' => 'Kindergarten assessments finalized successfully.',
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to finalize kindergarten assessments', ['error' => $e->getMessage()]);
+            return [
+                'success' => false,
+                'message' => 'Failed to finalize kindergarten assessments: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Validate if grades can be finalized for a section
      */
     public function validateGradesFinalization(int $sectionId, int $schoolYearId): array
@@ -488,21 +607,24 @@ class FinalizationService
                 ];
             }
 
-            $validComponents = ['grades', 'attendance', 'core_values'];
+            $validComponents = ['grades', 'attendance', 'core_values', 'kindergarten'];
             if (!in_array($component, $validComponents)) {
                 return [
                     'success' => false,
-                    'message' => 'Invalid component. Must be: grades, attendance, or core_values.',
+                    'message' => 'Invalid component. Must be: grades, attendance, core_values, or kindergarten.',
                 ];
             }
+            
+            // Map kindergarten to grades since they share the same field
+            $dbComponent = $component === 'kindergarten' ? 'grades' : $component;
 
             // Update the specific component's finalization status
             $updateData = [
-                "{$component}_finalized" => false,
-                "{$component}_finalized_at" => null,
-                "{$component}_unlocked_at" => now(),
-                "{$component}_unlocked_by" => $adminId,
-                "{$component}_unlock_reason" => $reason,
+                "{$dbComponent}_finalized" => false,
+                "{$dbComponent}_finalized_at" => null,
+                "{$dbComponent}_unlocked_at" => now(),
+                "{$dbComponent}_unlocked_by" => $adminId,
+                "{$dbComponent}_unlock_reason" => $reason,
                 'is_locked' => false, // Also unlock the section temporarily
                 'unlocked_at' => now(),
                 'unlocked_by' => $adminId,
@@ -521,6 +643,7 @@ class FinalizationService
                 'grades' => 'Grades',
                 'attendance' => 'Attendance',
                 'core_values' => 'Core Values',
+                'kindergarten' => 'Kindergarten Assessments',
             ];
 
             return [
@@ -597,7 +720,7 @@ class FinalizationService
 
             return [
                 'success' => true,
-                'message' => 'All components (Grades, Attendance, and Core Values) have been unlocked successfully.',
+                'message' => 'All components (Grades/Kindergarten, Attendance, and Core Values) have been unlocked successfully.',
             ];
         } catch (\Exception $e) {
             DB::rollBack();
@@ -634,18 +757,21 @@ class FinalizationService
                 ];
             }
 
-            $validComponents = ['grades', 'attendance', 'core_values'];
+            $validComponents = ['grades', 'attendance', 'core_values', 'kindergarten'];
             if (!in_array($component, $validComponents)) {
                 return [
                     'success' => false,
-                    'message' => 'Invalid component. Must be: grades, attendance, or core_values.',
+                    'message' => 'Invalid component. Must be: grades, attendance, core_values, or kindergarten.',
                 ];
             }
+            
+            // Map kindergarten to grades since they share the same field
+            $dbComponent = $component === 'kindergarten' ? 'grades' : $component;
 
             // Re-finalize the specific component
             $updateData = [
-                "{$component}_finalized" => true,
-                "{$component}_finalized_at" => now(),
+                "{$dbComponent}_finalized" => true,
+                "{$dbComponent}_finalized_at" => now(),
             ];
 
             // Check if all components are now finalized
@@ -664,6 +790,7 @@ class FinalizationService
                 'grades' => 'Grades',
                 'attendance' => 'Attendance',
                 'core_values' => 'Core Values',
+                'kindergarten' => 'Kindergarten Assessments',
             ];
 
             return [

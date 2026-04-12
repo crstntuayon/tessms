@@ -555,100 +555,235 @@
             </div>
 
             <!-- Report on Learning Progress and Achievement -->
-            <div class="section-header">
-                Report on Learning Progress and Achievement
-            </div>
-            
-            <table class="sf9-table">
-                <thead>
-                    <tr>
-                        <th rowspan="2" style="width: 32%; text-align: left; padding-left: 8px;">Learning Areas</th>
-                        <th colspan="4">Quarterly Rating</th>
-                        <th rowspan="2" style="width: 12%;">Final Rating</th>
-                        <th rowspan="2" style="width: 12%;">Remarks</th>
-                    </tr>
-                    <tr>
-                        <th style="width: 9%;">1st</th>
-                        <th style="width: 9%;">2nd</th>
-                        <th style="width: 9%;">3rd</th>
-                        <th style="width: 9%;">4th</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($subjectGrades as $subjectGrade)
-                    <tr>
-                        <td class="text-left pl-2 text-sm" style="font-size: 9pt;">{{ $subjectGrade['subject_name'] }}</td>
-                        <td>{{ $subjectGrade['quarter_1'] ?: '' }}</td>
-                        <td>{{ $subjectGrade['quarter_2'] ?: '' }}</td>
-                        <td>{{ $subjectGrade['quarter_3'] ?: '' }}</td>
-                        <td>{{ $subjectGrade['quarter_4'] ?: '' }}</td>
-                        <td class="font-bold {{ $subjectGrade['final_grade'] >= 75 ? '' : 'grade-failed' }}">
-                            {{ $subjectGrade['final_grade'] ?: '' }}
-                        </td>
-                        <td class="{{ $subjectGrade['remarks'] == 'Failed' ? 'grade-failed' : '' }}">
-                            {{ $subjectGrade['remarks'] ?: '' }}
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="py-6 text-gray-500 text-center">
-                            No subjects found for this grade level.
-                        </td>
-                    </tr>
-                    @endforelse
-
-                    @if($generalAverage !== null)
-                    <tr style="background: #f3f4f6; font-weight: bold;">
-                        <td colspan="5" class="text-right pr-4" style="font-size: 9pt;">GENERAL AVERAGE</td>
-                        <td class="{{ $generalAverage >= 75 ? '' : 'grade-failed' }}">{{ $generalAverage }}</td>
-                        <td class="{{ $generalAverage >= 75 ? '' : 'grade-failed' }}">
-                            {{ $generalAverage >= 75 ? 'Passed' : 'Failed' }}
-                        </td>
-                    </tr>
-                    @endif
-                </tbody>
-            </table>
-
-            <!-- Descriptors and Grading Scale -->
-            <div class="two-column">
-                <div class="border border-black p-2">
-                    <h4 class="font-bold text-xs mb-2 uppercase text-center border-b border-black pb-1">Descriptors & Grading Scale</h4>
+            @if($isKindergarten)
+                <!-- KINDERGARTEN: Developmental Domains -->
+                <div class="section-header">
+                    {{ $lang == 'cebuano' ? 'Report sa Kalambuan sa Bata' : 'Developmental Progress Report' }}
+                </div>
+                
+                @php
+                $kinderConfig = config('kindergarten.domains');
+                $ratingScale = config('kindergarten.rating_scale');
+                
+                // Helper function to get rating for domain indicator
+                $getKinderRating = function($domainKey, $indicatorKey, $quarter) use ($kindergartenDomains) {
+                    $domainData = $kindergartenDomains->get($domainKey);
+                    if (!$domainData) return '';
+                    
+                    $indicatorData = $domainData->get($indicatorKey);
+                    if (!$indicatorData) return '';
+                    
+                    $record = $indicatorData->firstWhere('quarter', $quarter);
+                    return $record ? $record->rating : '';
+                };
+                @endphp
+                
+                @foreach($kinderConfig as $domainKey => $domainData)
+                <div class="border border-black mb-2">
+                    <div class="bg-gray-100 p-2 border-b border-black" style="background-color: #f3f4f6;">
+                        <strong style="font-size: 9pt; text-transform: uppercase;">{{ $domainData['name'][$lang] ?? $domainData['name']['cebuano'] }}</strong>
+                    </div>
+                    <table class="sf9-table" style="font-size: 8pt;">
+                        <thead>
+                            <tr style="background-color: #f9fafb;">
+                                <th rowspan="2" style="width: 50%; text-align: left; padding-left: 8px; vertical-align: middle;">{{ $lang == 'cebuano' ? 'Mga Tigpasiunod (Indicators)' : 'Indicators' }}</th>
+                                <th colspan="4" style="text-align: center; border-bottom: 1px solid #000;">{{ $lang == 'cebuano' ? 'Kwarto (Quarter)' : 'Quarter' }}</th>
+                            </tr>
+                            <tr style="background-color: #f9fafb;">
+                                <th style="width: 12.5%; text-align: center;">1</th>
+                                <th style="width: 12.5%; text-align: center;">2</th>
+                                <th style="width: 12.5%; text-align: center;">3</th>
+                                <th style="width: 12.5%; text-align: center;">4</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(isset($domainData['indicators']))
+                                @foreach($domainData['indicators'] as $indicatorKey => $indicatorData)
+                                <tr style="{{ $loop->even ? 'background-color: #f9fafb;' : '' }}">
+                                    <td class="text-left pl-2" style="font-size: 7.5pt; text-align: justify; text-justify: inter-word; padding: 5px 8px; line-height: 1.4;">{{ $indicatorData[$lang] ?? $indicatorData['cebuano'] }}</td>
+                                    <td class="font-bold" style="text-align: center; vertical-align: middle;">{{ $getKinderRating($domainKey, $indicatorKey, 1) }}</td>
+                                    <td class="font-bold" style="text-align: center; vertical-align: middle;">{{ $getKinderRating($domainKey, $indicatorKey, 2) }}</td>
+                                    <td class="font-bold" style="text-align: center; vertical-align: middle;">{{ $getKinderRating($domainKey, $indicatorKey, 3) }}</td>
+                                    <td class="font-bold" style="text-align: center; vertical-align: middle;">{{ $getKinderRating($domainKey, $indicatorKey, 4) }}</td>
+                                </tr>
+                                @endforeach
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+                @endforeach
+                
+                <!-- Rating Scale for Kindergarten -->
+                <div class="border border-black p-2 mb-3">
+                    <h4 class="font-bold text-xs mb-2 uppercase text-center border-b border-black pb-1">{{ $lang == 'cebuano' ? 'Rating Scale / Suklanan sa Marka' : 'Rating Scale' }}</h4>
                     <table class="grading-scale-table">
                         <tbody>
                             <tr>
-                                <td class="text-left">Outstanding</td>
-                                <td class="text-center font-bold">90-100</td>
-                                <td class="text-center">Passed</td>
+                                <td class="text-center font-bold" style="width: 15%;">B</td>
+                                <td class="text-left"><strong>{{ $ratingScale['B']['label'][$lang] }} ({{ $ratingScale['B']['label']['cebuano'] }})</strong> - {{ $ratingScale['B']['description'][$lang] }}</td>
                             </tr>
                             <tr>
-                                <td class="text-left">Very Satisfactory</td>
-                                <td class="text-center font-bold">85-89</td>
-                                <td class="text-center">Passed</td>
+                                <td class="text-center font-bold">D</td>
+                                <td class="text-left"><strong>{{ $ratingScale['D']['label'][$lang] }} ({{ $ratingScale['D']['label']['cebuano'] }})</strong> - {{ $ratingScale['D']['description'][$lang] }}</td>
                             </tr>
                             <tr>
-                                <td class="text-left">Satisfactory</td>
-                                <td class="text-center font-bold">80-84</td>
-                                <td class="text-center">Passed</td>
-                            </tr>
-                            <tr>
-                                <td class="text-left">Fairly Satisfactory</td>
-                                <td class="text-center font-bold">75-79</td>
-                                <td class="text-center">Passed</td>
-                            </tr>
-                            <tr>
-                                <td class="text-left">Did Not Meet Expectations</td>
-                                <td class="text-center font-bold">Below 75</td>
-                                <td class="text-center font-bold">Failed</td>
+                                <td class="text-center font-bold">C</td>
+                                <td class="text-left"><strong>{{ $ratingScale['C']['label'][$lang] }} ({{ $ratingScale['C']['label']['cebuano'] }})</strong> - {{ $ratingScale['C']['description'][$lang] }}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="border border-black p-2 flex flex-col justify-center">
-                    <p class="text-xs italic text-center leading-relaxed">
-                        "This report card shows the ability and progress your child has made in different learning areas as well as their growth in core values. The school welcomes you should you desire to know more about your child's progress."
-                    </p>
+                
+                <!-- Teacher's Remarks Section for Kindergarten -->
+                <div class="section-header">
+                    {{ $lang == 'cebuano' ? 'Pasabot sa Magtutudlo (Teacher\'s Comments/Remarks)' : 'Teacher\'s Comments/Remarks' }}
                 </div>
-            </div>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <div class="border border-black p-2">
+                        <p class="text-xs font-bold text-center border-b border-black pb-1 mb-2">{{ $lang == 'cebuano' ? 'First Quarter (Semana 1-10)' : 'First Quarter (Weeks 1-10)' }}</p>
+                        <div class="h-20 border-b border-black mb-1"></div>
+                        <p class="text-xs text-center">{{ $lang == 'cebuano' ? 'Pirma sa Ginikanan / Guardian\'s Signature' : 'Guardian\'s Signature' }}</p>
+                    </div>
+                    <div class="border border-black p-2">
+                        <p class="text-xs font-bold text-center border-b border-black pb-1 mb-2">{{ $lang == 'cebuano' ? 'Second Quarter (Semana 11-20)' : 'Second Quarter (Weeks 11-20)' }}</p>
+                        <div class="h-20 border-b border-black mb-1"></div>
+                        <p class="text-xs text-center">{{ $lang == 'cebuano' ? 'Pirma sa Ginikanan / Guardian\'s Signature' : 'Guardian\'s Signature' }}</p>
+                    </div>
+                    <div class="border border-black p-2">
+                        <p class="text-xs font-bold text-center border-b border-black pb-1 mb-2">{{ $lang == 'cebuano' ? 'Third Quarter (Semana 21-30)' : 'Third Quarter (Weeks 21-30)' }}</p>
+                        <div class="h-20 border-b border-black mb-1"></div>
+                        <p class="text-xs text-center">{{ $lang == 'cebuano' ? 'Pirma sa Ginikanan / Guardian\'s Signature' : 'Guardian\'s Signature' }}</p>
+                    </div>
+                    <div class="border border-black p-2">
+                        <p class="text-xs font-bold text-center border-b border-black pb-1 mb-2">{{ $lang == 'cebuano' ? 'Fourth Quarter (Semana 31-40)' : 'Fourth Quarter (Weeks 31-40)' }}</p>
+                        <div class="h-20 border-b border-black mb-1"></div>
+                        <p class="text-xs text-center">{{ $lang == 'cebuano' ? 'Pirma sa Ginikanan / Guardian\'s Signature' : 'Guardian\'s Signature' }}</p>
+                    </div>
+                </div>
+                
+                <!-- Certification for Kindergarten -->
+                <div class="border border-black p-3 mb-3">
+                    <p class="text-xs leading-relaxed">
+                        @if($lang == 'cebuano')
+                            Gipasabot niini nga si <strong class="underline">{{ $user->first_name ?? '' }} {{ $user->middle_name ?? '' }} {{ $user->last_name ?? '' }}</strong> 
+                            sa <strong>{{ $section->name ?? '' }}</strong> niini nga tulunghaan, nakalampos sa Kindergarten Curriculum Guide.
+                        @else
+                            This certifies that <strong class="underline">{{ $user->first_name ?? '' }} {{ $user->middle_name ?? '' }} {{ $user->last_name ?? '' }}</strong> 
+                            of <strong>{{ $section->name ?? '' }}</strong> has completed the Kindergarten Curriculum Guide.
+                        @endif
+                    </p>
+                    <div class="mt-4 flex justify-between">
+                        <div class="text-center">
+                            <div class="border-t border-black pt-1 w-48">
+                                <p class="font-bold uppercase text-xs">{{ $adviserName ?? '_________________' }}</p>
+                                <p class="text-xs">{{ $lang == 'cebuano' ? 'Magtutudlo / Teacher' : 'Teacher' }}</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="border-t border-black pt-1 w-48">
+                                <p class="font-bold uppercase text-xs">{{ $schoolHead ?? '_________________' }}</p>
+                                <p class="text-xs">{{ $lang == 'cebuano' ? 'Principal / School Head' : 'School Head' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <!-- GRADES 1-6: Regular Subject Grades -->
+                <div class="section-header">
+                    Report on Learning Progress and Achievement
+                </div>
+                
+                <table class="sf9-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 32%; text-align: left; padding-left: 8px;">Learning Areas</th>
+                            <th colspan="4">Quarterly Rating</th>
+                            <th rowspan="2" style="width: 12%;">Final Rating</th>
+                            <th rowspan="2" style="width: 12%;">Remarks</th>
+                        </tr>
+                        <tr>
+                            <th style="width: 9%;">1st</th>
+                            <th style="width: 9%;">2nd</th>
+                            <th style="width: 9%;">3rd</th>
+                            <th style="width: 9%;">4th</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($subjectGrades as $subjectGrade)
+                        <tr>
+                            <td class="text-left pl-2 text-sm" style="font-size: 9pt;">{{ $subjectGrade['subject_name'] }}</td>
+                            <td>{{ $subjectGrade['quarter_1'] ?: '' }}</td>
+                            <td>{{ $subjectGrade['quarter_2'] ?: '' }}</td>
+                            <td>{{ $subjectGrade['quarter_3'] ?: '' }}</td>
+                            <td>{{ $subjectGrade['quarter_4'] ?: '' }}</td>
+                            <td class="font-bold {{ $subjectGrade['final_grade'] >= 75 ? '' : 'grade-failed' }}">
+                                {{ $subjectGrade['final_grade'] ?: '' }}
+                            </td>
+                            <td class="{{ $subjectGrade['remarks'] == 'Failed' ? 'grade-failed' : '' }}">
+                                {{ $subjectGrade['remarks'] ?: '' }}
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="py-6 text-gray-500 text-center">
+                                No subjects found for this grade level.
+                            </td>
+                        </tr>
+                        @endforelse
+
+                        @if($generalAverage !== null)
+                        <tr style="background: #f3f4f6; font-weight: bold;">
+                            <td colspan="5" class="text-right pr-4" style="font-size: 9pt;">GENERAL AVERAGE</td>
+                            <td class="{{ $generalAverage >= 75 ? '' : 'grade-failed' }}">{{ $generalAverage }}</td>
+                            <td class="{{ $generalAverage >= 75 ? '' : 'grade-failed' }}">
+                                {{ $generalAverage >= 75 ? 'Passed' : 'Failed' }}
+                            </td>
+                        </tr>
+                        @endif
+                    </tbody>
+                </table>
+
+                <!-- Descriptors and Grading Scale -->
+                <div class="two-column">
+                    <div class="border border-black p-2">
+                        <h4 class="font-bold text-xs mb-2 uppercase text-center border-b border-black pb-1">Descriptors & Grading Scale</h4>
+                        <table class="grading-scale-table">
+                            <tbody>
+                                <tr>
+                                    <td class="text-left">Outstanding</td>
+                                    <td class="text-center font-bold">90-100</td>
+                                    <td class="text-center">Passed</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-left">Very Satisfactory</td>
+                                    <td class="text-center font-bold">85-89</td>
+                                    <td class="text-center">Passed</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-left">Satisfactory</td>
+                                    <td class="text-center font-bold">80-84</td>
+                                    <td class="text-center">Passed</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-left">Fairly Satisfactory</td>
+                                    <td class="text-center font-bold">75-79</td>
+                                    <td class="text-center">Passed</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-left">Did Not Meet Expectations</td>
+                                    <td class="text-center font-bold">Below 75</td>
+                                    <td class="text-center font-bold">Failed</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="border border-black p-2 flex flex-col justify-center">
+                        <p class="text-xs italic text-center leading-relaxed">
+                            "This report card shows the ability and progress your child has made in different learning areas as well as their growth in core values. The school welcomes you should you desire to know more about your child's progress."
+                        </p>
+                    </div>
+                </div>
+            @endif
 
        <!-- Report on Learner's Observed Values -->
 <div class="section-header">
@@ -777,83 +912,164 @@ $getBehaviorStatement = function($coreValue, $statementKey) use ($sortedCoreValu
 
             <!-- Attendance Record -->
             <div class="section-header">
-                Report on Attendance
+                @if($isKindergarten)
+                    {{ $lang == 'cebuano' ? 'Rekord sa Pag-anhi (Attendance Record)' : 'Attendance Record' }}
+                @else
+                    Report on Attendance
+                @endif
             </div>
             
-            @php
-                $months = ['JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR', 'APR', 'MAY'];
-                $attendanceData = [];
-                $totalPresent = 0;
-                $totalAbsent = 0;
-                $totalLate = 0;
-                $totalSchoolDays = 0;
-                
-                foreach ($months as $month) {
-                    $monthAttendances = $attendances->filter(function($a) use ($month) {
-                        return strtoupper(date('M', strtotime($a->date))) === $month;
-                    });
+            @if($isKindergarten)
+                @php
+                    // Kindergarten now uses monthly attendance like Grades 1-6
+                    $months = ['JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR', 'APR', 'MAY'];
+                    $attendanceData = [];
+                    $totalPresent = 0;
+                    $totalAbsent = 0;
+                    $totalLate = 0;
+                    $totalSchoolDays = 0;
                     
-                    $present = $monthAttendances->where('status', 'present')->count();
-                    $absent = $monthAttendances->where('status', 'absent')->count();
-                    $late = $monthAttendances->where('status', 'late')->count();
-                    $schoolDays = $present + $absent + $late;
+                    foreach ($months as $month) {
+                        $monthAttendances = $attendances->filter(function($a) use ($month) {
+                            return strtoupper(date('M', strtotime($a->date))) === $month;
+                        });
+                        
+                        $present = $monthAttendances->where('status', 'present')->count();
+                        $absent = $monthAttendances->where('status', 'absent')->count();
+                        $late = $monthAttendances->where('status', 'late')->count();
+                        $schoolDays = $present + $absent + $late;
+                        
+                        $attendanceData[$month] = [
+                            'days' => $schoolDays > 0 ? $schoolDays : '',
+                            'present' => $present > 0 ? $present : '',
+                            'absent' => $absent > 0 ? $absent : '',
+                            'late' => $late > 0 ? $late : ''
+                        ];
+                        
+                        $totalPresent += $present;
+                        $totalAbsent += $absent;
+                        $totalLate += $late;
+                        $totalSchoolDays += $schoolDays;
+                    }
+                @endphp
+                <table class="sf9-table attendance-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left pl-2" style="width: 20%;">{{ $lang == 'cebuano' ? 'Bulan / Month' : 'Month' }}</th>
+                            @foreach($months as $month)
+                                <th style="width: 6%;">{{ $month }}</th>
+                            @endforeach
+                            <th style="width: 8%;">{{ $lang == 'cebuano' ? 'Total' : 'Total' }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">{{ $lang == 'cebuano' ? 'Adlaw sa Eskwelahan / No. of School Days' : 'No. of School Days' }}</td>
+                            @foreach($months as $month)
+                                <td>{{ $attendanceData[$month]['days'] }}</td>
+                            @endforeach
+                            <td class="font-bold">{{ $totalSchoolDays > 0 ? $totalSchoolDays : '' }}</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">{{ $lang == 'cebuano' ? 'Adlaw nga Mi-anhi / No. of Days Present' : 'No. of Days Present' }}</td>
+                            @foreach($months as $month)
+                                <td>{{ $attendanceData[$month]['present'] }}</td>
+                            @endforeach
+                            <td class="font-bold">{{ $totalPresent > 0 ? $totalPresent : '' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">{{ $lang == 'cebuano' ? 'Adlaw nga Wala / No. of Days Absent' : 'No. of Days Absent' }}</td>
+                            @foreach($months as $month)
+                                <td>{{ $attendanceData[$month]['absent'] }}</td>
+                            @endforeach
+                            <td class="font-bold">{{ $totalAbsent > 0 ? $totalAbsent : '' }}</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">{{ $lang == 'cebuano' ? 'Adlaw nga Niulahi / No. of Times Tardy' : 'No. of Times Tardy' }}</td>
+                            @foreach($months as $month)
+                                <td>{{ $attendanceData[$month]['late'] }}</td>
+                            @endforeach
+                            <td class="font-bold">{{ $totalLate > 0 ? $totalLate : '' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            @else
+                @php
+                    $months = ['JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR', 'APR', 'MAY'];
+                    $attendanceData = [];
+                    $totalPresent = 0;
+                    $totalAbsent = 0;
+                    $totalLate = 0;
+                    $totalSchoolDays = 0;
                     
-                    $attendanceData[$month] = [
-                        'days' => $schoolDays > 0 ? $schoolDays : '',
-                        'present' => $present > 0 ? $present : '',
-                        'absent' => $absent > 0 ? $absent : '',
-                        'late' => $late > 0 ? $late : ''
-                    ];
-                    
-                    $totalPresent += $present;
-                    $totalAbsent += $absent;
-                    $totalLate += $late;
-                    $totalSchoolDays += $schoolDays;
-                }
-            @endphp
+                    foreach ($months as $month) {
+                        $monthAttendances = $attendances->filter(function($a) use ($month) {
+                            return strtoupper(date('M', strtotime($a->date))) === $month;
+                        });
+                        
+                        $present = $monthAttendances->where('status', 'present')->count();
+                        $absent = $monthAttendances->where('status', 'absent')->count();
+                        $late = $monthAttendances->where('status', 'late')->count();
+                        $schoolDays = $present + $absent + $late;
+                        
+                        $attendanceData[$month] = [
+                            'days' => $schoolDays > 0 ? $schoolDays : '',
+                            'present' => $present > 0 ? $present : '',
+                            'absent' => $absent > 0 ? $absent : '',
+                            'late' => $late > 0 ? $late : ''
+                        ];
+                        
+                        $totalPresent += $present;
+                        $totalAbsent += $absent;
+                        $totalLate += $late;
+                        $totalSchoolDays += $schoolDays;
+                    }
+                @endphp
 
-            <table class="sf9-table attendance-table">
-                <thead>
-                    <tr>
-                        <th class="text-left pl-2" style="width: 20%;">Month</th>
-                        @foreach($months as $month)
-                            <th style="width: 6%;">{{ $month }}</th>
-                        @endforeach
-                        <th style="width: 8%;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of School Days</td>
-                        @foreach($months as $month)
-                            <td>{{ $attendanceData[$month]['days'] }}</td>
-                        @endforeach
-                        <td class="font-bold">{{ $totalSchoolDays > 0 ? $totalSchoolDays : '' }}</td>
-                    </tr>
-                    <tr style="background: #f9fafb;">
-                        <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of Days Present</td>
-                        @foreach($months as $month)
-                            <td>{{ $attendanceData[$month]['present'] }}</td>
-                        @endforeach
-                        <td class="font-bold">{{ $totalPresent > 0 ? $totalPresent : '' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of Days Absent</td>
-                        @foreach($months as $month)
-                            <td>{{ $attendanceData[$month]['absent'] }}</td>
-                        @endforeach
-                        <td class="font-bold">{{ $totalAbsent > 0 ? $totalAbsent : '' }}</td>
-                    </tr>
-                    <tr style="background: #f9fafb;">
-                        <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of Times Tardy</td>
-                        @foreach($months as $month)
-                            <td>{{ $attendanceData[$month]['late'] }}</td>
-                        @endforeach
-                        <td class="font-bold">{{ $totalLate > 0 ? $totalLate : '' }}</td>
-                    </tr>
-                </tbody>
-            </table>
+                <table class="sf9-table attendance-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left pl-2" style="width: 20%;">Month</th>
+                            @foreach($months as $month)
+                                <th style="width: 6%;">{{ $month }}</th>
+                            @endforeach
+                            <th style="width: 8%;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of School Days</td>
+                            @foreach($months as $month)
+                                <td>{{ $attendanceData[$month]['days'] }}</td>
+                            @endforeach
+                            <td class="font-bold">{{ $totalSchoolDays > 0 ? $totalSchoolDays : '' }}</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of Days Present</td>
+                            @foreach($months as $month)
+                                <td>{{ $attendanceData[$month]['present'] }}</td>
+                            @endforeach
+                            <td class="font-bold">{{ $totalPresent > 0 ? $totalPresent : '' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of Days Absent</td>
+                            @foreach($months as $month)
+                                <td>{{ $attendanceData[$month]['absent'] }}</td>
+                            @endforeach
+                            <td class="font-bold">{{ $totalAbsent > 0 ? $totalAbsent : '' }}</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td class="text-left font-bold pl-2" style="font-size: 8.5pt;">No. of Times Tardy</td>
+                            @foreach($months as $month)
+                                <td>{{ $attendanceData[$month]['late'] }}</td>
+                            @endforeach
+                            <td class="font-bold">{{ $totalLate > 0 ? $totalLate : '' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            @endif
 
+            @if(!$isKindergarten)
             <!-- Parent/Guardian Signature -->
             <div class="parent-sig-box">
                 <h4 class="font-bold text-xs mb-2 uppercase">Parent/Guardian's Signature</h4>
@@ -927,6 +1143,7 @@ $getBehaviorStatement = function($coreValue, $statementKey) use ($sortedCoreValu
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Footer -->
             <div class="sf9-footer">

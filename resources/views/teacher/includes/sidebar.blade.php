@@ -152,6 +152,23 @@ $sections = $teacher
                             </a>
                         </li>
                     @endforeach
+                    
+                    <!-- Kindergarten Assessment (only show if teacher has kinder sections) -->
+                    @php
+                        $hasKinderSection = $sections->contains(function($section) {
+                            return stripos($section->gradeLevel->name ?? '', 'kinder') !== false;
+                        });
+                    @endphp
+                    @if($hasKinderSection)
+                        <li>
+                            <a href="{{ route('teacher.kindergarten.assessment') }}" 
+                               class="block px-3 py-2 rounded-lg text-sm transition flex items-center gap-2
+                               {{ request()->routeIs('teacher.kindergarten.assessment') ? 'bg-indigo-100 text-indigo-600 font-medium' : 'text-slate-500 hover:text-indigo-600' }}">
+                                <i class="fas fa-child text-xs"></i>
+                                Kinder Assessment
+                            </a>
+                        </li>
+                    @endif
                 </ul>
             </li>
 

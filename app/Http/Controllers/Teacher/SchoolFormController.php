@@ -16,17 +16,22 @@ use App\Models\Enrollment;
 use App\Models\SchoolYear;
 use App\Models\Setting;
 use App\Models\CoreValue;
+use App\Models\KindergartenDomain;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Book;
 use App\Models\BookInventory;
 use App\Models\TeachingProgram;
 use App\Models\StudentHealthRecord;
-
-
+use App\Services\FinalizationService;
 
 class SchoolFormController extends Controller
 {
+    protected $finalizationService;
 
+    public function __construct(FinalizationService $finalizationService)
+    {
+        $this->finalizationService = $finalizationService;
+    }
 
     /**
      * Get logged-in teacher sections
@@ -1555,6 +1560,15 @@ public function sf9(Request $request)
     $schoolDistrict = $schoolSettings['school_district'] ?? '';
     $schoolHead = $schoolSettings['school_head'] ?? '';
     
+    // Language setting for Kindergarten (cebuano or english) - persisted in session
+    if ($request->has('lang')) {
+        $lang = $request->get('lang');
+        if (in_array($lang, ['cebuano', 'english'])) {
+            session(['kindergarten_lang' => $lang]);
+        }
+    }
+    $lang = session('kindergarten_lang', 'cebuano');
+    
     // Get all students from teacher's sections
     $students = collect();
     foreach ($sections as $section) {
@@ -1595,8 +1609,14 @@ public function sf9(Request $request)
     $attendances = collect();
     $generalAverage = null;
     $coreValues = collect();
+    $kindergartenDomains = collect();
+    $isKindergarten = false;
     
     if ($selectedStudent) {
+        // Check if student is in Kindergarten
+        $gradeLevelName = $selectedStudent->section->gradeLevel->name ?? '';
+        $isKindergarten = (stripos($gradeLevelName, 'kinder') !== false);
+        
         // Get attendance records
         $attendances = Attendance::where('student_id', $selectedStudent->id)
             ->where('school_year_id', $activeSchoolYear->id)
@@ -1608,61 +1628,69 @@ public function sf9(Request $request)
             ->get()
             ->groupBy(['core_value', 'statement_key']);
         
-        // Build subject grades array from grade level subjects
-        $gradeLevelSubjects = $selectedStudent->section->gradeLevel->subjects ?? collect();
-        
-        $totalFinalGrade = 0;
-        $gradedSubjectsCount = 0;
-        
-        foreach ($gradeLevelSubjects as $subject) {
-            // Get all final_grade records for this subject (quarters 1-4 and year-end)
-            $allGrades = Grade::where([
-                'student_id' => $selectedStudent->id,
-                'subject_id' => $subject->id,
-                'school_year_id' => $activeSchoolYear->id,
-                'component_type' => 'final_grade',
-            ])->get()->keyBy('quarter');
+        if ($isKindergarten) {
+            // Get kindergarten developmental domains
+            $kindergartenDomains = KindergartenDomain::where('student_id', $selectedStudent->id)
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->get()
+                ->groupBy(['domain', 'indicator_key']);
+        } else {
+            // Regular Grades 1-6 - Build subject grades array from grade level subjects
+            $gradeLevelSubjects = $selectedStudent->section->gradeLevel->subjects ?? collect();
             
-            // Extract quarter grades (quarter 1-4)
-            $q1 = $allGrades->get(1)?->final_grade;
-            $q2 = $allGrades->get(2)?->final_grade;
-            $q3 = $allGrades->get(3)?->final_grade;
-            $q4 = $allGrades->get(4)?->final_grade;
+            $totalFinalGrade = 0;
+            $gradedSubjectsCount = 0;
             
-            // Get year-end final grade (quarter = NULL or 0)
-            $yearEndGrade = $allGrades->get(null)?->final_grade ?? $allGrades->get(0)?->final_grade;
-            
-            // If no year-end grade, calculate average of available quarters
-            $finalGrade = $yearEndGrade;
-            if (!$finalGrade) {
-                $quarters = array_filter([$q1, $q2, $q3, $q4], fn($q) => $q !== null);
-                if (count($quarters) > 0) {
-                    $finalGrade = round(array_sum($quarters) / count($quarters));
+            foreach ($gradeLevelSubjects as $subject) {
+                // Get all final_grade records for this subject (quarters 1-4 and year-end)
+                $allGrades = Grade::where([
+                    'student_id' => $selectedStudent->id,
+                    'subject_id' => $subject->id,
+                    'school_year_id' => $activeSchoolYear->id,
+                    'component_type' => 'final_grade',
+                ])->get()->keyBy('quarter');
+                
+                // Extract quarter grades (quarter 1-4)
+                $q1 = $allGrades->get(1)?->final_grade;
+                $q2 = $allGrades->get(2)?->final_grade;
+                $q3 = $allGrades->get(3)?->final_grade;
+                $q4 = $allGrades->get(4)?->final_grade;
+                
+                // Get year-end final grade (quarter = NULL or 0)
+                $yearEndGrade = $allGrades->get(null)?->final_grade ?? $allGrades->get(0)?->final_grade;
+                
+                // If no year-end grade, calculate average of available quarters
+                $finalGrade = $yearEndGrade;
+                if (!$finalGrade) {
+                    $quarters = array_filter([$q1, $q2, $q3, $q4], fn($q) => $q !== null);
+                    if (count($quarters) > 0) {
+                        $finalGrade = round(array_sum($quarters) / count($quarters));
+                    }
                 }
+                
+                $remarks = '';
+                if ($finalGrade !== null) {
+                    $remarks = $finalGrade >= 75 ? 'Passed' : 'Failed';
+                    $totalFinalGrade += $finalGrade;
+                    $gradedSubjectsCount++;
+                }
+                
+                $subjectGrades->push([
+                    'subject_id' => $subject->id,
+                    'subject_name' => $subject->name,
+                    'subject_code' => $subject->code,
+                    'quarter_1' => $q1,
+                    'quarter_2' => $q2,
+                    'quarter_3' => $q3,
+                    'quarter_4' => $q4,
+                    'final_grade' => $finalGrade,
+                    'remarks' => $remarks,
+                ]);
             }
             
-            $remarks = '';
-            if ($finalGrade !== null) {
-                $remarks = $finalGrade >= 75 ? 'Passed' : 'Failed';
-                $totalFinalGrade += $finalGrade;
-                $gradedSubjectsCount++;
-            }
-            
-            $subjectGrades->push([
-                'subject_id' => $subject->id,
-                'subject_name' => $subject->name,
-                'subject_code' => $subject->code,
-                'quarter_1' => $q1,
-                'quarter_2' => $q2,
-                'quarter_3' => $q3,
-                'quarter_4' => $q4,
-                'final_grade' => $finalGrade,
-                'remarks' => $remarks,
-            ]);
+            // Calculate general average
+            $generalAverage = $gradedSubjectsCount > 0 ? round($totalFinalGrade / $gradedSubjectsCount) : null;
         }
-        
-        // Calculate general average
-        $generalAverage = $gradedSubjectsCount > 0 ? round($totalFinalGrade / $gradedSubjectsCount) : null;
     }
 
     return view('teacher.school-forms.sf9', compact(
@@ -1673,6 +1701,9 @@ public function sf9(Request $request)
         'generalAverage',
         'attendances',
         'coreValues',
+        'kindergartenDomains',
+        'isKindergarten',
+        'lang',
         'schoolYear',
         'activeSchoolYear',
         'schoolId',
@@ -1716,6 +1747,15 @@ public function sf10(Request $request)
     $schoolRegion = $schoolSettings['school_region'] ?? '';
     $schoolDistrict = $schoolSettings['school_district'] ?? '';
     $schoolHead = $schoolSettings['school_head'] ?? '';
+    
+    // Language setting for Kindergarten (cebuano or english) - persisted in session
+    if ($request->has('lang')) {
+        $lang = $request->get('lang');
+        if (in_array($lang, ['cebuano', 'english'])) {
+            session(['kindergarten_lang' => $lang]);
+        }
+    }
+    $lang = session('kindergarten_lang', 'cebuano');
 
     // Get all students from teacher's sections
     $students = collect();
@@ -1765,6 +1805,7 @@ public function sf10(Request $request)
     $subjectsByGrade = [];
     $historicalGrades = [];
     $schoolHistory = [];
+    $kinderDomainsByGrade = []; // Store kindergarten domain data
 
     if ($selectedStudent) {
         // Get all grade levels from the database
@@ -1775,58 +1816,53 @@ public function sf10(Request $request)
 
         foreach ($allGradeLevels as $gradeLevelName) {
             $gradeLevel = $gradeLevels[$gradeLevelName] ?? null;
+            $isKindergartenGrade = (stripos($gradeLevelName, 'kinder') !== false);
             
-            if ($gradeLevel) {
-                // Get subjects for this grade level
-                $subjectsByGrade[$gradeLevelName] = Subject::where('grade_level_id', $gradeLevel->id)
-                    ->orderBy('name')
-                    ->get();
+            if ($isKindergartenGrade) {
+                // For Kindergarten, load developmental domains
+                $kinderDomains = KindergartenDomain::where('student_id', $selectedStudent->id)
+                    ->where('school_year_id', $activeSchoolYear->id)
+                    ->get()
+                    ->groupBy(['domain', 'indicator_key']);
+                
+                $kinderDomainsByGrade[$gradeLevelName] = $kinderDomains;
+                $subjectsByGrade[$gradeLevelName] = collect(); // No subjects for kinder
+                $historicalGrades[$gradeLevelName] = collect();
             } else {
-                $subjectsByGrade[$gradeLevelName] = collect();
+                // For Grades 1-6, load subjects and grades
+                if ($gradeLevel) {
+                    $subjectsByGrade[$gradeLevelName] = Subject::where('grade_level_id', $gradeLevel->id)
+                        ->orderBy('name')
+                        ->get();
+                } else {
+                    $subjectsByGrade[$gradeLevelName] = collect();
+                }
+
+                // Get grades for this student in this grade level
+                $grades = Grade::with(['subject', 'section.gradeLevel'])
+                    ->where('student_id', $selectedStudent->id)
+                    ->where('school_year_id', $activeSchoolYear->id)
+                    ->whereHas('section.gradeLevel', function ($q) use ($gradeLevelName) {
+                        $q->where('name', $gradeLevelName);
+                    })
+                    ->where('component_type', 'final_grade')
+                    ->get();
+
+                // Group grades by subject_id and quarter for easy access
+                $groupedGrades = $grades->groupBy('subject_id')->map(function($subjectGrades) {
+                    return $subjectGrades->keyBy('quarter');
+                });
+
+                $historicalGrades[$gradeLevelName] = $groupedGrades;
+                $kinderDomainsByGrade[$gradeLevelName] = collect();
             }
 
-            // Get grades for this student in this grade level
-            $grades = Grade::with(['subject', 'section.gradeLevel'])
-                ->where('student_id', $selectedStudent->id)
-                ->where('school_year_id', $activeSchoolYear->id)
-                ->whereHas('section.gradeLevel', function ($q) use ($gradeLevelName) {
-                    $q->where('name', $gradeLevelName);
-                })
-                ->where('component_type', 'final_grade')
-                ->get();
-
-            // Group grades by subject_id and quarter for easy access
-            $groupedGrades = $grades->groupBy('subject_id')->map(function($subjectGrades) {
-                return $subjectGrades->keyBy('quarter');
-            });
-
-            $historicalGrades[$gradeLevelName] = $groupedGrades;
-
             // Build school history for this grade level
-            $gradeRecord = $grades->first();
-            if ($gradeRecord && $gradeRecord->section) {
-                $sectionTeacher = $gradeRecord->section->teacher;
-                $teacherFullName = '';
-                if ($sectionTeacher && $sectionTeacher->user) {
-                    $tUser = $sectionTeacher->user;
-                    $teacherFullName = ($tUser->last_name ?? '') . ', ' . 
-                                     ($tUser->first_name ?? '') . ' ' . 
-                                     ($tUser->middle_name ?? '');
-                    $teacherFullName = trim($teacherFullName) ?: ($tUser->name ?? '');
-                }
+            if ($isKindergartenGrade) {
+                $kinderRecord = KindergartenDomain::where('student_id', $selectedStudent->id)
+                    ->where('school_year_id', $activeSchoolYear->id)
+                    ->first();
                 
-                $schoolHistory[$gradeLevelName] = (object)[
-                    'school_name' => $schoolName,
-                    'school_id' => $schoolId,
-                    'district' => $schoolDistrict,
-                    'division' => $schoolDivision,
-                    'region' => $schoolRegion,
-                    'section' => $gradeRecord->section->name ?? '',
-                    'school_year' => $schoolYear,
-                    'adviser' => $teacherFullName
-                ];
-            } else {
-                // Use current section info if this is the current grade level
                 $isCurrentGrade = ($gradeLevelName === $currentGradeLevel);
                 $schoolHistory[$gradeLevelName] = (object)[
                     'school_name' => $schoolName,
@@ -1838,6 +1874,46 @@ public function sf10(Request $request)
                     'school_year' => $isCurrentGrade ? $schoolYear : '',
                     'adviser' => $isCurrentGrade ? $adviserName : ''
                 ];
+            } else {
+                // Get first grade record to extract section info
+                // $historicalGrades is grouped by subject_id, then by quarter
+                $subjectGrades = $historicalGrades[$gradeLevelName]->first();
+                $gradeRecord = $subjectGrades ? $subjectGrades->first() : null;
+                
+                if ($gradeRecord && $gradeRecord->section) {
+                    $sectionTeacher = $gradeRecord->section->teacher;
+                    $teacherFullName = '';
+                    if ($sectionTeacher && $sectionTeacher->user) {
+                        $tUser = $sectionTeacher->user;
+                        $teacherFullName = ($tUser->last_name ?? '') . ', ' . 
+                                         ($tUser->first_name ?? '') . ' ' . 
+                                         ($tUser->middle_name ?? '');
+                        $teacherFullName = trim($teacherFullName) ?: ($tUser->name ?? '');
+                    }
+                    
+                    $schoolHistory[$gradeLevelName] = (object)[
+                        'school_name' => $schoolName,
+                        'school_id' => $schoolId,
+                        'district' => $schoolDistrict,
+                        'division' => $schoolDivision,
+                        'region' => $schoolRegion,
+                        'section' => $gradeRecord->section->name ?? '',
+                        'school_year' => $schoolYear,
+                        'adviser' => $teacherFullName
+                    ];
+                } else {
+                    $isCurrentGrade = ($gradeLevelName === $currentGradeLevel);
+                    $schoolHistory[$gradeLevelName] = (object)[
+                        'school_name' => $schoolName,
+                        'school_id' => $schoolId,
+                        'district' => $schoolDistrict,
+                        'division' => $schoolDivision,
+                        'region' => $schoolRegion,
+                        'section' => $isCurrentGrade ? ($selectedStudent->section->name ?? '') : '',
+                        'school_year' => $isCurrentGrade ? $schoolYear : '',
+                        'adviser' => $isCurrentGrade ? $adviserName : ''
+                    ];
+                }
             }
         }
     }
@@ -1849,6 +1925,7 @@ public function sf10(Request $request)
         'subjectsByGrade',
         'historicalGrades',
         'schoolHistory',
+        'kinderDomainsByGrade',
         'schoolYear',
         'activeSchoolYear',
         'schoolId',
@@ -1858,7 +1935,242 @@ public function sf10(Request $request)
         'schoolDistrict',
         'schoolHead',
         'currentGradeLevel',
-        'allGradeLevels'
+        'allGradeLevels',
+        'lang'
     ));
 }
+
+    /**
+     * Kindergarten Developmental Domain Assessment
+     */
+    public function kindergartenAssessment(Request $request)
+    {
+        $sections = $this->getTeacherSections();
+        
+        // Get active school year
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            $activeSchoolYear = SchoolYear::latest('start_date')->first();
+        }
+        
+        // Filter sections to only show Kindergarten sections
+        $kinderSections = $sections->filter(function($section) {
+            $gradeName = $section->gradeLevel->name ?? '';
+            return stripos($gradeName, 'kinder') !== false;
+        });
+        
+        // Get selected section
+        $selectedSection = $request->section_id
+            ? Section::with(['gradeLevel', 'students.user'])->find($request->section_id)
+            : $kinderSections->first();
+        
+        // Get selected student
+        $selectedStudent = null;
+        if ($request->student_id) {
+            $selectedStudent = Student::with(['user', 'section.gradeLevel'])->find($request->student_id);
+        } elseif ($selectedSection && $selectedSection->students->isNotEmpty()) {
+            $selectedStudent = $selectedSection->students->first();
+        }
+        
+        // Get selected quarter (default to 1)
+        $selectedQuarter = $request->quarter ?? 1;
+        
+        // Language setting - persisted in session
+        if ($request->has('lang')) {
+            $lang = $request->get('lang');
+            if (in_array($lang, ['cebuano', 'english'])) {
+                session(['kindergarten_lang' => $lang]);
+            }
+        }
+        $lang = session('kindergarten_lang', 'cebuano');
+        
+        // Get kindergarten config
+        $kinderConfig = config('kindergarten.domains');
+        $ratingScale = config('kindergarten.rating_scale');
+        
+        // Get existing ratings for this student and quarter
+        $existingRatings = collect();
+        if ($selectedStudent) {
+            $existingRatings = KindergartenDomain::where('student_id', $selectedStudent->id)
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->where('quarter', $selectedQuarter)
+                ->get()
+                ->keyBy(function($item) {
+                    return $item->domain . '.' . $item->indicator_key;
+                });
+        }
+        
+        // Get students for dropdown
+        $students = collect();
+        if ($selectedSection) {
+            $students = Student::with('user')
+                ->where('section_id', $selectedSection->id)
+                ->whereHas('enrollments', function($q) use ($activeSchoolYear) {
+                    $q->where('school_year_id', $activeSchoolYear->id)
+                      ->where('status', 'enrolled');
+                })
+                ->whereNotIn('status', ['completed', 'inactive'])
+                ->orderBy('created_at')
+                ->get();
+        }
+        
+        // Check finalization status for the selected section
+        $isEditable = true;
+        $finalization = null;
+        if ($selectedSection && $activeSchoolYear) {
+            $finalization = $this->finalizationService->getOrCreateFinalization(
+                $selectedSection->id, 
+                $activeSchoolYear->id
+            );
+            $isEditable = !$finalization->is_locked && !$finalization->grades_finalized;
+        }
+        
+        return view('teacher.school-forms.kindergarten-assessment', compact(
+            'kinderSections',
+            'selectedSection',
+            'students',
+            'selectedStudent',
+            'selectedQuarter',
+            'kinderConfig',
+            'ratingScale',
+            'existingRatings',
+            'activeSchoolYear',
+            'lang',
+            'isEditable',
+            'finalization'
+        ));
+    }
+
+    /**
+     * Store Kindergarten Domain Assessment
+     */
+    public function storeKindergartenDomain(Request $request)
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'quarter' => 'required|in:1,2,3,4',
+            'ratings' => 'required|array',
+            'ratings.*.*' => 'nullable|in:B,D,C', // domain_key.indicator_key => rating
+        ]);
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first()
+            ?? SchoolYear::latest('start_date')->first();
+
+        // Check if section is finalized/locked
+        $student = Student::find($validated['student_id']);
+        if ($student && $student->section_id && $activeSchoolYear) {
+            $finalization = $this->finalizationService->getOrCreateFinalization(
+                $student->section_id, 
+                $activeSchoolYear->id
+            );
+            
+            if ($finalization->is_locked || $finalization->grades_finalized) {
+                return back()->with('error', 'Kindergarten assessments have been finalized and are locked. Contact the administrator if you need to make changes.');
+            }
+        }
+
+        $kinderConfig = config('kindergarten.domains');
+        $studentId = $validated['student_id'];
+        $quarter = $validated['quarter'];
+
+        // Process each rating
+        foreach ($validated['ratings'] as $domainKey => $indicators) {
+            foreach ($indicators as $indicatorKey => $rating) {
+                if (empty($rating)) continue;
+
+                // Get the indicator text from config
+                $indicatorText = '';
+                if (isset($kinderConfig[$domainKey]['subdomains'])) {
+                    foreach ($kinderConfig[$domainKey]['subdomains'] as $subdomain) {
+                        if (isset($subdomain['indicators'][$indicatorKey])) {
+                            $indicatorText = $subdomain['indicators'][$indicatorKey];
+                            break 2;
+                        }
+                    }
+                }
+
+                // Update or create the rating
+                KindergartenDomain::updateOrCreate(
+                    [
+                        'student_id' => $studentId,
+                        'domain' => $domainKey,
+                        'indicator_key' => $indicatorKey,
+                        'quarter' => $quarter,
+                        'school_year_id' => $activeSchoolYear->id,
+                    ],
+                    [
+                        'indicator' => $indicatorText,
+                        'rating' => $rating,
+                        'recorded_by' => auth()->id(),
+                    ]
+                );
+            }
+        }
+
+        // Preserve language preference in redirect
+        $lang = session('kindergarten_lang', 'cebuano');
+        
+        return redirect()
+            ->route('teacher.kindergarten.assessment', [
+                'section_id' => $request->section_id,
+                'student_id' => $studentId,
+                'quarter' => $quarter,
+                'lang' => $lang,
+            ])
+            ->with('success', 'Kindergarten assessment saved successfully!');
+    }
+
+    /**
+     * Delete Kindergarten Domain Rating
+     */
+    public function deleteKindergartenDomain(KindergartenDomain $domain)
+    {
+        // Verify the teacher owns this section
+        $teacher = auth()->user()->teacher;
+        $student = Student::find($domain->student_id);
+        
+        if (!$student || $student->section->teacher_id !== $teacher?->id) {
+            abort(403, 'Unauthorized');
+        }
+
+        $domain->delete();
+
+        return back()->with('success', 'Rating deleted successfully.');
+    }
+
+    /**
+     * Finalize Kindergarten Assessments for a section
+     */
+    public function finalizeKindergarten(Request $request, Section $section)
+    {
+        if ($section->teacher_id !== auth()->user()->teacher?->id) {
+            abort(403);
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'No active school year found.']);
+            }
+            return back()->with('error', 'No active school year found.');
+        }
+
+        $result = $this->finalizationService->finalizeKindergarten(
+            $section->id,
+            $activeSchoolYear->id,
+            auth()->id()
+        );
+
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json($result);
+        }
+
+        // Regular form submission fallback
+        if ($result['success']) {
+            return back()->with('success', $result['message']);
+        } else {
+            return back()->with('error', $result['message'])->with('validation_errors', $result['errors'] ?? []);
+        }
+    }
 }

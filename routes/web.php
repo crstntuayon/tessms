@@ -344,6 +344,12 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
     Route::get('/sf9', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf9'])->name('sf9');
     Route::get('/sf10', [App\Http\Controllers\Teacher\SchoolFormController::class, 'sf10'])->name('sf10');
     
+    // Kindergarten Domain Assessment
+    Route::get('/kindergarten-assessment', [App\Http\Controllers\Teacher\SchoolFormController::class, 'kindergartenAssessment'])->name('kindergarten.assessment');
+    Route::post('/kindergarten-assessment/store', [App\Http\Controllers\Teacher\SchoolFormController::class, 'storeKindergartenDomain'])->name('kindergarten.store');
+    Route::delete('/kindergarten-assessment/{domain}', [App\Http\Controllers\Teacher\SchoolFormController::class, 'deleteKindergartenDomain'])->name('kindergarten.delete');
+    Route::post('/kindergarten-assessment/finalize/{section}', [App\Http\Controllers\Teacher\SchoolFormController::class, 'finalizeKindergarten'])->name('kindergarten.finalize');
+    
     // Seating Chart & Roster
     Route::get('/sections/{section}/seating',
         [App\Http\Controllers\Teacher\SeatingController::class, 'index'])
