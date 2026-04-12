@@ -37,29 +37,61 @@
         </div>
     </div>
 
-    <!-- Alerts -->
-    @if(session('success'))
-    <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex items-start gap-4 animate-fade-in-up">
-        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i class="fas fa-check-circle text-emerald-600 text-xl"></i>
-        </div>
-        <div class="flex-1">
-            <h3 class="font-bold text-emerald-900 text-lg">Success</h3>
-            <p class="text-emerald-700">{{ session('success') }}</p>
+    <!-- Success/Error Modal with Sound -->
+    <div id="actionModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div id="actionModalContent" class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 modal-pop">
+            {{-- Success State --}}
+            <div id="actionModalSuccess" class="hidden">
+                <div class="bg-emerald-50 rounded-t-2xl p-6 border-b border-emerald-100 text-center relative overflow-hidden">
+                    <div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check-circle text-emerald-600 text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-emerald-900">Success!</h3>
+                    <p class="text-sm text-emerald-600 mt-1">Action completed successfully</p>
+                    {{-- Progress bar for countdown --}}
+                    <div id="countdownProgress" class="absolute bottom-0 left-0 h-1 bg-emerald-500 transition-all duration-1000" style="width: 100%;"></div>
+                </div>
+                <div class="p-6 text-center">
+                    <p class="text-slate-600 mb-4" id="actionSuccessMessage">Operation completed.</p>
+                    <button onclick="closeActionModal()" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors">
+                        Continue
+                    </button>
+                </div>
+            </div>
+            
+            {{-- Error State --}}
+            <div id="actionModalError" class="hidden">
+                <div class="bg-red-50 rounded-t-2xl p-6 border-b border-red-100 text-center">
+                    <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-times-circle text-red-600 text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-red-900">Error!</h3>
+                    <p class="text-sm text-red-600 mt-1">Something went wrong</p>
+                </div>
+                <div class="p-6 text-center">
+                    <p class="text-slate-600 mb-4" id="actionErrorMessage">An error occurred.</p>
+                    <button onclick="closeActionModal()" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors">
+                        Try Again
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
+
+    @if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showActionModal('success', '{{ session('success') }}');
+        });
+    </script>
     @endif
 
     @if(session('error'))
-    <div class="mb-6 bg-rose-50 border border-rose-200 rounded-2xl p-5 flex items-start gap-4 animate-fade-in-up">
-        <div class="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i class="fas fa-exclamation-circle text-rose-600 text-xl"></i>
-        </div>
-        <div class="flex-1">
-            <h3 class="font-bold text-rose-900 text-lg">Error</h3>
-            <p class="text-rose-700">{{ session('error') }}</p>
-        </div>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showActionModal('error', '{{ session('error') }}');
+        });
+    </script>
     @endif
 
     @if(session('warning'))
@@ -121,9 +153,15 @@
     <div class="glass-card rounded-2xl p-6 mb-8 animate-fade-in-up" style="animation-delay: 0.4s;">
         <div class="flex items-center justify-between mb-4">
             <h3 class="font-semibold text-slate-900">Finalization Progress</h3>
-            <span class="text-sm font-medium {{ $closure->all_sections_finalized ? 'text-emerald-600' : 'text-amber-600' }}">
-                {{ $closure->finalized_sections }} / {{ $closure->total_sections }} Sections
-            </span>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-slate-400 flex items-center gap-1">
+                    <i class="fas fa-sync-alt fa-spin" id="autoRefreshIcon" style="display:none;"></i>
+                    <span id="lastUpdated">Last updated: {{ now()->format('h:i A') }}</span>
+                </span>
+                <span class="text-sm font-medium {{ $closure->all_sections_finalized ? 'text-emerald-600' : 'text-amber-600' }}">
+                    {{ $closure->finalized_sections }} / {{ $closure->total_sections }} Sections
+                </span>
+            </div>
         </div>
         <div class="w-full bg-slate-200 rounded-full h-4 overflow-hidden">
             <div class="progress-bar h-full rounded-full {{ $closure->all_sections_finalized ? 'bg-gradient-to-r from-emerald-500 to-teal-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500' }}" 
@@ -274,31 +312,58 @@
                             </span>
                         </td>
                         <td class="px-6 py-4">
-                            @if($item['finalization'] && $item['finalization']->is_locked)
-                            <form action="{{ route('admin.school-year.unlock-section') }}" method="POST" class="inline">
-                                @csrf
-                                <input type="hidden" name="section_id" value="{{ $item['section']->id }}">
-                                <input type="hidden" name="school_year_id" value="{{ $activeSchoolYear->id }}">
-                                <button type="button"
-                                        onclick="showUnlockModal({{ $item['section']->id }}, '{{ $item['section']->name }}')"
-                                        class="inline-flex items-center px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg text-xs font-medium transition-colors">
-                                    <i class="fas fa-unlock mr-1"></i> Unlock
-                                </button>
-                            </form>
-                            @elseif($item['finalization'] && $item['finalization']->is_fully_finalized)
-                            <form action="{{ route('admin.school-year.relock-section') }}" method="POST" class="inline">
-                                @csrf
-                                <input type="hidden" name="section_id" value="{{ $item['section']->id }}">
-                                <input type="hidden" name="school_year_id" value="{{ $activeSchoolYear->id }}">
-                                <button type="submit"
-                                        class="inline-flex items-center px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-medium transition-colors"
-                                        onclick="return confirm('Re-lock this section?')">
-                                    <i class="fas fa-lock mr-1"></i> Re-lock
-                                </button>
-                            </form>
-                            @else
-                            <span class="text-xs text-slate-400">-</span>
-                            @endif
+                            <div class="flex flex-wrap gap-1.5">
+                                @if($item['finalization'])
+                                    @php
+                                        $sectionId = $item['section']->id;
+                                        $sectionName = $item['section']->name;
+                                        $grades = $item['finalization']->grades_finalized;
+                                        $attendance = $item['finalization']->attendance_finalized;
+                                        $coreValues = $item['finalization']->core_values_finalized;
+                                        $finalizedCount = ($grades ? 1 : 0) + ($attendance ? 1 : 0) + ($coreValues ? 1 : 0);
+                                    @endphp
+                                    
+                                    {{-- Individual Component Unlock Buttons --}}
+                                    @if($grades)
+                                        <button type="button"
+                                            onclick="unlockComponent({{ $sectionId }}, '{{ addslashes($sectionName) }}', 'grades')"
+                                            class="inline-flex items-center px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg text-xs font-medium transition-colors"
+                                            title="Unlock Grades">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </button>
+                                    @endif
+                                    
+                                    @if($attendance)
+                                        <button type="button"
+                                            onclick="unlockComponent({{ $sectionId }}, '{{ addslashes($sectionName) }}', 'attendance')"
+                                            class="inline-flex items-center px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-xs font-medium transition-colors"
+                                            title="Unlock Attendance">
+                                            <i class="fas fa-calendar-check"></i>
+                                        </button>
+                                    @endif
+                                    
+                                    @if($coreValues)
+                                        <button type="button"
+                                            onclick="unlockComponent({{ $sectionId }}, '{{ addslashes($sectionName) }}', 'core_values')"
+                                            class="inline-flex items-center px-2 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-xs font-medium transition-colors"
+                                            title="Unlock Core Values">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    @endif
+                                    
+                                    {{-- Unlock All Button --}}
+                                    @if($finalizedCount > 1)
+                                        <button type="button"
+                                            onclick="unlockAll({{ $sectionId }}, '{{ addslashes($sectionName) }}', {{ json_encode(['grades' => $grades, 'attendance' => $attendance, 'core_values' => $coreValues]) }})"
+                                            class="inline-flex items-center px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg text-xs font-medium transition-colors"
+                                            title="Unlock All Components">
+                                            <i class="fas fa-unlock-alt mr-1"></i> All
+                                        </button>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-slate-400">-</span>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @empty
@@ -421,46 +486,58 @@
     </div>
 </div>
 
-<!-- Unlock Section Modal -->
-<div id="unlockModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
-        <button onclick="document.getElementById('unlockModal').classList.add('hidden')" 
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+<!-- Unlock Modal System -->
+<div id="unlockModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative m-4">
+        <button type="button" id="unlockModalClose" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
             <i class="fas fa-times text-xl"></i>
         </button>
         
         <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <i class="fas fa-unlock text-amber-600 text-xl"></i>
+            <div id="unlockModalIcon" class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-unlock text-indigo-600 text-xl"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-900">Unlock Section</h3>
+            <div>
+                <h3 id="unlockModalTitle" class="text-xl font-bold text-slate-900">Unlock Component</h3>
+                <p id="unlockModalSubtitle" class="text-sm text-slate-500">Unlock for section</p>
+            </div>
         </div>
         
-        <p class="text-sm text-slate-600 mb-4">
-            Unlocking <strong id="unlockSectionName"></strong> will allow the teacher to edit grades, attendance, and core values again.
-        </p>
+        <div id="unlockModalInfo" class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4">
+            <p class="text-sm text-indigo-800">
+                <i class="fas fa-info-circle mr-2"></i>
+                <span id="unlockModalDescription">You are about to unlock this component.</span>
+            </p>
+            <ul id="unlockModalList" class="hidden text-sm text-indigo-700 mt-2 ml-6 space-y-1">
+                <li data-component="grades"><i class="fas fa-graduation-cap text-emerald-500 mr-1"></i> Grades</li>
+                <li data-component="attendance"><i class="fas fa-calendar-check text-blue-500 mr-1"></i> Attendance</li>
+                <li data-component="core_values"><i class="fas fa-heart text-purple-500 mr-1"></i> Core Values</li>
+            </ul>
+        </div>
         
-        <form id="unlockForm" action="{{ route('admin.school-year.unlock-section') }}" method="POST">
+        <form id="unlockForm" method="POST">
             @csrf
             <input type="hidden" name="section_id" id="unlockSectionId">
             <input type="hidden" name="school_year_id" value="{{ $activeSchoolYear->id }}">
+            <input type="hidden" name="component" id="unlockComponentType">
             
             <div class="mb-6">
-                <label class="block text-sm font-medium text-slate-700 mb-2">Reason <span class="text-rose-500">*</span></label>
-                <textarea name="reason" required rows="3"
-                          class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
-                          placeholder="Enter reason for unlocking..."></textarea>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Reason <span class="text-rose-500">*</span>
+                </label>
+                <textarea name="reason" id="unlockReason" required rows="3"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                    placeholder="Enter reason for unlocking..."></textarea>
             </div>
             
             <div class="flex gap-3">
-                <button type="button" 
-                        onclick="document.getElementById('unlockModal').classList.add('hidden')"
-                        class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors">
+                <button type="button" id="unlockModalCancel"
+                    class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors">
                     Cancel
                 </button>
-                <button type="submit" 
-                        class="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium rounded-xl transition-all">
-                    Unlock Section
+                <button type="submit" id="unlockModalSubmit"
+                    class="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-medium rounded-xl transition-all">
+                    <i class="fas fa-unlock mr-2"></i><span id="unlockSubmitText">Unlock</span>
                 </button>
             </div>
         </form>
@@ -636,11 +713,190 @@
 </div>
 
 <script>
-function showUnlockModal(sectionId, sectionName) {
+// ============================================
+// UNLOCK MODAL SYSTEM - Simple & Working
+// ============================================
+
+const componentConfig = {
+    grades: { name: 'Grades', bg: 'bg-emerald-100', text: 'text-emerald-600', btn: 'from-emerald-500 to-teal-500' },
+    attendance: { name: 'Attendance', bg: 'bg-blue-100', text: 'text-blue-600', btn: 'from-blue-500 to-indigo-500' },
+    core_values: { name: 'Core Values', bg: 'bg-purple-100', text: 'text-purple-600', btn: 'from-purple-500 to-pink-500' }
+};
+
+// Show unlock modal for individual component
+function unlockComponent(sectionId, sectionName, component) {
+    console.log('unlockComponent called:', sectionId, sectionName, component);
+    
+    const config = componentConfig[component];
+    if (!config) {
+        console.error('Unknown component:', component);
+        return;
+    }
+    
+    // Set form values
+    const form = document.getElementById('unlockForm');
+    form.action = '{{ route("admin.school-year.unlock-component") }}';
     document.getElementById('unlockSectionId').value = sectionId;
-    document.getElementById('unlockSectionName').textContent = sectionName;
+    document.getElementById('unlockComponentType').value = component;
+    document.getElementById('unlockReason').value = '';
+    
+    // Update modal content
+    document.getElementById('unlockModalTitle').textContent = 'Unlock ' + config.name;
+    document.getElementById('unlockModalSubtitle').textContent = 'Unlock for ' + sectionName;
+    document.getElementById('unlockModalDescription').innerHTML = 
+        'You are about to unlock <strong>' + config.name + '</strong> for this section. The teacher will be able to edit this component again.';
+    document.getElementById('unlockSubmitText').textContent = 'Unlock ' + config.name;
+    
+    // Style modal
+    const iconDiv = document.getElementById('unlockModalIcon');
+    iconDiv.className = 'w-12 h-12 rounded-xl flex items-center justify-center ' + config.bg;
+    iconDiv.innerHTML = '<i class="fas ' + config.name.toLowerCase().replace(' ', '-') + ' ' + config.text + ' text-xl"></i>';
+    if (component === 'grades') iconDiv.innerHTML = '<i class="fas fa-graduation-cap ' + config.text + ' text-xl"></i>';
+    if (component === 'attendance') iconDiv.innerHTML = '<i class="fas fa-calendar-check ' + config.text + ' text-xl"></i>';
+    if (component === 'core_values') iconDiv.innerHTML = '<i class="fas fa-heart ' + config.text + ' text-xl"></i>';
+    
+    document.getElementById('unlockModalInfo').className = config.bg.replace('100', '50') + ' border rounded-xl p-4 mb-4';
+    document.getElementById('unlockModalSubmit').className = 'flex-1 px-4 py-3 bg-gradient-to-r ' + config.btn + ' hover:opacity-90 text-white font-medium rounded-xl transition-all';
+    
+    // Hide the list
+    document.getElementById('unlockModalList').classList.add('hidden');
+    
+    // Show modal
     document.getElementById('unlockModal').classList.remove('hidden');
+    stopAutoRefresh();
 }
+
+// Show unlock modal for all components
+function unlockAll(sectionId, sectionName, components) {
+    console.log('unlockAll called:', sectionId, sectionName, components);
+    
+    // Set form values
+    const form = document.getElementById('unlockForm');
+    form.action = '{{ route("admin.school-year.unlock-all-components") }}';
+    document.getElementById('unlockSectionId').value = sectionId;
+    document.getElementById('unlockComponentType').value = '';
+    document.getElementById('unlockReason').value = '';
+    
+    // Update modal content
+    document.getElementById('unlockModalTitle').textContent = 'Unlock All Components';
+    document.getElementById('unlockModalSubtitle').textContent = 'Unlock for ' + sectionName;
+    document.getElementById('unlockModalDescription').innerHTML = 'The following finalized components will be unlocked:';
+    document.getElementById('unlockSubmitText').textContent = 'Unlock All';
+    
+    // Style modal for amber
+    document.getElementById('unlockModalIcon').className = 'w-12 h-12 rounded-xl flex items-center justify-center bg-amber-100';
+    document.getElementById('unlockModalIcon').innerHTML = '<i class="fas fa-unlock-alt text-amber-600 text-xl"></i>';
+    document.getElementById('unlockModalInfo').className = 'bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4';
+    document.getElementById('unlockModalSubmit').className = 'flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white font-medium rounded-xl transition-all';
+    
+    // Show list with finalized components
+    const list = document.getElementById('unlockModalList');
+    list.classList.remove('hidden');
+    list.querySelector('li[data-component="grades"]').classList.toggle('hidden', !components.grades);
+    list.querySelector('li[data-component="attendance"]').classList.toggle('hidden', !components.attendance);
+    list.querySelector('li[data-component="core_values"]').classList.toggle('hidden', !components.core_values);
+    
+    // Show modal
+    document.getElementById('unlockModal').classList.remove('hidden');
+    stopAutoRefresh();
+}
+
+// Close unlock modal
+function closeUnlockModal() {
+    document.getElementById('unlockModal').classList.add('hidden');
+    startAutoRefresh();
+}
+
+// Close modal handlers
+document.getElementById('unlockModalClose').addEventListener('click', closeUnlockModal);
+document.getElementById('unlockModalCancel').addEventListener('click', closeUnlockModal);
+document.getElementById('unlockModal').addEventListener('click', function(e) {
+    if (e.target === this) closeUnlockModal();
+});
+
+// Form submission
+const unlockForm = document.getElementById('unlockForm');
+if (unlockForm) {
+    unlockForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const component = formData.get('component');
+        const config = component ? componentConfig[component] : null;
+        
+        closeUnlockModal();
+        
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const data = await response.json().catch(() => ({ 
+                success: true, 
+                message: config ? config.name + ' unlocked successfully!' : 'All components unlocked successfully!' 
+            }));
+            
+            if (data.success) {
+                showActionModal('success', data.message || (config ? config.name + ' unlocked!' : 'All unlocked!'), true);
+            } else {
+                showActionModal('error', data.message || 'Failed to unlock');
+            }
+        } catch (error) {
+            console.error('Unlock error:', error);
+            showActionModal('error', 'Network error. Please try again.');
+        }
+    });
+}
+
+// Auto-refresh page every 30 seconds to show real-time updates
+let autoRefreshInterval;
+let countdownInterval;
+
+function startAutoRefresh() {
+    // Show refresh indicator
+    document.getElementById('autoRefreshIcon').style.display = 'inline-block';
+    
+    autoRefreshInterval = setInterval(() => {
+        // Only refresh if no modal is open
+        const openModals = document.querySelectorAll('.fixed:not(.hidden)');
+        if (openModals.length === 0) {
+            window.location.reload();
+        }
+    }, 30000); // 30 seconds
+    
+    // Update countdown
+    let seconds = 30;
+    countdownInterval = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) seconds = 30;
+    }, 1000);
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+    // Hide refresh indicator
+    document.getElementById('autoRefreshIcon').style.display = 'none';
+}
+
+// Start auto-refresh on page load
+document.addEventListener('DOMContentLoaded', startAutoRefresh);
+
+// Stop auto-refresh when any modal is opened
+document.querySelectorAll('button[onclick*="show"]').forEach(btn => {
+    btn.addEventListener('click', stopAutoRefresh);
+});
+
+
 
 // End School Year Modal Functions
 function showEndSchoolYearModal() {
@@ -729,6 +985,9 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeEndSchoolYearModal();
         document.getElementById('cannotEndModal').classList.add('hidden');
+        document.getElementById('setDeadlineModal').classList.add('hidden');
+        document.getElementById('forceEndModal').classList.add('hidden');
+        closeUnlockModal(); // Use the correct function to close unlock modal
     }
 });
 
@@ -743,5 +1002,204 @@ document.getElementById('cannotEndModal').addEventListener('click', function(e) 
         this.classList.add('hidden');
     }
 });
+// Click-outside-to-close for unlock modal (unlockModal is the actual modal ID)
+document.getElementById('unlockModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeUnlockModal();
+    }
+});
+
+// Sound effects using Web Audio API
+let audioContext = null;
+
+function initAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    return audioContext;
+}
+
+function playSuccessSound() {
+    const ctx = initAudioContext();
+    const now = ctx.currentTime;
+    const duration = 2.0;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1);
+    
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.25, now + 0.05);
+    gain.gain.setValueAtTime(0.25, now + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    
+    osc.start(now);
+    osc.stop(now + duration);
+}
+
+function playErrorSound() {
+    const ctx = initAudioContext();
+    const now = ctx.currentTime;
+    const duration = 2.0;
+    const interval = 0.4;
+    
+    // First beep
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(400, now);
+    gain1.gain.setValueAtTime(0, now);
+    gain1.gain.linearRampToValueAtTime(0.25, now + 0.02);
+    gain1.gain.setValueAtTime(0.25, now + 0.1);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + interval);
+    osc1.start(now);
+    osc1.stop(now + interval);
+    
+    // Second beep
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(300, now + interval);
+    gain2.gain.setValueAtTime(0, now + interval);
+    gain2.gain.linearRampToValueAtTime(0.25, now + interval + 0.02);
+    gain2.gain.setValueAtTime(0.25, now + interval + 0.1);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + interval * 2);
+    osc2.start(now + interval);
+    osc2.stop(now + interval * 2);
+    
+    // Third beep
+    const osc3 = ctx.createOscillator();
+    const gain3 = ctx.createGain();
+    osc3.connect(gain3);
+    gain3.connect(ctx.destination);
+    
+    osc3.type = 'sine';
+    osc3.frequency.setValueAtTime(200, now + interval * 2);
+    gain3.gain.setValueAtTime(0, now + interval * 2);
+    gain3.gain.linearRampToValueAtTime(0.25, now + interval * 2 + 0.02);
+    gain3.gain.setValueAtTime(0.25, now + interval * 2 + 0.3);
+    gain3.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    osc3.start(now + interval * 2);
+    osc3.stop(now + duration);
+}
+
+// Initialize audio on first user interaction
+document.addEventListener('click', function initAudio() {
+    initAudioContext();
+    document.removeEventListener('click', initAudio);
+}, { once: true });
+
+// Modal functions with countdown (countdownInterval is already declared above)
+
+function showActionModal(type, message, autoReload = false) {
+    const modal = document.getElementById('actionModal');
+    const success = document.getElementById('actionModalSuccess');
+    const error = document.getElementById('actionModalError');
+    const content = document.getElementById('actionModalContent');
+    
+    modal.classList.remove('hidden');
+    success.classList.add('hidden');
+    error.classList.add('hidden');
+    
+    // Clear any existing countdown
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+    
+    if (type === 'success') {
+        success.classList.remove('hidden');
+        const msgEl = document.getElementById('actionSuccessMessage');
+        if (message) {
+            if (autoReload) {
+                msgEl.innerHTML = message + '<br><span class="text-sm text-slate-400 mt-2 block">Reloading in <span id="countdown">3</span>s...</span>';
+                startCountdown();
+            } else {
+                msgEl.textContent = message;
+            }
+        }
+        playSuccessSound();
+    } else if (type === 'error') {
+        error.classList.remove('hidden');
+        content.classList.add('shake-animation');
+        setTimeout(() => content.classList.remove('shake-animation'), 500);
+        if (message) document.getElementById('actionErrorMessage').textContent = message;
+        playErrorSound();
+    }
+}
+
+function startCountdown() {
+    let seconds = 3;
+    const countdownEl = document.getElementById('countdown');
+    const progressEl = document.getElementById('countdownProgress');
+    
+    // Animate progress bar
+    if (progressEl) {
+        progressEl.style.width = '100%';
+        setTimeout(() => {
+            progressEl.style.width = '0%';
+        }, 50);
+    }
+    
+    countdownInterval = setInterval(() => {
+        seconds--;
+        if (countdownEl) countdownEl.textContent = seconds;
+        
+        if (seconds <= 0) {
+            clearInterval(countdownInterval);
+            window.location.reload();
+        }
+    }, 1000);
+}
+
+function closeActionModal() {
+    document.getElementById('actionModal').classList.add('hidden');
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    const actionModal = document.getElementById('actionModal');
+    if (actionModal) {
+        actionModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeActionModal();
+            }
+        });
+    }
+});
 </script>
+
+<style>
+    @keyframes modal-pop {
+        0% { transform: scale(0.9); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .modal-pop {
+        animation: modal-pop 0.3s ease-out;
+    }
+    @keyframes shake-animation {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    .shake-animation {
+        animation: shake-animation 0.5s ease-in-out;
+    }
+</style>
 @endsection

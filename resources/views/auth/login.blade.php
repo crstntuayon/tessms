@@ -29,6 +29,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Tugawe Elementary School | Official Website</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
@@ -801,8 +802,8 @@ function imageSlider() {
                                 </svg>
                             </div>
                         </div>
-                        <p class="text-2xl font-black text-slate-900 group-hover:text-purple-600 transition-colors">Region VII</p>
-                        <p class="text-sm text-slate-500 font-medium uppercase tracking-wide mt-1">Central Visayas</p>
+                        <p class="text-2xl font-black text-slate-900 group-hover:text-purple-600 transition-colors">NIR</p>
+                        <p class="text-sm text-slate-500 font-medium uppercase tracking-wide mt-1">Negros Island Region</p>
                     </div>
                 </div>
                 
@@ -2091,21 +2092,7 @@ document.addEventListener('DOMContentLoaded', function () {
             menu.classList.toggle('hidden');
         }
 
-        // Side Panel Auth Functions
-        function openAuthPanel(mode = 'login') {
-            const panel = document.getElementById('authSidePanel');
-            const overlay = document.getElementById('sidePanelOverlay');
-            
-            panel.classList.add('active');
-            overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
-            if (mode === 'register') {
-                switchAuthMode('register');
-            } else {
-                switchAuthMode('login');
-            }
-        }
+
 
         function closeAuthPanel() {
             const panel = document.getElementById('authSidePanel');
@@ -2172,6 +2159,48 @@ document.addEventListener('DOMContentLoaded', function () {
             const input = document.getElementById(inputId);
             const type = input.type === 'password' ? 'text' : 'password';
             input.type = type;
+        }
+
+        // CSRF Token refresh mechanism
+        function refreshCsrfToken() {
+            return fetch('/sanctum/csrf-cookie', {
+                method: 'GET',
+                credentials: 'same-origin'
+            }).then(() => {
+                // Update meta tag and form tokens
+                return fetch('/csrf-token')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.token) {
+                            document.querySelector('meta[name="csrf-token"]').setAttribute('content', data.token);
+                            // Update all form CSRF inputs
+                            document.querySelectorAll('input[name="_token"]').forEach(input => {
+                                input.value = data.token;
+                            });
+                        }
+                    });
+            }).catch(() => {
+                // Silently fail - the existing token might still work
+            });
+        }
+
+        // Refresh CSRF token when auth panel opens
+        function openAuthPanel(mode = 'login') {
+            const panel = document.getElementById('authSidePanel');
+            const overlay = document.getElementById('sidePanelOverlay');
+            
+            panel.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            if (mode === 'register') {
+                switchAuthMode('register');
+            } else {
+                switchAuthMode('login');
+            }
+            
+            // Refresh CSRF token when opening the panel
+            refreshCsrfToken();
         }
 
         // Form Submit Handler
@@ -2248,6 +2277,16 @@ document.addEventListener('DOMContentLoaded', function () {
             section.style.transform = 'translateY(20px)';
             section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             observer.observe(section);
+        });
+        
+        // Refresh CSRF token periodically to prevent 419 errors (every 30 minutes)
+        setInterval(refreshCsrfToken, 30 * 60 * 1000);
+        
+        // Also refresh when the page becomes visible again
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                refreshCsrfToken();
+            }
         });
     </script>
 

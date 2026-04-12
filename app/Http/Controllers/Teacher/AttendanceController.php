@@ -38,7 +38,7 @@ class AttendanceController extends Controller
         $isEditable = true;
         if ($activeSchoolYear) {
             $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
-            $isEditable = !$finalization->is_locked;
+            $isEditable = !$finalization->is_locked && !$finalization->attendance_finalized;
         }
 
         $students = $section->students()
@@ -90,6 +90,43 @@ class AttendanceController extends Controller
     }
 
     /**
+     * Show mobile-optimized attendance page
+     */
+    public function mobile(Section $section)
+    {
+        // Security: teacher only sees own section
+        if ($section->teacher_id !== auth()->user()->teacher->id) {
+            abort(403);
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        $date = request('date', now()->toDateString());
+
+        $students = $section->students()
+            ->whereNotIn('status', ['completed', 'inactive'])
+            ->with('user')
+            ->get()
+            ->map(function ($student) use ($section, $date) {
+                $attendance = Attendance::where([
+                    'section_id' => $section->id,
+                    'student_id' => $student->id,
+                ])->whereDate('date', $date)->first();
+
+                return [
+                    'id' => $student->id,
+                    'name' => $student->user->full_name ?? $student->user->first_name . ' ' . $student->user->last_name,
+                    'lrn' => $student->lrn,
+                    'photo' => $student->user->photo ? asset('storage/' . $student->user->photo) : null,
+                    'status' => $attendance?->status ?? null,
+                    'remarks' => $attendance?->remarks ?? '',
+                ];
+            });
+
+        return view('teacher.attendance.mobile', compact('section', 'students', 'date'));
+    }
+
+    /**
      * Store attendance - FIXED VERSION
      */
     public function store(Request $request, Section $section)
@@ -103,11 +140,12 @@ class AttendanceController extends Controller
         if ($activeSchoolYear) {
             $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
             
-            if ($finalization->is_locked) {
+            if ($finalization->is_locked || $finalization->attendance_finalized) {
+                $msg = 'Attendance has been finalized and is locked. Contact the administrator if you need to make changes.';
                 if ($request->ajax() || $request->wantsJson()) {
-                    return response()->json(['success' => false, 'message' => 'This section has been finalized and is locked.']);
+                    return response()->json(['success' => false, 'message' => $msg]);
                 }
-                return back()->with('error', 'This section has been finalized and is locked. Contact the administrator if you need to make changes.');
+                return back()->with('error', $msg);
             }
         }
 
@@ -176,10 +214,10 @@ class AttendanceController extends Controller
         if ($activeSchoolYear) {
             $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
             
-            if ($finalization->is_locked) {
+            if ($finalization->is_locked || $finalization->attendance_finalized) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'This section has been finalized and is locked.'
+                    'message' => 'Attendance has been finalized and is locked.'
                 ], 403);
             }
         }
@@ -205,6 +243,16 @@ class AttendanceController extends Controller
             ], 400);
         }
 
+        // Get location data from request
+        $locationData = [
+            'latitude' => $request->input('latitude'),
+            'longitude' => $request->input('longitude'),
+            'accuracy' => $request->input('accuracy'),
+            'location_verified' => $request->boolean('location_verified', false),
+            'distance_from_school' => $request->input('distance_from_school'),
+            'location_status' => $request->input('location_status'),
+        ];
+
         foreach ($attendances as $studentId => $data) {
             $status = is_array($data) ? ($data['status'] ?? null) : $data;
             $remarks = is_array($data) ? ($data['remarks'] ?? null) : null;
@@ -222,13 +270,20 @@ class AttendanceController extends Controller
                     'status' => $status,
                     'remarks' => $remarks,
                     'teacher_id' => auth()->user()->teacher->id,
+                    'latitude' => $locationData['latitude'],
+                    'longitude' => $locationData['longitude'],
+                    'accuracy' => $locationData['accuracy'],
+                    'location_verified' => $locationData['location_verified'],
+                    'distance_from_school' => $locationData['distance_from_school'],
+                    'location_status' => $locationData['location_status'],
                 ]
             );
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Attendance saved successfully'
+            'message' => 'Attendance saved successfully',
+            'location_verified' => $locationData['location_verified']
         ]);
     }
 
@@ -246,8 +301,8 @@ class AttendanceController extends Controller
         if ($activeSchoolYear) {
             $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
             
-            if ($finalization->is_locked) {
-                return back()->with('error', 'This section has been finalized and is locked.');
+            if ($finalization->is_locked || $finalization->attendance_finalized) {
+                return back()->with('error', 'Attendance has been finalized and is locked.');
             }
         }
 
@@ -312,7 +367,7 @@ class AttendanceController extends Controller
         $finalization = null;
         $isEditable = true;
         $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
-        $isEditable = !$finalization->is_locked;
+        $isEditable = !$finalization->is_locked && !$finalization->attendance_finalized;
 
         $month = $request->get('month', now()->month);
         $year = $request->get('year', now()->year);
@@ -354,8 +409,8 @@ class AttendanceController extends Controller
 
         // Check if section is finalized/locked
         $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
-        if ($finalization->is_locked) {
-            return back()->with('error', 'This section has been finalized and is locked.');
+        if ($finalization->is_locked || $finalization->attendance_finalized) {
+            return back()->with('error', 'Attendance has been finalized and is locked.');
         }
 
         $request->validate([
@@ -410,8 +465,8 @@ class AttendanceController extends Controller
 
         // Check if section is finalized/locked
         $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
-        if ($finalization->is_locked) {
-            return response()->json(['error' => 'This section has been finalized and is locked.'], 403);
+        if ($finalization->is_locked || $finalization->attendance_finalized) {
+            return response()->json(['error' => 'Attendance has been finalized and is locked.'], 403);
         }
 
         $request->validate([
@@ -454,8 +509,8 @@ class AttendanceController extends Controller
 
         // Check if section is finalized/locked
         $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
-        if ($finalization->is_locked) {
-            return response()->json(['error' => 'This section has been finalized and is locked.'], 403);
+        if ($finalization->is_locked || $finalization->attendance_finalized) {
+            return response()->json(['error' => 'Attendance has been finalized and is locked.'], 403);
         }
 
         $request->validate([
@@ -494,7 +549,12 @@ class AttendanceController extends Controller
 
         $activeSchoolYear = SchoolYear::where('is_active', true)->first();
         if (!$activeSchoolYear) {
-            return back()->with('error', 'No active school year found.');
+            $message = 'No active school year found.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $message]);
+            }
+            return redirect()->route('teacher.sections.attendance', $section)
+                ->with('error', $message);
         }
 
         $result = $this->finalizationService->finalizeAttendance(
@@ -503,11 +563,19 @@ class AttendanceController extends Controller
             auth()->id()
         );
 
-        if ($result['success']) {
-            return back()->with('success', $result['message']);
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json($result);
         }
 
-        return back()->with('error', $result['message'])->with('validation_errors', $result['errors'] ?? []);
+        if ($result['success']) {
+            return redirect()->route('teacher.sections.attendance', $section)
+                ->with('success', $result['message']);
+        }
+
+        return redirect()->route('teacher.sections.attendance', $section)
+            ->with('error', $result['message'])
+            ->with('validation_errors', $result['errors'] ?? []);
     }
 
     /**

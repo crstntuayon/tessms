@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Section;
 use App\Models\Grade;
 use App\Models\GradeLevel;
+use App\Models\GradeWeight;
 use App\Models\Subject;
 use App\Models\Setting;
 use App\Models\SchoolYear;
@@ -35,7 +36,8 @@ class GradeController extends Controller
         $isEditable = true;
         if ($activeSchoolYear) {
             $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
-            $isEditable = !$finalization->is_locked;
+            // Editable only if section is not locked AND grades are not finalized
+            $isEditable = !$finalization->is_locked && !$finalization->grades_finalized;
         }
 
         $students = $section->students()
@@ -51,6 +53,7 @@ class GradeController extends Controller
         $selectedSubject = null;
         $grades = collect();
         $existingGrades = collect();
+        $gradeWeights = null; // Store custom weights
 
         $selectedGradeLevel = $gradeLevel;
         $filteredSubjects = $gradeLevel->subjects ?? collect();
@@ -86,7 +89,49 @@ class GradeController extends Controller
                 $existingGrades['ww_total_items'] = $wwGrade ? (json_decode($wwGrade->total_items, true) ?? []) : [];
                 $existingGrades['pt_total_items'] = $ptGrade ? (json_decode($ptGrade->total_items, true) ?? []) : [];
                 $existingGrades['qe_total_items'] = $qeGrade ? ($qeGrade->total_items ?? 100) : 100;
+
+                // Load saved custom weights if they exist
+                if ($activeSchoolYear) {
+                    $currentQuarter = $request->get('quarter', 1);
+                    
+                    // First, try to get weights for the current quarter
+                    $gradeWeights = GradeWeight::where([
+                        'section_id' => $section->id,
+                        'subject_id' => $selectedSubject->id,
+                        'school_year_id' => $activeSchoolYear->id,
+                        'quarter' => $currentQuarter,
+                    ])->first();
+                    
+                    // If no weights for current quarter, check if teacher has preferred weights from other quarters
+                    if (!$gradeWeights) {
+                        $preferredWeights = GradeWeight::where([
+                            'section_id' => $section->id,
+                            'subject_id' => $selectedSubject->id,
+                            'school_year_id' => $activeSchoolYear->id,
+                        ])->where('quarter', '!=', $currentQuarter)
+                          ->orderBy('updated_at', 'desc') // Get the most recently updated
+                          ->first();
+                        
+                        // If teacher has preferred weights from other quarters, use those
+                        if ($preferredWeights) {
+                            $gradeWeights = (object) [
+                                'ww_weight' => $preferredWeights->ww_weight,
+                                'pt_weight' => $preferredWeights->pt_weight,
+                                'qe_weight' => $preferredWeights->qe_weight,
+                            ];
+                        }
+                    }
+                }
             }
+        }
+
+        // Default weights if no custom weights saved at all
+        if (!$gradeWeights) {
+            $gradeWeights = (object) [
+                'ww_weight' => 40,
+                'pt_weight' => 40,
+                'qe_weight' => 20,
+            ];
         }
 
         return view('teacher.grades.index', compact(
@@ -99,7 +144,8 @@ class GradeController extends Controller
             'grades',
             'existingGrades',
             'finalization',
-            'isEditable'
+            'isEditable',
+            'gradeWeights'
         ));
     }
 
@@ -119,8 +165,9 @@ class GradeController extends Controller
         if ($activeSchoolYear) {
             $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
             
-            if ($finalization->is_locked) {
-                return back()->with('error', 'This section has been finalized and is locked. Contact the administrator if you need to make changes.');
+            // Block if section is locked OR grades are already finalized
+            if ($finalization->is_locked || $finalization->grades_finalized) {
+                return back()->with('error', 'Grades have been finalized and are locked. Contact the administrator if you need to make changes.');
             }
         }
 
@@ -154,6 +201,21 @@ class GradeController extends Controller
         }
         
         $schoolYearId = $activeSchoolYear->id;
+
+        // Save or update the custom weights
+        GradeWeight::updateOrCreate(
+            [
+                'section_id' => $section->id,
+                'subject_id' => $subjectId,
+                'school_year_id' => $schoolYearId,
+                'quarter' => $quarter,
+            ],
+            [
+                'ww_weight' => $request->ww_weight,
+                'pt_weight' => $request->pt_weight,
+                'qe_weight' => $request->qe_weight,
+            ]
+        );
 
         if ($request->has('ww')) {
             $wwTitles = $request->ww_titles ?? [];
@@ -211,7 +273,12 @@ class GradeController extends Controller
 
         $activeSchoolYear = SchoolYear::where('is_active', true)->first();
         if (!$activeSchoolYear) {
-            return back()->with('error', 'No active school year found.');
+            $message = 'No active school year found.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $message]);
+            }
+            return redirect()->route('teacher.sections.grades', $section)
+                ->with('error', $message);
         }
 
         $result = $this->finalizationService->finalizeGrades(
@@ -220,11 +287,19 @@ class GradeController extends Controller
             auth()->id()
         );
 
-        if ($result['success']) {
-            return back()->with('success', $result['message']);
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json($result);
         }
 
-        return back()->with('error', $result['message'])->with('validation_errors', $result['errors'] ?? []);
+        if ($result['success']) {
+            return redirect()->route('teacher.sections.grades', $section)
+                ->with('success', $result['message']);
+        }
+
+        return redirect()->route('teacher.sections.grades', $section)
+            ->with('error', $result['message'])
+            ->with('validation_errors', $result['errors'] ?? []);
     }
 
     /**
@@ -444,7 +519,7 @@ class GradeController extends Controller
         $isEditable = true;
         if ($activeSchoolYear) {
             $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
-            $isEditable = !$finalization->is_locked;
+            $isEditable = !$finalization->is_locked && !$finalization->grades_finalized;
         }
 
         $students = $section->students()
@@ -490,8 +565,8 @@ class GradeController extends Controller
         if ($activeSchoolYear) {
             $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
             
-            if ($finalization->is_locked) {
-                return back()->with('error', 'This section has been finalized and is locked. Contact the administrator if you need to make changes.');
+            if ($finalization->is_locked || $finalization->grades_finalized) {
+                return back()->with('error', 'Grades have been finalized and are locked. Contact the administrator if you need to make changes.');
             }
         }
 

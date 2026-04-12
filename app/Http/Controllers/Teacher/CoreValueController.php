@@ -39,7 +39,7 @@ class CoreValueController extends Controller
         $isEditable = true;
         if ($activeSchoolYear) {
             $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
-            $isEditable = !$finalization->is_locked;
+            $isEditable = !$finalization->is_locked && !$finalization->core_values_finalized;
         }
         
         $students = $section->students()
@@ -186,10 +186,10 @@ class CoreValueController extends Controller
         if ($activeSchoolYear) {
             $finalization = $this->finalizationService->getOrCreateFinalization($section->id, $activeSchoolYear->id);
             
-            if ($finalization->is_locked) {
+            if ($finalization->is_locked || $finalization->core_values_finalized) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'This section has been finalized and is locked.'
+                    'message' => 'Core values have been finalized and are locked.'
                 ], 403);
             }
         }
@@ -265,7 +265,12 @@ class CoreValueController extends Controller
 
         $activeSchoolYear = SchoolYear::where('is_active', true)->first();
         if (!$activeSchoolYear) {
-            return back()->with('error', 'No active school year found.');
+            $message = 'No active school year found.';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $message]);
+            }
+            return redirect()->route('teacher.sections.core-values.index', $section)
+                ->with('error', $message);
         }
 
         $result = $this->finalizationService->finalizeCoreValues(
@@ -274,11 +279,19 @@ class CoreValueController extends Controller
             auth()->id()
         );
 
-        if ($result['success']) {
-            return back()->with('success', $result['message']);
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json($result);
         }
 
-        return back()->with('error', $result['message'])->with('validation_errors', $result['errors'] ?? []);
+        if ($result['success']) {
+            return redirect()->route('teacher.sections.core-values.index', $section)
+                ->with('success', $result['message']);
+        }
+
+        return redirect()->route('teacher.sections.core-values.index', $section)
+            ->with('error', $result['message'])
+            ->with('validation_errors', $result['errors'] ?? []);
     }
 
     /**

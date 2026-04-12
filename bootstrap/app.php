@@ -17,5 +17,16 @@ return Application::configure(basePath: dirname(__DIR__))
         
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Handle 419 Page Expired errors - redirect to login with fresh session
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('login') || $request->is('student/login') || $request->is('logout')) {
+                return redirect('/')
+                    ->withInput($request->except('_token'))
+                    ->withErrors(['login' => 'Your session expired. Please try again.']);
+            }
+            
+            return redirect()->back()
+                ->withInput($request->except('_token'))
+                ->withErrors(['error' => 'Your session expired. Please try again.']);
+        });
     })->create();

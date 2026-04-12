@@ -156,8 +156,8 @@ class DashboardController extends Controller
                 'at_risk_count' => $subjectGrades
                     ->filter(fn($g) => $this->calculateFinalGrade($g) < 75)
                     ->count(),
-                'ww_weight'     => 30,
-                'pt_weight'     => 50,
+                'ww_weight'     => 40,
+                'pt_weight'     => 40,
                 'color'         => 'blue',
                 'icon'          => 'fa-book'
             ];
@@ -244,6 +244,6 @@ class DashboardController extends Controller
         $pt = $grade->performance_tasks_avg ?? 0;
         $qa = $grade->quarterly_assessment ?? 0;
 
-        return round(($ww * 0.3) + ($pt * 0.5) + ($qa * 0.2));
+        return round(($ww * 0.4) + ($pt * 0.4) + ($qa * 0.2));
     }
 }

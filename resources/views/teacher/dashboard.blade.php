@@ -809,8 +809,8 @@
                                             </td>
                                             @foreach($subjects ?? [] as $subject)
                                                 @php
-                                                    $grade = $student->grades->where('subject_id', $subject->id)->where('quarter', $currentQuarterNumber ?? 1)->first();
-                                                    $finalGrade = $grade ? calculateFinalGrade($grade) : null;
+                                                    $grade = $student->grades->where('subject_id', $subject->id)->where('quarter', $currentQuarterNumber ?? 1)->where('component_type', 'final_grade')->first();
+                                                    $finalGrade = $grade?->final_grade;
                                                 @endphp
                                                 <td class="px-4 py-3 text-center">
                                                     @if($finalGrade)

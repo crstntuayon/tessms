@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Grades - {{ $section->name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -69,29 +70,120 @@
             </div>
         </div>
 
-        <!-- Success/Error Messages -->
-        @if(session('success'))
-            <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 animate-fade-in">
-                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-check text-emerald-600"></i>
+        {{-- Save Grades Modal with Sound --}}
+        <div id="saveGradesModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div id="saveModalContent" class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 modal-pop relative overflow-hidden">
+                {{-- Progress bar for auto-close --}}
+                <div id="modalProgressBar" class="absolute top-0 left-0 h-1 bg-slate-300 w-full">
+                    <div id="modalProgressFill" class="h-full w-full"></div>
                 </div>
-                <div>
-                    <p class="font-semibold text-emerald-900">Success!</p>
-                    <p class="text-sm text-emerald-700">{{ session('success') }}</p>
+                
+                {{-- Success State --}}
+                <div id="saveModalSuccess" class="hidden">
+                    <div class="bg-emerald-50 rounded-t-2xl p-6 border-b border-emerald-100 text-center">
+                        <div id="successIcon" class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-check-circle text-emerald-600 text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-emerald-900">Saved Successfully!</h3>
+                        <p class="text-sm text-emerald-600 mt-1">Grades have been recorded</p>
+                    </div>
+                    <div class="p-6 text-center">
+                        <p class="text-slate-600 mb-4" id="successMessage">Grades have been saved successfully.</p>
+                        <p class="text-xs text-slate-400 mb-3">Closing in <span id="successCountdown">3</span>s...</p>
+                        <button onclick="closeSaveModal()" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors">
+                            Continue
+                        </button>
+                    </div>
+                </div>
+                
+                {{-- Error State --}}
+                <div id="saveModalError" class="hidden">
+                    <div class="bg-red-50 rounded-t-2xl p-6 border-b border-red-100 text-center">
+                        <div id="errorIcon" class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-times-circle text-red-600 text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-red-900">Save Failed!</h3>
+                        <p class="text-sm text-red-600 mt-1">Unable to save grades</p>
+                    </div>
+                    <div class="p-6 text-center">
+                        <p class="text-slate-600 mb-4" id="errorMessage">An error occurred while saving grades.</p>
+                        <p class="text-xs text-slate-400 mb-3">Closing in <span id="errorCountdown">3</span>s...</p>
+                        <button onclick="closeSaveModal()" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors">
+                            Try Again
+                        </button>
+                    </div>
                 </div>
             </div>
-        @endif
+        </div>
 
-        @if(session('error'))
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 animate-fade-in">
-                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-exclamation-circle text-red-600"></i>
+        {{-- Finalization Result Modal with Sound --}}
+        <div id="finalizeResultModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div id="finalizeResultContent" class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 modal-pop relative overflow-hidden">
+                {{-- Progress bar for auto-close --}}
+                <div id="finalizeProgressBar" class="absolute top-0 left-0 h-1 bg-slate-300 w-full">
+                    <div id="finalizeProgressFill" class="h-full w-full"></div>
                 </div>
-                <div>
-                    <p class="font-semibold text-red-900">Error!</p>
-                    <p class="text-sm text-red-700">{{ session('error') }}</p>
+                
+                {{-- Success State --}}
+                <div id="finalizeResultSuccess" class="hidden">
+                    <div class="bg-emerald-50 rounded-t-2xl p-6 border-b border-emerald-100 text-center">
+                        <div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-check-circle text-emerald-600 text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-emerald-900">Finalized Successfully!</h3>
+                        <p class="text-sm text-emerald-600 mt-1">Grades have been locked</p>
+                    </div>
+                    <div class="p-6 text-center">
+                        <p class="text-slate-600 mb-4" id="finalizeSuccessMessage">Grades have been finalized successfully.</p>
+                        <p class="text-xs text-slate-400 mb-3">Closing in <span id="finalizeSuccessCountdown">3</span>s...</p>
+                        <button onclick="closeFinalizeResultModal()" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors">
+                            Continue
+                        </button>
+                    </div>
+                </div>
+                
+                {{-- Error State --}}
+                <div id="finalizeResultError" class="hidden">
+                    <div class="bg-red-50 rounded-t-2xl p-6 border-b border-red-100 text-center">
+                        <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-times-circle text-red-600 text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-red-900">Finalization Failed!</h3>
+                        <p class="text-sm text-red-600 mt-1">Unable to finalize grades</p>
+                    </div>
+                    <div class="p-6 text-center">
+                        <p class="text-slate-600 mb-4" id="finalizeErrorMessage">An error occurred while finalizing grades.</p>
+                        <p class="text-xs text-slate-400 mb-3">Closing in <span id="finalizeErrorCountdown">3</span>s...</p>
+                        <button onclick="closeFinalizeResultModal()" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors">
+                            Try Again
+                        </button>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Section Locked Warning -->
+        @if(!$isEditable)
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-lock text-amber-600 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-amber-900 text-lg">Section Locked</h3>
+                    <p class="text-amber-700 mt-1">
+                        This section has been finalized and is locked. You cannot edit grades, attendance, or core values.
+                        Contact the administrator if you need to make changes.
+                    </p>
+                    @if($finalization?->grades_finalized_at)
+                    <p class="text-sm text-amber-600 mt-2">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        Finalized on: {{ $finalization->grades_finalized_at->format('F d, Y \a\t h:i A') }}
+                    </p>
+                    @endif
+                </div>
+            </div>
+        </div>
         @endif
 
         <!-- Grading System Info Card -->
@@ -101,6 +193,11 @@
                     <i class="fas fa-info-circle text-indigo-600"></i>
                 </div>
                 <h3 class="font-semibold text-slate-900">DepEd Grading System</h3>
+                @if(isset($selectedSubject) && $gradeWeights)
+                <span class="ml-auto text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-medium">
+                    Custom weights saved
+                </span>
+                @endif
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-white/60 rounded-xl p-4 border border-white">
@@ -110,7 +207,7 @@
                         </div>
                         <span class="font-semibold text-slate-700">Written Work</span>
                     </div>
-                    <p class="text-2xl font-bold text-blue-600">40%</p>
+                    <p class="text-2xl font-bold text-blue-600" id="display-ww-weight">{{ $gradeWeights->ww_weight }}%</p>
                     <p class="text-xs text-slate-500">Quizzes, Assignments, etc.</p>
                 </div>
                 <div class="bg-white/60 rounded-xl p-4 border border-white">
@@ -120,7 +217,7 @@
                         </div>
                         <span class="font-semibold text-slate-700">Performance Tasks</span>
                     </div>
-                    <p class="text-2xl font-bold text-purple-600">40%</p>
+                    <p class="text-2xl font-bold text-purple-600" id="display-pt-weight">{{ $gradeWeights->pt_weight }}%</p>
                     <p class="text-xs text-slate-500">Projects, Activities, etc.</p>
                 </div>
                 <div class="bg-white/60 rounded-xl p-4 border border-white">
@@ -130,7 +227,7 @@
                         </div>
                         <span class="font-semibold text-slate-700">Quarterly Exam</span>
                     </div>
-                    <p class="text-2xl font-bold text-amber-600">20%</p>
+                    <p class="text-2xl font-bold text-amber-600" id="display-qe-weight">{{ $gradeWeights->qe_weight }}%</p>
                     <p class="text-xs text-slate-500">Periodical Tests</p>
                 </div>
             </div>
@@ -243,28 +340,28 @@
                         <i class="fas fa-sliders-h text-indigo-600"></i>
                         Component Weights
                     </h3>
-                    <button type="button" onclick="resetWeights()" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                    <button type="button" onclick="resetWeights()" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium{{ !$isEditable ? ' opacity-50 cursor-not-allowed' : '' }}" {{ !$isEditable ? 'disabled' : '' }}>
                         Reset to Default
                     </button>
                 </div>
                 <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Written Work Weight (%)</label>
-                        <input type="number" name="ww_weight" id="wwWeight" value="40" min="0" max="100" 
-                               class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold text-blue-600"
-                               onchange="validateWeights()">
+                        <input type="number" name="ww_weight" id="wwWeight" value="{{ $gradeWeights->ww_weight }}" min="0" max="100" 
+                               class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold text-blue-600{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}"
+                               onchange="validateWeights()" {{ !$isEditable ? 'disabled' : '' }}>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Performance Task Weight (%)</label>
-                        <input type="number" name="pt_weight" id="ptWeight" value="40" min="0" max="100" 
-                               class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 font-semibold text-purple-600"
-                               onchange="validateWeights()">
+                        <input type="number" name="pt_weight" id="ptWeight" value="{{ $gradeWeights->pt_weight }}" min="0" max="100" 
+                               class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 font-semibold text-purple-600{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}"
+                               onchange="validateWeights()" {{ !$isEditable ? 'disabled' : '' }}>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Quarterly Exam Weight (%)</label>
-                        <input type="number" name="qe_weight" id="qeWeight" value="20" min="0" max="100" 
-                               class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-semibold text-amber-600"
-                               onchange="validateWeights()">
+                        <input type="number" name="qe_weight" id="qeWeight" value="{{ $gradeWeights->qe_weight }}" min="0" max="100" 
+                               class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-semibold text-amber-600{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}"
+                               onchange="validateWeights()" {{ !$isEditable ? 'disabled' : '' }}>
                     </div>
                 </div>
                 <div id="weightWarning" class="hidden px-6 pb-4 text-red-600 text-sm flex items-center gap-2">
@@ -286,10 +383,10 @@
                 
                 <div class="p-6">
                     <div class="mb-4 flex gap-2 overflow-x-auto pb-2">
-                        <button type="button" onclick="addWWColumn()" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                        <button type="button" onclick="addWWColumn()" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2{{ !$isEditable ? ' opacity-50 cursor-not-allowed' : '' }}" {{ !$isEditable ? 'disabled' : '' }}>
                             <i class="fas fa-plus"></i> Add Activity
                         </button>
-                        <button type="button" onclick="removeLastWW()" class="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                        <button type="button" onclick="removeLastWW()" class="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2{{ !$isEditable ? ' opacity-50 cursor-not-allowed' : '' }}" {{ !$isEditable ? 'disabled' : '' }}>
                             <i class="fas fa-minus"></i> Remove Last
                         </button>
                     </div>
@@ -307,8 +404,8 @@
                                     @for($i = 0; $i < max(3, count($wwTitles)); $i++)
                                     <th class="px-2 py-3 text-center font-semibold text-slate-700 ww-col-header" data-col="{{ $i + 1 }}">
                                         <div class="mb-1">WW {{ $i + 1 }}</div>
-                                        <input type="text" name="ww_titles[]" class="ww-title w-16 text-center bg-transparent border-b border-slate-300 text-xs mb-1" placeholder="Title" value="{{ $wwTitles[$i] ?? '' }}">
-                                        <input type="number" name="ww_total_items[]" class="ww-total-item w-16 text-center bg-blue-50 border border-blue-200 rounded text-xs py-1" placeholder="Items" value="{{ $wwTotalItems[$i] ?? 100 }}" min="1" onchange="calculateAllWW()">
+                                        <input type="text" name="ww_titles[]" class="ww-title w-16 text-center bg-transparent border-b border-slate-300 text-xs mb-1{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}" placeholder="Title" value="{{ $wwTitles[$i] ?? '' }}" {{ !$isEditable ? 'disabled' : '' }}>
+                                        <input type="number" name="ww_total_items[]" class="ww-total-item w-16 text-center bg-blue-50 border border-blue-200 rounded text-xs py-1{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}" placeholder="Items" value="{{ $wwTotalItems[$i] ?? 100 }}" min="1" onchange="calculateAllWW()" {{ !$isEditable ? 'disabled' : '' }}>
                                     </th>
                                     @endfor
                                     
@@ -335,7 +432,7 @@
                                     
                                     @for($i = 0; $i < max(3, count($wwTitles)); $i++)
                                     <td class="px-2 py-3 text-center ww-col" data-col="{{ $i + 1 }}">
-                                        <input type="number" name="ww[{{ $student->id }}][]" class="ww-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" min="0" value="{{ $wwScores[$i] ?? '' }}" onchange="calculateStudentWW({{ $student->id }})">
+                                        <input type="number" name="ww[{{ $student->id }}][]" class="ww-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}" min="0" value="{{ $wwScores[$i] ?? '' }}" onchange="calculateStudentWW({{ $student->id }})" {{ !$isEditable ? 'disabled' : '' }}>
                                     </td>
                                     @endfor
                                     
@@ -369,10 +466,10 @@
                 
                 <div class="p-6">
                     <div class="mb-4 flex gap-2 overflow-x-auto pb-2">
-                        <button type="button" onclick="addPTColumn()" class="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                        <button type="button" onclick="addPTColumn()" class="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2{{ !$isEditable ? ' opacity-50 cursor-not-allowed' : '' }}" {{ !$isEditable ? 'disabled' : '' }}>
                             <i class="fas fa-plus"></i> Add Task
                         </button>
-                        <button type="button" onclick="removeLastPT()" class="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                        <button type="button" onclick="removeLastPT()" class="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2{{ !$isEditable ? ' opacity-50 cursor-not-allowed' : '' }}" {{ !$isEditable ? 'disabled' : '' }}>
                             <i class="fas fa-minus"></i> Remove Last
                         </button>
                     </div>
@@ -390,8 +487,8 @@
                                     @for($i = 0; $i < max(2, count($ptTitles)); $i++)
                                     <th class="px-2 py-3 text-center font-semibold text-slate-700 pt-col-header" data-col="{{ $i + 1 }}">
                                         <div class="mb-1">PT {{ $i + 1 }}</div>
-                                        <input type="text" name="pt_titles[]" class="pt-title w-16 text-center bg-transparent border-b border-slate-300 text-xs mb-1" placeholder="Title" value="{{ $ptTitles[$i] ?? '' }}">
-                                        <input type="number" name="pt_total_items[]" class="pt-total-item w-16 text-center bg-purple-50 border border-purple-200 rounded text-xs py-1" placeholder="Items" value="{{ $ptTotalItems[$i] ?? 100 }}" min="1" onchange="calculateAllPT()">
+                                        <input type="text" name="pt_titles[]" class="pt-title w-16 text-center bg-transparent border-b border-slate-300 text-xs mb-1{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}" placeholder="Title" value="{{ $ptTitles[$i] ?? '' }}" {{ !$isEditable ? 'disabled' : '' }}>
+                                        <input type="number" name="pt_total_items[]" class="pt-total-item w-16 text-center bg-purple-50 border border-purple-200 rounded text-xs py-1{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}" placeholder="Items" value="{{ $ptTotalItems[$i] ?? 100 }}" min="1" onchange="calculateAllPT()" {{ !$isEditable ? 'disabled' : '' }}>
                                     </th>
                                     @endfor
                                     
@@ -418,7 +515,7 @@
                                     
                                     @for($i = 0; $i < max(2, count($ptTitles)); $i++)
                                     <td class="px-2 py-3 text-center pt-col" data-col="{{ $i + 1 }}">
-                                        <input type="number" name="pt[{{ $student->id }}][]" class="pt-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all" min="0" value="{{ $ptScores[$i] ?? '' }}" onchange="calculateStudentPT({{ $student->id }})">
+                                        <input type="number" name="pt[{{ $student->id }}][]" class="pt-score w-16 px-2 py-2 text-center rounded-lg border border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}" min="0" value="{{ $ptScores[$i] ?? '' }}" onchange="calculateStudentPT({{ $student->id }})" {{ !$isEditable ? 'disabled' : '' }}>
                                     </td>
                                     @endfor
                                     
@@ -451,7 +548,7 @@
                         <input type="hidden" name="qe_total_items" id="qeTotalItemsInput" value="{{ $existingGrades['qe_total_items'] ?? 100 }}">
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-slate-600">Total Items:</span>
-                            <input type="number" id="qeTotal" value="{{ $existingGrades['qe_total_items'] ?? 100 }}" class="w-20 px-3 py-1 rounded-lg border border-amber-200 text-sm font-semibold text-amber-600" onchange="updateQETotalItems(this.value)">
+                            <input type="number" id="qeTotal" value="{{ $existingGrades['qe_total_items'] ?? 100 }}" class="w-20 px-3 py-1 rounded-lg border border-amber-200 text-sm font-semibold text-amber-600{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}" onchange="updateQETotalItems(this.value)" {{ !$isEditable ? 'disabled' : '' }}>
                         </div>
                     </div>
                 </div>
@@ -482,7 +579,7 @@
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         @php $qeKey = $student->id . '_quarterly_exam'; @endphp
-                                        <input type="number" name="qe[{{ $student->id }}]" class="qe-score w-20 px-3 py-2 text-center rounded-lg border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all font-semibold" min="0" value="{{ $existingGrades[$qeKey]['total_score'] ?? '' }}" onchange="calculateStudentQE({{ $student->id }})">
+                                        <input type="number" name="qe[{{ $student->id }}]" class="qe-score w-20 px-3 py-2 text-center rounded-lg border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all font-semibold{{ !$isEditable ? ' bg-slate-100 cursor-not-allowed' : '' }}" min="0" value="{{ $existingGrades[$qeKey]['total_score'] ?? '' }}" onchange="calculateStudentQE({{ $student->id }})" {{ !$isEditable ? 'disabled' : '' }}>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <span class="qe-ps px-2 py-1 rounded bg-amber-50 text-amber-700 font-semibold" id="qe-ps-{{ $student->id }}">0.00</span>
@@ -511,9 +608,9 @@
                         <thead>
                             <tr class="border-b border-white/20">
                                 <th class="px-4 py-3 text-left font-semibold text-white/80">Student</th>
-                                <th class="px-4 py-3 text-center font-semibold text-white/80">WW (40%)</th>
-                                <th class="px-4 py-3 text-center font-semibold text-white/80">PT (40%)</th>
-                                <th class="px-4 py-3 text-center font-semibold text-white/80">QE (20%)</th>
+                                <th class="px-4 py-3 text-center font-semibold text-white/80">WW ({{ $gradeWeights->ww_weight }}%)</th>
+                                <th class="px-4 py-3 text-center font-semibold text-white/80">PT ({{ $gradeWeights->pt_weight }}%)</th>
+                                <th class="px-4 py-3 text-center font-semibold text-white/80">QE ({{ $gradeWeights->qe_weight }}%)</th>
                                 <th class="px-4 py-3 text-center font-semibold text-white/80">Initial Grade</th>
                                 <th class="px-4 py-3 text-center font-semibold text-white bg-white/10 rounded-t-lg">Transmuted Grade</th>
                                 <th class="px-4 py-3 text-center font-semibold text-white/80">Remarks</th>
@@ -550,14 +647,175 @@
 
             <!-- Save Button -->
             <div class="flex justify-end gap-4">
-                <button type="button" onclick="calculateAllGrades()" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium transition-colors flex items-center gap-2">
+                <button type="button" onclick="calculateAllGrades()" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium transition-colors flex items-center gap-2{{ !$isEditable ? ' opacity-50 cursor-not-allowed' : '' }}" {{ !$isEditable ? 'disabled' : '' }}>
                     <i class="fas fa-sync-alt"></i> Recalculate All
                 </button>
-                <button type="submit" class="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                <button type="submit" class="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 transform hover:-translate-y-0.5 transition-all flex items-center gap-2{{ !$isEditable ? ' opacity-50 cursor-not-allowed' : '' }}" {{ !$isEditable ? 'disabled' : '' }}>
                     <i class="fas fa-save"></i> Save All Grades
                 </button>
             </div>
         </form>
+
+        <!-- Finalize Section -->
+        @if($isEditable && !$finalization?->grades_finalized)
+        <div class="mt-8 bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl shadow-slate-200/50 p-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-lock text-amber-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900">Finalize Grades</h3>
+                        <p class="text-sm text-slate-500">Once finalized, grades for this section will be locked and cannot be edited.</p>
+                    </div>
+                </div>
+                <button type="button" 
+                        onclick="showFinalizeGradesModal()"
+                        class="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                    <i class="fas fa-check-circle mr-2"></i>Finalize Grades
+                </button>
+            </div>
+        </div>
+
+        <!-- Finalize Grades Modal -->
+        <div id="finalizeGradesModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 transform transition-all modal-pop">
+                <div class="bg-amber-50 rounded-t-2xl p-6 border-b border-amber-100">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-amber-600 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-amber-900">Finalize Grades?</h3>
+                            <p class="text-sm text-amber-600">This action cannot be undone</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="bg-slate-50 rounded-xl p-4 mb-4 space-y-3">
+                        <p class="text-sm text-slate-700">
+                            <i class="fas fa-info-circle text-amber-500 mr-2"></i>
+                            You are about to finalize grades for <strong>{{ $section->name }}</strong>.
+                        </p>
+                        <div class="text-sm text-slate-600 space-y-2 ml-6">
+                            <p><i class="fas fa-check text-emerald-500 mr-2"></i>All grade entries will be locked</p>
+                            <p><i class="fas fa-check text-emerald-500 mr-2"></i>Students' report cards will be generated</p>
+                            <p><i class="fas fa-check text-emerald-500 mr-2"></i>Admin assistance required for any changes</p>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                        <p class="text-sm text-amber-800">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <strong>Important:</strong> Make sure you have entered grades for <strong>ALL subjects</strong> and <strong>ALL quarters (Q1-Q4)</strong> before finalizing.
+                        </p>
+                    </div>
+                    <form id="finalizeGradesForm" action="{{ route('teacher.sections.grades.finalize', $section) }}" method="POST">
+                        @csrf
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button type="button" 
+                                    onclick="document.getElementById('finalizeGradesModal').classList.add('hidden')"
+                                    class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-amber-500/30">
+                                <i class="fas fa-lock mr-2"></i>Yes, Finalize Grades
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Finalizing Loading Modal -->
+        <div id="finalizingModal" class="hidden fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-8 text-center">
+                <div class="w-16 h-16 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin mx-auto mb-4"></div>
+                <h3 class="text-lg font-semibold text-slate-800">Finalizing Grades...</h3>
+                <p class="text-sm text-slate-500 mt-1">Please wait while we lock your grade records</p>
+            </div>
+        </div>
+
+        <script>
+        function showFinalizeGradesModal() {
+            document.getElementById('finalizeGradesModal').classList.remove('hidden');
+        }
+        
+        // Handle finalize form submission via AJAX
+        document.getElementById('finalizeGradesForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Hide confirmation modal and show loading
+            document.getElementById('finalizeGradesModal').classList.add('hidden');
+            document.getElementById('finalizingModal').classList.remove('hidden');
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    }
+                });
+                
+                // Handle 419 CSRF token expired error
+                if (response.status === 419) {
+                    document.getElementById('finalizingModal').classList.add('hidden');
+                    showFinalizeResultModal('error', 'Session expired. Please refresh the page and try again.');
+                    return;
+                }
+                
+                const data = await response.json().catch(() => ({
+                    success: response.ok,
+                    message: response.ok ? 'Grades finalized successfully!' : 'Failed to finalize grades'
+                }));
+                
+                // Hide loading modal
+                document.getElementById('finalizingModal').classList.add('hidden');
+                
+                if (data.success) {
+                    showFinalizeResultModal('success', data.message || 'Grades finalized successfully!');
+                    // Reload page after showing success
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showFinalizeResultModal('error', data.message || 'Failed to finalize grades');
+                }
+            } catch (error) {
+                console.error('Finalize error:', error);
+                document.getElementById('finalizingModal').classList.add('hidden');
+                showFinalizeResultModal('error', 'Network error. Please try again.');
+            }
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('finalizeGradesModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+        </script>
+        @elseif($finalization?->grades_finalized)
+        <div class="mt-8 bg-emerald-50 rounded-2xl border border-emerald-200 p-6">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-check-double text-emerald-600 text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-emerald-900">Grades Finalized</h3>
+                    <p class="text-sm text-emerald-700">
+                        Grades for this section were finalized on {{ $finalization->grades_finalized_at?->format('F d, Y \a\t h:i A') }}.
+                        Contact the administrator if you need to make changes.
+                    </p>
+                </div>
+            </div>
+        </div>
+        @endif
         @else
         <!-- No Subject Selected State -->
         <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl shadow-slate-200/50 p-12 text-center">
@@ -680,6 +938,29 @@
             warning.classList.remove('hidden');
         } else {
             warning.classList.add('hidden');
+            // Auto-recalculate all grades when weights are valid (100%)
+            calculateAllGrades();
+            // Update displayed weights on the page
+            updateWeightDisplays(ww, pt, qe);
+        }
+    }
+
+    // Update all weight displays on the page
+    function updateWeightDisplays(ww, pt, qe) {
+        // Update info cards
+        const displayWW = document.getElementById('display-ww-weight');
+        const displayPT = document.getElementById('display-pt-weight');
+        const displayQE = document.getElementById('display-qe-weight');
+        if (displayWW) displayWW.textContent = ww + '%';
+        if (displayPT) displayPT.textContent = pt + '%';
+        if (displayQE) displayQE.textContent = qe + '%';
+        
+        // Update summary table headers
+        const summaryHeaders = document.querySelectorAll('#summaryTable thead th');
+        if (summaryHeaders.length >= 6) {
+            summaryHeaders[1].textContent = `WW (${ww}%)`;
+            summaryHeaders[2].textContent = `PT (${pt}%)`;
+            summaryHeaders[3].textContent = `QE (${qe}%)`;
         }
     }
 
@@ -689,6 +970,7 @@
         document.getElementById('qeWeight').value = 20;
         document.getElementById('weightWarning').classList.add('hidden');
         calculateAllGrades();
+        updateWeightDisplays(40, 40, 20);
     }
 
     // Written Work Calculations with individual total items
@@ -1079,8 +1361,325 @@
     document.addEventListener('DOMContentLoaded', function() {
         populateExistingGrades();
         calculateAllGrades();
+        
+        // Show modal on page load if there's a success/error message
+        @if(session('success'))
+            const successMsg = '{{ session('success') }}';
+            if (successMsg.toLowerCase().includes('finalized')) {
+                showFinalizeResultModal('success', successMsg);
+            } else {
+                showSaveModal('success', successMsg);
+            }
+        @endif
+        @if(session('error'))
+            const errorMsg = '{{ session('error') }}';
+            if (errorMsg.toLowerCase().includes('finalized') || errorMsg.toLowerCase().includes('finalize')) {
+                showFinalizeResultModal('error', errorMsg);
+            } else {
+                showSaveModal('error', errorMsg);
+            }
+        @endif
     });
+
+    // Sound effects using Web Audio API
+    let audioContext = null;
+    
+    function initAudioContext() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        return audioContext;
+    }
+    
+    function playSuccessSound() {
+        const ctx = initAudioContext();
+        const now = ctx.currentTime;
+        const duration = 2.0;
+        
+        // Success - pleasant ascending chime with sustain
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now); // A5
+        osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1); // A6
+        
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.25, now + 0.05);
+        gain.gain.setValueAtTime(0.25, now + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        
+        osc.start(now);
+        osc.stop(now + duration);
+    }
+    
+    function playErrorSound() {
+        const ctx = initAudioContext();
+        const now = ctx.currentTime;
+        const duration = 2.0;
+        const interval = 0.4;
+        
+        // First beep
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(400, now);
+        gain1.gain.setValueAtTime(0, now);
+        gain1.gain.linearRampToValueAtTime(0.25, now + 0.02);
+        gain1.gain.setValueAtTime(0.25, now + 0.1);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + interval);
+        osc1.start(now);
+        osc1.stop(now + interval);
+        
+        // Second beep (lower)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(300, now + interval);
+        gain2.gain.setValueAtTime(0, now + interval);
+        gain2.gain.linearRampToValueAtTime(0.25, now + interval + 0.02);
+        gain2.gain.setValueAtTime(0.25, now + interval + 0.1);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + interval * 2);
+        osc2.start(now + interval);
+        osc2.stop(now + interval * 2);
+        
+        // Third beep (lowest) - sustains longer
+        const osc3 = ctx.createOscillator();
+        const gain3 = ctx.createGain();
+        osc3.connect(gain3);
+        gain3.connect(ctx.destination);
+        
+        osc3.type = 'sine';
+        osc3.frequency.setValueAtTime(200, now + interval * 2);
+        gain3.gain.setValueAtTime(0, now + interval * 2);
+        gain3.gain.linearRampToValueAtTime(0.25, now + interval * 2 + 0.02);
+        gain3.gain.setValueAtTime(0.25, now + interval * 2 + 0.3);
+        gain3.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc3.start(now + interval * 2);
+        osc3.stop(now + duration);
+    }
+    
+    // Initialize audio on first user interaction
+    document.addEventListener('click', function initAudio() {
+        initAudioContext();
+        document.removeEventListener('click', initAudio);
+    }, { once: true });
+
+    // Modal functions
+    let modalAutoCloseTimer = null;
+    let modalCountdownInterval = null;
+    
+    function showSaveModal(type, message) {
+        const modal = document.getElementById('saveGradesModal');
+        const success = document.getElementById('saveModalSuccess');
+        const error = document.getElementById('saveModalError');
+        const content = document.getElementById('saveModalContent');
+        const progressFill = document.getElementById('modalProgressFill');
+        
+        // Clear any existing timers
+        clearTimeout(modalAutoCloseTimer);
+        clearInterval(modalCountdownInterval);
+        
+        // Reset icon animations
+        const successIcon = document.getElementById('successIcon');
+        const errorIcon = document.getElementById('errorIcon');
+        if (successIcon) successIcon.classList.remove('icon-exit');
+        if (errorIcon) errorIcon.classList.remove('icon-exit');
+        
+        // Reset progress bar
+        if (progressFill) {
+            progressFill.style.transition = 'none';
+            progressFill.style.width = '100%';
+            progressFill.className = 'h-full w-full';
+        }
+        
+        modal.classList.remove('hidden');
+        success.classList.add('hidden');
+        error.classList.add('hidden');
+        
+        const countdownEl = type === 'success' ? document.getElementById('successCountdown') : document.getElementById('errorCountdown');
+        let countdown = 3;
+        if (countdownEl) countdownEl.textContent = countdown;
+        
+        if (type === 'success') {
+            success.classList.remove('hidden');
+            if (progressFill) progressFill.classList.add('bg-emerald-500');
+            if (message) document.getElementById('successMessage').textContent = message;
+            playSuccessSound();
+            
+            // Animate progress bar
+            setTimeout(() => {
+                if (progressFill) {
+                    progressFill.style.transition = 'width 3s linear';
+                    progressFill.style.width = '0%';
+                }
+            }, 50);
+            
+        } else if (type === 'error') {
+            error.classList.remove('hidden');
+            if (progressFill) progressFill.classList.add('bg-red-500');
+            content.classList.add('shake-animation');
+            setTimeout(() => content.classList.remove('shake-animation'), 500);
+            if (message) document.getElementById('errorMessage').textContent = message;
+            playErrorSound();
+            
+            // Animate progress bar
+            setTimeout(() => {
+                if (progressFill) {
+                    progressFill.style.transition = 'width 3s linear';
+                    progressFill.style.width = '0%';
+                }
+            }, 50);
+        }
+        
+        // Countdown interval
+        modalCountdownInterval = setInterval(() => {
+            countdown--;
+            if (countdownEl) countdownEl.textContent = countdown;
+            if (countdown <= 0) clearInterval(modalCountdownInterval);
+        }, 1000);
+        
+        // Auto-close after 3 seconds
+        modalAutoCloseTimer = setTimeout(() => {
+            closeSaveModal(type);
+        }, 3000);
+    }
+    
+    function closeSaveModal(type) {
+        clearTimeout(modalAutoCloseTimer);
+        clearInterval(modalCountdownInterval);
+        
+        // Add exit animation to icon
+        const iconId = type === 'success' ? 'successIcon' : (type === 'error' ? 'errorIcon' : null);
+        if (iconId) {
+            const icon = document.getElementById(iconId);
+            if (icon) {
+                icon.classList.add('icon-exit');
+                // Wait for animation before hiding modal
+                setTimeout(() => {
+                    document.getElementById('saveGradesModal').classList.add('hidden');
+                }, 300);
+                return;
+            }
+        }
+        
+        document.getElementById('saveGradesModal').classList.add('hidden');
+    }
+    
+    // Finalize Result Modal Functions
+    let finalizeModalAutoCloseTimer = null;
+    let finalizeModalCountdownInterval = null;
+    
+    function showFinalizeResultModal(type, message) {
+        const modal = document.getElementById('finalizeResultModal');
+        const success = document.getElementById('finalizeResultSuccess');
+        const error = document.getElementById('finalizeResultError');
+        const content = document.getElementById('finalizeResultContent');
+        
+        // Clear any existing timers
+        clearTimeout(finalizeModalAutoCloseTimer);
+        clearInterval(finalizeModalCountdownInterval);
+        
+        modal.classList.remove('hidden');
+        success.classList.add('hidden');
+        error.classList.add('hidden');
+        
+        // Reset progress bar
+        const progressFill = document.getElementById('finalizeProgressFill');
+        progressFill.className = 'h-full w-full';
+        
+        let countdown = 3;
+        const countdownEl = type === 'success' ? document.getElementById('finalizeSuccessCountdown') : document.getElementById('finalizeErrorCountdown');
+        
+        if (type === 'success') {
+            success.classList.remove('hidden');
+            if (message) document.getElementById('finalizeSuccessMessage').textContent = message;
+            progressFill.classList.add('bg-emerald-500');
+            playSuccessSound();
+        } else if (type === 'error') {
+            error.classList.remove('hidden');
+            content.classList.add('shake-animation');
+            setTimeout(() => content.classList.remove('shake-animation'), 500);
+            if (message) document.getElementById('finalizeErrorMessage').textContent = message;
+            progressFill.classList.add('bg-red-500');
+            playErrorSound();
+        }
+        
+        // Animate progress bar
+        setTimeout(() => {
+            progressFill.style.transition = 'width 3s linear';
+            progressFill.style.width = '0%';
+        }, 50);
+        
+        // Countdown
+        countdownEl.textContent = countdown;
+        finalizeModalCountdownInterval = setInterval(() => {
+            countdown--;
+            countdownEl.textContent = countdown;
+            if (countdown <= 0) clearInterval(finalizeModalCountdownInterval);
+        }, 1000);
+        
+        // Auto-close after 3 seconds
+        finalizeModalAutoCloseTimer = setTimeout(() => {
+            closeFinalizeResultModal();
+        }, 3000);
+    }
+    
+    function closeFinalizeResultModal() {
+        clearTimeout(finalizeModalAutoCloseTimer);
+        clearInterval(finalizeModalCountdownInterval);
+        document.getElementById('finalizeResultModal').classList.add('hidden');
+    }
 </script>
+
+<style>
+    @keyframes modal-pop {
+        0% { opacity: 0; transform: scale(0.95); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+    .modal-pop {
+        animation: modal-pop 0.3s ease-out;
+    }
+    @keyframes shake-animation {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+    .shake-animation {
+        animation: shake-animation 0.5s ease-in-out;
+    }
+    
+    /* Icon exit animations */
+    @keyframes icon-exit-success {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 1; }
+        100% { transform: scale(0) rotate(360deg); opacity: 0; }
+    }
+    @keyframes icon-exit-error {
+        0% { transform: scale(1); opacity: 1; }
+        25% { transform: scale(1.1) rotate(-10deg); }
+        50% { transform: scale(1.1) rotate(10deg); }
+        75% { transform: scale(1.1) rotate(-10deg); }
+        100% { transform: scale(0) rotate(360deg); opacity: 0; }
+    }
+    .icon-exit {
+        animation: icon-exit-success 0.3s ease-in forwards;
+    }
+    #errorIcon.icon-exit {
+        animation: icon-exit-error 0.3s ease-in forwards;
+    }
+</style>
 
 </body>
 </html>

@@ -40,9 +40,10 @@ protected $fillable = [
 {
     $ww = $this->written_works_avg ?? 0;
     $pt = $this->performance_tasks_avg ?? 0;
+    $qe = $this->quarterly_exam ?? 0;
 
-    // Example formula (adjust if needed)
-    return round(($ww * 0.4) + ($pt * 0.6), 2);
+    // DepEd K-12 standard: 40% WW, 40% PT, 20% QE
+    return round(($ww * 0.4) + ($pt * 0.4) + ($qe * 0.2), 2);
 }
 
 public function section()

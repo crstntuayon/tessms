@@ -83,6 +83,23 @@
         .unsaved-indicator.show {
             display: flex;
         }
+        
+        /* Modal animations */
+        @keyframes modal-pop {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .modal-pop {
+            animation: modal-pop 0.3s ease-out;
+        }
+        @keyframes shake-animation {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake-animation {
+            animation: shake-animation 0.5s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -102,8 +119,14 @@
                     <i class="fas fa-lock text-amber-600 text-lg"></i>
                 </div>
                 <div class="flex-1">
-                    <h3 class="font-bold text-amber-900">Section Finalized</h3>
-                    <p class="text-sm text-amber-700">This section has been finalized and is locked. Contact the administrator if you need to make changes.</p>
+                    <h3 class="font-bold text-amber-900">Core Values Finalized</h3>
+                    <p class="text-sm text-amber-700">Core values for this section have been finalized and are locked. Contact the administrator if you need to make changes.</p>
+                    @if($finalization?->core_values_finalized_at)
+                    <p class="text-xs text-amber-600 mt-1">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        Finalized on: {{ $finalization->core_values_finalized_at->format('F d, Y \a\t h:i A') }}
+                    </p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -292,9 +315,10 @@
                                             @foreach(['AO', 'SO', 'RO', 'NO'] as $rating)
                                                 <button type="button" 
                                                         onclick="setStatementRating(this, '{{ $rating }}', '{{ $student->id }}', 'Maka-Diyos', 'statement1')"
-                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Maka-Diyos_statement1']->rating ?? '') == $rating ? 'active bg-rose-500 border-rose-500 text-white' : 'border-slate-200 text-slate-400 hover:border-rose-300 hover:text-rose-500' }}"
+                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Maka-Diyos_statement1']->rating ?? '') == $rating ? 'active bg-rose-500 border-rose-500 text-white' : 'border-slate-200 text-slate-400 hover:border-rose-300 hover:text-rose-500' }} {{ !$isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
                                                         data-rating="{{ $rating }}"
-                                                        data-statement="statement1">
+                                                        data-statement="statement1"
+                                                        {{ !$isEditable ? 'disabled' : '' }}>
                                                     {{ $rating }}
                                                 </button>
                                             @endforeach
@@ -312,9 +336,10 @@
                                             @foreach(['AO', 'SO', 'RO', 'NO'] as $rating)
                                                 <button type="button" 
                                                         onclick="setStatementRating(this, '{{ $rating }}', '{{ $student->id }}', 'Maka-Diyos', 'statement2')"
-                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Maka-Diyos_statement2']->rating ?? '') == $rating ? 'active bg-rose-500 border-rose-500 text-white' : 'border-slate-200 text-slate-400 hover:border-rose-300 hover:text-rose-500' }}"
+                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Maka-Diyos_statement2']->rating ?? '') == $rating ? 'active bg-rose-500 border-rose-500 text-white' : 'border-slate-200 text-slate-400 hover:border-rose-300 hover:text-rose-500' }} {{ !$isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
                                                         data-rating="{{ $rating }}"
-                                                        data-statement="statement2">
+                                                        data-statement="statement2"
+                                                        {{ !$isEditable ? 'disabled' : '' }}>
                                                     {{ $rating }}
                                                 </button>
                                             @endforeach
@@ -325,11 +350,11 @@
                             
                             <!-- Remarks for Maka-Diyos -->
                             <div class="mt-3">
-                                <textarea class="remarks-textarea w-full px-3 py-2 rounded-lg border border-rose-200 bg-white text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-100 transition-all" 
+                                <textarea class="remarks-textarea w-full px-3 py-2 rounded-lg border border-rose-200 bg-white text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-100 transition-all {{ !$isEditable ? 'bg-slate-100 cursor-not-allowed' : '' }}" 
                                           data-student-id="{{ $student->id }}" 
                                           data-core-value="Maka-Diyos"
                                           placeholder="Remarks for Maka-Diyos (optional)..."
-                                          oninput="markAsChanged('{{ $student->id }}')">{{ $existingRatings['Maka-Diyos_statement1']->remarks ?? ($existingRatings['Maka-Diyos_statement2']->remarks ?? '') }}</textarea>
+                                          oninput="markAsChanged('{{ $student->id }}')" {{ !$isEditable ? 'disabled' : '' }}>{{ $existingRatings['Maka-Diyos_statement1']->remarks ?? ($existingRatings['Maka-Diyos_statement2']->remarks ?? '') }}</textarea>
                             </div>
                         </div>
 
@@ -349,9 +374,10 @@
                                             @foreach(['AO', 'SO', 'RO', 'NO'] as $rating)
                                                 <button type="button" 
                                                         onclick="setStatementRating(this, '{{ $rating }}', '{{ $student->id }}', 'Makatao', 'statement1')"
-                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Makatao_statement1']->rating ?? '') == $rating ? 'active bg-blue-500 border-blue-500 text-white' : 'border-slate-200 text-slate-400 hover:border-blue-300 hover:text-blue-500' }}"
+                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Makatao_statement1']->rating ?? '') == $rating ? 'active bg-blue-500 border-blue-500 text-white' : 'border-slate-200 text-slate-400 hover:border-blue-300 hover:text-blue-500' }} {{ !$isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
                                                         data-rating="{{ $rating }}"
-                                                        data-statement="statement1">
+                                                        data-statement="statement1"
+                                                        {{ !$isEditable ? 'disabled' : '' }}>
                                                     {{ $rating }}
                                                 </button>
                                             @endforeach
@@ -369,9 +395,10 @@
                                             @foreach(['AO', 'SO', 'RO', 'NO'] as $rating)
                                                 <button type="button" 
                                                         onclick="setStatementRating(this, '{{ $rating }}', '{{ $student->id }}', 'Makatao', 'statement2')"
-                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Makatao_statement2']->rating ?? '') == $rating ? 'active bg-blue-500 border-blue-500 text-white' : 'border-slate-200 text-slate-400 hover:border-blue-300 hover:text-blue-500' }}"
+                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Makatao_statement2']->rating ?? '') == $rating ? 'active bg-blue-500 border-blue-500 text-white' : 'border-slate-200 text-slate-400 hover:border-blue-300 hover:text-blue-500' }} {{ !$isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
                                                         data-rating="{{ $rating }}"
-                                                        data-statement="statement2">
+                                                        data-statement="statement2"
+                                                        {{ !$isEditable ? 'disabled' : '' }}>
                                                     {{ $rating }}
                                                 </button>
                                             @endforeach
@@ -382,11 +409,11 @@
                             
                             <!-- Remarks for Makatao -->
                             <div class="mt-3">
-                                <textarea class="remarks-textarea w-full px-3 py-2 rounded-lg border border-blue-200 bg-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all" 
+                                <textarea class="remarks-textarea w-full px-3 py-2 rounded-lg border border-blue-200 bg-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all {{ !$isEditable ? 'bg-slate-100 cursor-not-allowed' : '' }}" 
                                           data-student-id="{{ $student->id }}" 
                                           data-core-value="Makatao"
                                           placeholder="Remarks for Makatao (optional)..."
-                                          oninput="markAsChanged('{{ $student->id }}')">{{ $existingRatings['Makatao_statement1']->remarks ?? ($existingRatings['Makatao_statement2']->remarks ?? '') }}</textarea>
+                                          oninput="markAsChanged('{{ $student->id }}')" {{ !$isEditable ? 'disabled' : '' }}>{{ $existingRatings['Makatao_statement1']->remarks ?? ($existingRatings['Makatao_statement2']->remarks ?? '') }}</textarea>
                             </div>
                         </div>
 
@@ -406,9 +433,10 @@
                                             @foreach(['AO', 'SO', 'RO', 'NO'] as $rating)
                                                 <button type="button" 
                                                         onclick="setStatementRating(this, '{{ $rating }}', '{{ $student->id }}', 'Maka-Kalikasan', 'statement1')"
-                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Maka-Kalikasan_statement1']->rating ?? '') == $rating ? 'active bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200 text-slate-400 hover:border-emerald-300 hover:text-emerald-500' }}"
+                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Maka-Kalikasan_statement1']->rating ?? '') == $rating ? 'active bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200 text-slate-400 hover:border-emerald-300 hover:text-emerald-500' }} {{ !$isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
                                                         data-rating="{{ $rating }}"
-                                                        data-statement="statement1">
+                                                        data-statement="statement1"
+                                                        {{ !$isEditable ? 'disabled' : '' }}>
                                                     {{ $rating }}
                                                 </button>
                                             @endforeach
@@ -443,9 +471,10 @@
                                             @foreach(['AO', 'SO', 'RO', 'NO'] as $rating)
                                                 <button type="button" 
                                                         onclick="setStatementRating(this, '{{ $rating }}', '{{ $student->id }}', 'Maka-bansa', 'statement1')"
-                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Maka-bansa_statement1']->rating ?? '') == $rating ? 'active bg-amber-500 border-amber-500 text-white' : 'border-slate-200 text-slate-400 hover:border-amber-300 hover:text-amber-500' }}"
+                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Maka-bansa_statement1']->rating ?? '') == $rating ? 'active bg-amber-500 border-amber-500 text-white' : 'border-slate-200 text-slate-400 hover:border-amber-300 hover:text-amber-500' }} {{ !$isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
                                                         data-rating="{{ $rating }}"
-                                                        data-statement="statement1">
+                                                        data-statement="statement1"
+                                                        {{ !$isEditable ? 'disabled' : '' }}>
                                                     {{ $rating }}
                                                 </button>
                                             @endforeach
@@ -463,9 +492,10 @@
                                             @foreach(['AO', 'SO', 'RO', 'NO'] as $rating)
                                                 <button type="button" 
                                                         onclick="setStatementRating(this, '{{ $rating }}', '{{ $student->id }}', 'Maka-bansa', 'statement2')"
-                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Maka-bansa_statement2']->rating ?? '') == $rating ? 'active bg-amber-500 border-amber-500 text-white' : 'border-slate-200 text-slate-400 hover:border-amber-300 hover:text-amber-500' }}"
+                                                        class="statement-rating-btn w-8 h-8 rounded-md border-2 text-xs font-bold transition-all {{ ($existingRatings['Maka-bansa_statement2']->rating ?? '') == $rating ? 'active bg-amber-500 border-amber-500 text-white' : 'border-slate-200 text-slate-400 hover:border-amber-300 hover:text-amber-500' }} {{ !$isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
                                                         data-rating="{{ $rating }}"
-                                                        data-statement="statement2">
+                                                        data-statement="statement2"
+                                                        {{ !$isEditable ? 'disabled' : '' }}>
                                                     {{ $rating }}
                                                 </button>
                                             @endforeach
@@ -476,11 +506,11 @@
                             
                             <!-- Remarks for Maka-bansa -->
                             <div class="mt-3">
-                                <textarea class="remarks-textarea w-full px-3 py-2 rounded-lg border border-amber-200 bg-white text-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-100 transition-all" 
+                                <textarea class="remarks-textarea w-full px-3 py-2 rounded-lg border border-amber-200 bg-white text-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-100 transition-all {{ !$isEditable ? 'bg-slate-100 cursor-not-allowed' : '' }}" 
                                           data-student-id="{{ $student->id }}" 
                                           data-core-value="Maka-bansa"
                                           placeholder="Remarks for Maka-bansa (optional)..."
-                                          oninput="markAsChanged('{{ $student->id }}')">{{ $existingRatings['Maka-bansa_statement1']->remarks ?? ($existingRatings['Maka-bansa_statement2']->remarks ?? '') }}</textarea>
+                                          oninput="markAsChanged('{{ $student->id }}')" {{ !$isEditable ? 'disabled' : '' }}>{{ $existingRatings['Maka-bansa_statement1']->remarks ?? ($existingRatings['Maka-bansa_statement2']->remarks ?? '') }}</textarea>
                             </div>
                         </div>
 
@@ -522,16 +552,176 @@
                         <h3 class="font-bold text-lg text-slate-900">Finalize Core Values</h3>
                         <p class="text-sm text-slate-500">Once finalized, core values will be locked and cannot be edited.</p>
                     </div>
-                    <form action="{{ route('teacher.sections.core-values.finalize', $section) }}" method="POST">
-                        @csrf
-                        <button type="submit" 
-                                class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/30"
-                                onclick="return confirm('Are you sure you want to finalize core values for this section? This action cannot be undone.')">
-                            <i class="fas fa-lock mr-2"></i>Finalize Core Values
-                        </button>
-                    </form>
+                    <button type="button" 
+                            onclick="showFinalizeCoreValuesModal()"
+                            class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/30">
+                        <i class="fas fa-lock mr-2"></i>Finalize Core Values
+                    </button>
                 </div>
             </div>
+
+            <!-- Finalize Core Values Modal -->
+            <div id="finalizeCoreValuesModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 transform transition-all" style="animation: modal-pop 0.3s ease-out;">
+                    <div class="bg-emerald-50 rounded-t-2xl p-6 border-b border-emerald-100">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-emerald-600 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-emerald-900">Finalize Core Values?</h3>
+                                <p class="text-sm text-emerald-600">This action cannot be undone</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-slate-50 rounded-xl p-4 mb-4 space-y-3">
+                            <p class="text-sm text-slate-700">
+                                <i class="fas fa-info-circle text-emerald-500 mr-2"></i>
+                                You are about to finalize core values for <strong>{{ $section->name }}</strong>.
+                            </p>
+                            <div class="text-sm text-slate-600 space-y-2 ml-6">
+                                <p><i class="fas fa-check text-emerald-500 mr-2"></i>All core value ratings will be locked</p>
+                                <p><i class="fas fa-check text-emerald-500 mr-2"></i>Behavioral statements for all 4 quarters will be finalized</p>
+                                <p><i class="fas fa-check text-emerald-500 mr-2"></i>Admin assistance required for any changes</p>
+                            </div>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                            <p class="text-sm text-amber-800">
+                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                <strong>Important:</strong> Make sure you have rated <strong>ALL 4 core values</strong> for <strong>ALL students</strong> across <strong>ALL quarters (Q1-Q4)</strong> before finalizing.
+                            </p>
+                        </div>
+                        <form id="finalizeCoreValuesForm" action="{{ route('teacher.sections.core-values.finalize', $section) }}" method="POST">
+                            @csrf
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button type="button" 
+                                        onclick="document.getElementById('finalizeCoreValuesModal').classList.add('hidden')"
+                                        class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" 
+                                        class="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/30">
+                                    <i class="fas fa-lock mr-2"></i>Yes, Finalize Core Values
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finalizing Loading Modal -->
+            <div id="finalizingModal" class="hidden fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-8 text-center">
+                    <div class="w-16 h-16 rounded-full border-4 border-emerald-200 border-t-emerald-500 animate-spin mx-auto mb-4"></div>
+                    <h3 class="text-lg font-semibold text-slate-800">Finalizing Core Values...</h3>
+                    <p class="text-sm text-slate-500 mt-1">Please wait while we lock your core values records</p>
+                </div>
+            </div>
+
+            <!-- Finalization Result Modal with Sound -->
+            <div id="finalizeResultModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div id="finalizeResultContent" class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 modal-pop">
+                    {{-- Success State --}}
+                    <div id="finalizeResultSuccess" class="hidden">
+                        <div class="bg-emerald-50 rounded-t-2xl p-6 border-b border-emerald-100 text-center">
+                            <div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-check-circle text-emerald-600 text-4xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-emerald-900">Finalized Successfully!</h3>
+                            <p class="text-sm text-emerald-600 mt-1">Core Values have been locked</p>
+                        </div>
+                        <div class="p-6 text-center">
+                            <p class="text-slate-600 mb-4" id="finalizeSuccessMessage">Core Values have been finalized successfully.</p>
+                            <button onclick="closeFinalizeResultModal()" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors">
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {{-- Error State --}}
+                    <div id="finalizeResultError" class="hidden">
+                        <div class="bg-red-50 rounded-t-2xl p-6 border-b border-red-100 text-center">
+                            <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-times-circle text-red-600 text-4xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-red-900">Finalization Failed!</h3>
+                            <p class="text-sm text-red-600 mt-1">Unable to finalize core values</p>
+                        </div>
+                        <div class="p-6 text-center">
+                            <p class="text-slate-600 mb-4" id="finalizeErrorMessage">An error occurred while finalizing core values.</p>
+                            <button onclick="closeFinalizeResultModal()" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors">
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            function showFinalizeCoreValuesModal() {
+                document.getElementById('finalizeCoreValuesModal').classList.remove('hidden');
+            }
+            
+            // Handle finalize form submission via AJAX
+            document.getElementById('finalizeCoreValuesForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Hide confirmation modal and show loading
+                document.getElementById('finalizeCoreValuesModal').classList.add('hidden');
+                document.getElementById('finalizingModal').classList.remove('hidden');
+                
+                const formData = new FormData(this);
+                
+                try {
+                    const response = await fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        }
+                    });
+                    
+                    // Handle 419 CSRF token expired error
+                    if (response.status === 419) {
+                        document.getElementById('finalizingModal').classList.add('hidden');
+                        showFinalizeResultModal('error', 'Session expired. Please refresh the page and try again.');
+                        return;
+                    }
+                    
+                    const data = await response.json().catch(() => ({
+                        success: response.ok,
+                        message: response.ok ? 'Core Values finalized successfully!' : 'Failed to finalize core values'
+                    }));
+                    
+                    // Hide loading modal
+                    document.getElementById('finalizingModal').classList.add('hidden');
+                    
+                    if (data.success) {
+                        showFinalizeResultModal('success', data.message || 'Core Values finalized successfully!');
+                        // Reload page after showing success
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        showFinalizeResultModal('error', data.message || 'Failed to finalize core values');
+                    }
+                } catch (error) {
+                    console.error('Finalize error:', error);
+                    document.getElementById('finalizingModal').classList.add('hidden');
+                    showFinalizeResultModal('error', 'Network error. Please try again.');
+                }
+            });
+            
+            // Close modal when clicking outside
+            document.getElementById('finalizeCoreValuesModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                }
+            });
+            </script>
             @endif
 
             <!-- Rating Guide -->
@@ -868,6 +1058,136 @@ window.addEventListener('beforeunload', function(e) {
         e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
     }
 });
+
+// Sound effects using Web Audio API
+let audioContext = null;
+
+function initAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    return audioContext;
+}
+
+function playSuccessSound() {
+    const ctx = initAudioContext();
+    const now = ctx.currentTime;
+    const duration = 2.0;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1);
+    
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.25, now + 0.05);
+    gain.gain.setValueAtTime(0.25, now + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    
+    osc.start(now);
+    osc.stop(now + duration);
+}
+
+function playErrorSound() {
+    const ctx = initAudioContext();
+    const now = ctx.currentTime;
+    const duration = 2.0;
+    const interval = 0.4;
+    
+    // First beep
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(400, now);
+    gain1.gain.setValueAtTime(0, now);
+    gain1.gain.linearRampToValueAtTime(0.25, now + 0.02);
+    gain1.gain.setValueAtTime(0.25, now + 0.1);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + interval);
+    osc1.start(now);
+    osc1.stop(now + interval);
+    
+    // Second beep
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(300, now + interval);
+    gain2.gain.setValueAtTime(0, now + interval);
+    gain2.gain.linearRampToValueAtTime(0.25, now + interval + 0.02);
+    gain2.gain.setValueAtTime(0.25, now + interval + 0.1);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + interval * 2);
+    osc2.start(now + interval);
+    osc2.stop(now + interval * 2);
+    
+    // Third beep
+    const osc3 = ctx.createOscillator();
+    const gain3 = ctx.createGain();
+    osc3.connect(gain3);
+    gain3.connect(ctx.destination);
+    
+    osc3.type = 'sine';
+    osc3.frequency.setValueAtTime(200, now + interval * 2);
+    gain3.gain.setValueAtTime(0, now + interval * 2);
+    gain3.gain.linearRampToValueAtTime(0.25, now + interval * 2 + 0.02);
+    gain3.gain.setValueAtTime(0.25, now + interval * 2 + 0.3);
+    gain3.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    osc3.start(now + interval * 2);
+    osc3.stop(now + duration);
+}
+
+// Initialize audio on first user interaction
+document.addEventListener('click', function initAudio() {
+    initAudioContext();
+    document.removeEventListener('click', initAudio);
+}, { once: true });
+
+// Finalize Result Modal Functions
+function showFinalizeResultModal(type, message) {
+    const modal = document.getElementById('finalizeResultModal');
+    const success = document.getElementById('finalizeResultSuccess');
+    const error = document.getElementById('finalizeResultError');
+    const content = document.getElementById('finalizeResultContent');
+    
+    modal.classList.remove('hidden');
+    success.classList.add('hidden');
+    error.classList.add('hidden');
+    
+    if (type === 'success') {
+        success.classList.remove('hidden');
+        if (message) document.getElementById('finalizeSuccessMessage').textContent = message;
+        playSuccessSound();
+    } else if (type === 'error') {
+        error.classList.remove('hidden');
+        content.classList.add('shake-animation');
+        setTimeout(() => content.classList.remove('shake-animation'), 500);
+        if (message) document.getElementById('finalizeErrorMessage').textContent = message;
+        playErrorSound();
+    }
+}
+
+function closeFinalizeResultModal() {
+    document.getElementById('finalizeResultModal').classList.add('hidden');
+}
+
+// Show session success/error messages on page load
+@if(session('success'))
+    showFinalizeResultModal('success', '{{ session('success') }}');
+@endif
+@if(session('error'))
+    showFinalizeResultModal('error', '{{ session('error') }}');
+@endif
 </script>
 
 </body>

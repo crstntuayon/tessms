@@ -57,8 +57,11 @@ class FinalizationService
      */
     public function validateGradesFinalization(int $sectionId, int $schoolYearId): array
     {
-        $section = Section::with('students', 'gradeLevel.subjects')->findOrFail($sectionId);
-        $students = $section->students()->whereNotIn('status', ['completed', 'inactive'])->get();
+        $section = Section::with(['students' => function($query) {
+            $query->whereNotIn('status', ['completed', 'inactive']);
+        }, 'gradeLevel.subjects'])->findOrFail($sectionId);
+        
+        $students = $section->students;
         $subjects = $section->gradeLevel->subjects ?? collect();
         
         $errors = [];
@@ -69,20 +72,28 @@ class FinalizationService
             return ['valid' => false, 'errors' => $errors, 'warnings' => $warnings];
         }
 
-        // Check for missing grades
+        // Bulk fetch all grades in a single query
+        $studentIds = $students->pluck('id')->toArray();
+        $subjectIds = $subjects->pluck('id')->toArray();
+        
+        $existingGrades = Grade::where('section_id', $sectionId)
+            ->where('school_year_id', $schoolYearId)
+            ->where('component_type', 'final_grade')
+            ->whereIn('student_id', $studentIds)
+            ->whereIn('subject_id', $subjectIds)
+            ->whereIn('quarter', [1, 2, 3, 4])
+            ->whereNotNull('final_grade')
+            ->get()
+            ->keyBy(function ($grade) {
+                return "{$grade->student_id}-{$grade->subject_id}-{$grade->quarter}";
+            });
+
+        // Check for missing grades using the pre-loaded collection
         foreach ($students as $student) {
             foreach ($subjects as $subject) {
                 for ($quarter = 1; $quarter <= 4; $quarter++) {
-                    $grade = Grade::where([
-                        'section_id' => $sectionId,
-                        'student_id' => $student->id,
-                        'subject_id' => $subject->id,
-                        'school_year_id' => $schoolYearId,
-                        'quarter' => $quarter,
-                        'component_type' => 'final_grade',
-                    ])->first();
-
-                    if (!$grade || $grade->final_grade === null) {
+                    $key = "{$student->id}-{$subject->id}-{$quarter}";
+                    if (!$existingGrades->has($key)) {
                         $errors[] = "Missing grade for {$student->user->full_name} - {$subject->name} (Q{$quarter})";
                     }
                 }
@@ -108,8 +119,11 @@ class FinalizationService
      */
     public function validateAttendanceFinalization(int $sectionId, int $schoolYearId): array
     {
-        $section = Section::with('students')->findOrFail($sectionId);
-        $students = $section->students()->whereNotIn('status', ['completed', 'inactive'])->get();
+        $section = Section::with(['students' => function($query) {
+            $query->whereNotIn('status', ['completed', 'inactive']);
+        }])->findOrFail($sectionId);
+        
+        $students = $section->students;
         
         $errors = [];
         $warnings = [];
@@ -119,31 +133,37 @@ class FinalizationService
         $startDate = Carbon::parse($schoolYear->start_date);
         $endDate = Carbon::parse($schoolYear->end_date ?? now());
         
+        // Bulk fetch all school days for the section in one query
+        $schoolDaysRecords = AttendanceSchoolDay::where([
+            'section_id' => $sectionId,
+            'school_year_id' => $schoolYearId,
+        ])->get()->keyBy(function ($record) {
+            return "{$record->year}-{$record->month}";
+        });
+        
         $current = $startDate->copy();
         while ($current->lessThanOrEqualTo($endDate)) {
-            $schoolDays = AttendanceSchoolDay::where([
-                'section_id' => $sectionId,
-                'school_year_id' => $schoolYearId,
-                'month' => $current->month,
-                'year' => $current->year,
-            ])->first();
-
-            if (!$schoolDays) {
+            $key = "{$current->year}-{$current->month}";
+            if (!$schoolDaysRecords->has($key)) {
                 $warnings[] = "School days not configured for {$current->format('F Y')}";
             }
-
             $current->addMonth();
         }
 
-        // Check for students with no attendance records
-        foreach ($students as $student) {
-            $attendanceCount = Attendance::where([
-                'student_id' => $student->id,
-                'school_year_id' => $schoolYearId,
-            ])->count();
-
-            if ($attendanceCount === 0) {
-                $warnings[] = "No attendance records for {$student->user->full_name}";
+        // Bulk check attendance records
+        if ($students->isNotEmpty()) {
+            $studentIds = $students->pluck('id')->toArray();
+            
+            $attendanceCounts = Attendance::where('school_year_id', $schoolYearId)
+                ->whereIn('student_id', $studentIds)
+                ->selectRaw('student_id, COUNT(*) as count')
+                ->groupBy('student_id')
+                ->pluck('count', 'student_id');
+            
+            foreach ($students as $student) {
+                if (!$attendanceCounts->has($student->id)) {
+                    $warnings[] = "No attendance records for {$student->user->full_name}";
+                }
             }
         }
 
@@ -159,24 +179,34 @@ class FinalizationService
      */
     public function validateCoreValuesFinalization(int $sectionId, int $schoolYearId): array
     {
-        $section = Section::with('students')->findOrFail($sectionId);
-        $students = $section->students()->whereNotIn('status', ['completed', 'inactive'])->get();
+        $section = Section::with(['students' => function($query) {
+            $query->whereNotIn('status', ['completed', 'inactive']);
+        }])->findOrFail($sectionId);
+        
+        $students = $section->students;
         
         $errors = [];
         $warnings = [];
         $coreValues = ['Maka-Diyos', 'Makatao', 'Maka-Kalikasan', 'Maka-bansa'];
 
+        // Bulk fetch all core value ratings in one query
+        $studentIds = $students->pluck('id')->toArray();
+        
+        $existingRatings = CoreValue::where('school_year_id', $schoolYearId)
+            ->whereIn('student_id', $studentIds)
+            ->whereIn('core_value', $coreValues)
+            ->whereIn('quarter', [1, 2, 3, 4])
+            ->get()
+            ->keyBy(function ($rating) {
+                return "{$rating->student_id}-{$rating->core_value}-{$rating->quarter}";
+            });
+
+        // Check for missing ratings using the pre-loaded collection
         foreach ($students as $student) {
             foreach ($coreValues as $coreValue) {
                 for ($quarter = 1; $quarter <= 4; $quarter++) {
-                    $rating = CoreValue::where([
-                        'student_id' => $student->id,
-                        'school_year_id' => $schoolYearId,
-                        'quarter' => $quarter,
-                        'core_value' => $coreValue,
-                    ])->first();
-
-                    if (!$rating) {
+                    $key = "{$student->id}-{$coreValue}-{$quarter}";
+                    if (!$existingRatings->has($key)) {
                         $errors[] = "Missing core value rating for {$student->user->full_name} - {$coreValue} (Q{$quarter})";
                     }
                 }
@@ -427,6 +457,225 @@ class FinalizationService
             return [
                 'success' => false,
                 'message' => 'Failed to relock section: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Unlock a specific component for editing (admin only)
+     * 
+     * @param int $sectionId
+     * @param int $schoolYearId
+     * @param string $component - 'grades', 'attendance', or 'core_values'
+     * @param int $adminId
+     * @param string|null $reason
+     * @return array
+     */
+    public function unlockComponent(int $sectionId, int $schoolYearId, string $component, int $adminId, ?string $reason = null): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $finalization = SectionFinalization::where([
+                'section_id' => $sectionId,
+                'school_year_id' => $schoolYearId,
+            ])->first();
+
+            if (!$finalization) {
+                return [
+                    'success' => false,
+                    'message' => 'No finalization record found.',
+                ];
+            }
+
+            $validComponents = ['grades', 'attendance', 'core_values'];
+            if (!in_array($component, $validComponents)) {
+                return [
+                    'success' => false,
+                    'message' => 'Invalid component. Must be: grades, attendance, or core_values.',
+                ];
+            }
+
+            // Update the specific component's finalization status
+            $updateData = [
+                "{$component}_finalized" => false,
+                "{$component}_finalized_at" => null,
+                "{$component}_unlocked_at" => now(),
+                "{$component}_unlocked_by" => $adminId,
+                "{$component}_unlock_reason" => $reason,
+                'is_locked' => false, // Also unlock the section temporarily
+                'unlocked_at' => now(),
+                'unlocked_by' => $adminId,
+                'unlock_reason' => $reason,
+            ];
+
+            // Reset full finalization status
+            $updateData['is_fully_finalized'] = false;
+            $updateData['finalized_at'] = null;
+
+            $finalization->update($updateData);
+
+            DB::commit();
+
+            $componentNames = [
+                'grades' => 'Grades',
+                'attendance' => 'Attendance',
+                'core_values' => 'Core Values',
+            ];
+
+            return [
+                'success' => true,
+                'message' => "{$componentNames[$component]} have been unlocked successfully.",
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to unlock component', ['error' => $e->getMessage(), 'component' => $component]);
+            return [
+                'success' => false,
+                'message' => 'Failed to unlock component: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Unlock all components at once (admin only)
+     * 
+     * @param int $sectionId
+     * @param int $schoolYearId
+     * @param int $adminId
+     * @param string|null $reason
+     * @return array
+     */
+    public function unlockAllComponents(int $sectionId, int $schoolYearId, int $adminId, ?string $reason = null): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $finalization = SectionFinalization::where([
+                'section_id' => $sectionId,
+                'school_year_id' => $schoolYearId,
+            ])->first();
+
+            if (!$finalization) {
+                return [
+                    'success' => false,
+                    'message' => 'No finalization record found.',
+                ];
+            }
+
+            $now = now();
+            
+            // Unlock all components
+            $finalization->update([
+                'grades_finalized' => false,
+                'grades_finalized_at' => null,
+                'grades_unlocked_at' => $now,
+                'grades_unlocked_by' => $adminId,
+                'grades_unlock_reason' => $reason,
+                
+                'attendance_finalized' => false,
+                'attendance_finalized_at' => null,
+                'attendance_unlocked_at' => $now,
+                'attendance_unlocked_by' => $adminId,
+                'attendance_unlock_reason' => $reason,
+                
+                'core_values_finalized' => false,
+                'core_values_finalized_at' => null,
+                'core_values_unlocked_at' => $now,
+                'core_values_unlocked_by' => $adminId,
+                'core_values_unlock_reason' => $reason,
+                
+                'is_fully_finalized' => false,
+                'finalized_at' => null,
+                'is_locked' => false,
+                'unlocked_at' => $now,
+                'unlocked_by' => $adminId,
+                'unlock_reason' => $reason,
+            ]);
+
+            DB::commit();
+
+            return [
+                'success' => true,
+                'message' => 'All components (Grades, Attendance, and Core Values) have been unlocked successfully.',
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to unlock all components', ['error' => $e->getMessage()]);
+            return [
+                'success' => false,
+                'message' => 'Failed to unlock all components: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Re-lock a specific component after admin edits (admin only)
+     * 
+     * @param int $sectionId
+     * @param int $schoolYearId
+     * @param string $component - 'grades', 'attendance', or 'core_values'
+     * @return array
+     */
+    public function relockComponent(int $sectionId, int $schoolYearId, string $component): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $finalization = SectionFinalization::where([
+                'section_id' => $sectionId,
+                'school_year_id' => $schoolYearId,
+            ])->first();
+
+            if (!$finalization) {
+                return [
+                    'success' => false,
+                    'message' => 'No finalization record found.',
+                ];
+            }
+
+            $validComponents = ['grades', 'attendance', 'core_values'];
+            if (!in_array($component, $validComponents)) {
+                return [
+                    'success' => false,
+                    'message' => 'Invalid component. Must be: grades, attendance, or core_values.',
+                ];
+            }
+
+            // Re-finalize the specific component
+            $updateData = [
+                "{$component}_finalized" => true,
+                "{$component}_finalized_at" => now(),
+            ];
+
+            // Check if all components are now finalized
+            if ($finalization->grades_finalized && $finalization->attendance_finalized && $finalization->core_values_finalized) {
+                $updateData['is_fully_finalized'] = true;
+                $updateData['finalized_at'] = now();
+                $updateData['is_locked'] = true;
+                $updateData['locked_at'] = now();
+            }
+
+            $finalization->update($updateData);
+
+            DB::commit();
+
+            $componentNames = [
+                'grades' => 'Grades',
+                'attendance' => 'Attendance',
+                'core_values' => 'Core Values',
+            ];
+
+            return [
+                'success' => true,
+                'message' => "{$componentNames[$component]} have been re-locked successfully.",
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to relock component', ['error' => $e->getMessage(), 'component' => $component]);
+            return [
+                'success' => false,
+                'message' => 'Failed to relock component: ' . $e->getMessage(),
             ];
         }
     }

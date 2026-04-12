@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthenticatedSessionController::class, 'create']);
 
+// CSRF Token refresh endpoint (for preventing 419 errors)
+Route::get('/csrf-token', function () {
+    return response()->json(['token' => csrf_token()]);
+})->middleware('web');
+
 Route::get('/dashboard', function () {
     $user = auth()->user();
     $roleName = strtolower($user->role?->name ?? '');
@@ -200,6 +205,11 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
         [App\Http\Controllers\Teacher\AttendanceController::class, 'index'])
         ->name('sections.attendance');
     
+    // Mobile Attendance View
+    Route::get('/sections/{section}/attendance/mobile',
+        [App\Http\Controllers\Teacher\AttendanceController::class, 'mobile'])
+        ->name('attendance.mobile');
+    
     // Attendance Quick Actions
     Route::get('/sections/{section}/attendance/create',
         [App\Http\Controllers\Teacher\AttendanceController::class, 'create'])
@@ -381,6 +391,9 @@ Route::middleware(['auth', 'role:Student'])
    
 // OFFICIAL STUDENT ROUTE
 Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+ // Mobile Dashboard
+ Route::get('/mobile', [App\Http\Controllers\Student\MobileController::class, 'dashboard'])->name('mobile');
+ 
  Route::get('/subjects', [App\Http\Controllers\Student\SubjectController::class, 'index'])->name('subjects');
 
 
@@ -581,6 +594,12 @@ Route::post('/school-year/unlock-section', [\App\Http\Controllers\Admin\SchoolYe
     ->name('school-year.unlock-section');
 Route::post('/school-year/relock-section', [\App\Http\Controllers\Admin\SchoolYearController::class, 'relockSection'])
     ->name('school-year.relock-section');
+Route::post('/school-year/unlock-component', [\App\Http\Controllers\Admin\SchoolYearController::class, 'unlockComponent'])
+    ->name('school-year.unlock-component');
+Route::post('/school-year/relock-component', [\App\Http\Controllers\Admin\SchoolYearController::class, 'relockComponent'])
+    ->name('school-year.relock-component');
+Route::post('/school-year/unlock-all-components', [\App\Http\Controllers\Admin\SchoolYearController::class, 'unlockAllComponents'])
+    ->name('school-year.unlock-all-components');
 Route::post('/school-year/force-end', [\App\Http\Controllers\Admin\SchoolYearController::class, 'forceEndSchoolYear'])
     ->name('school-year.force-end');
 
@@ -660,6 +679,15 @@ Route::delete('/pending-registrations/{student}',
     Route::post('/import/teachers', [App\Http\Controllers\Admin\BulkImportController::class, 'importTeachers']);
     Route::get('/import/template/students', [App\Http\Controllers\Admin\BulkImportController::class, 'downloadStudentTemplate'])->name('import.template.students');
     Route::get('/import/template/teachers', [App\Http\Controllers\Admin\BulkImportController::class, 'downloadTeacherTemplate'])->name('import.template.teachers');
+
+    // Reporting & Analytics
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\ReportingController::class, 'index'])->name('index');
+        Route::get('/templates/{template}/builder', [App\Http\Controllers\Admin\ReportingController::class, 'builder'])->name('builder');
+        Route::post('/templates/{template}/generate', [App\Http\Controllers\Admin\ReportingController::class, 'generate'])->name('generate');
+        Route::post('/templates/{template}/save', [App\Http\Controllers\Admin\ReportingController::class, 'save'])->name('save');
+        Route::delete('/saved/{savedReport}', [App\Http\Controllers\Admin\ReportingController::class, 'destroySaved'])->name('destroy-saved');
+    });
 });
 
 
@@ -708,6 +736,14 @@ Route::middleware(['auth'])->prefix('api')->name('api.')->group(function () {
         }
         return response()->json(['success' => true]);
     })->name('heartbeat');
+    
+    // Reports API
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/dashboard-charts', [App\Http\Controllers\Api\ReportDataController::class, 'dashboardCharts'])->name('dashboard-charts');
+        Route::get('/realtime-stats', [App\Http\Controllers\Api\ReportDataController::class, 'realtimeStats'])->name('realtime-stats');
+        Route::get('/filter-options', [App\Http\Controllers\Api\ReportDataController::class, 'filterOptions'])->name('filter-options');
+        Route::post('/preview', [App\Http\Controllers\Api\ReportDataController::class, 'preview'])->name('preview');
+    });
 });
 
 Route::get('/admin/sections/{section}/students',
@@ -731,5 +767,15 @@ Route::prefix('admin')->name('sections.')->middleware(['auth'])->group(function 
 
 
 
+
+// PWA Settings Page
+Route::get('/pwa-settings', function () {
+    return view('pwa-settings');
+})->middleware(['auth'])->name('pwa.settings');
+
+// Biometric Demo Page
+Route::get('/biometric-demo', function () {
+    return view('biometric-demo');
+});
 
 require __DIR__.'/auth.php';

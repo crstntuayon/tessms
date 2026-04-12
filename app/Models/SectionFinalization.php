@@ -15,10 +15,19 @@ class SectionFinalization extends Model
         'teacher_id',
         'grades_finalized',
         'grades_finalized_at',
+        'grades_unlocked_at',
+        'grades_unlocked_by',
+        'grades_unlock_reason',
         'attendance_finalized',
         'attendance_finalized_at',
+        'attendance_unlocked_at',
+        'attendance_unlocked_by',
+        'attendance_unlock_reason',
         'core_values_finalized',
         'core_values_finalized_at',
+        'core_values_unlocked_at',
+        'core_values_unlocked_by',
+        'core_values_unlock_reason',
         'is_fully_finalized',
         'finalized_at',
         'finalized_by',
@@ -39,8 +48,11 @@ class SectionFinalization extends Model
         'is_locked' => 'boolean',
         'auto_finalized' => 'boolean',
         'grades_finalized_at' => 'datetime',
+        'grades_unlocked_at' => 'datetime',
         'attendance_finalized_at' => 'datetime',
+        'attendance_unlocked_at' => 'datetime',
         'core_values_finalized_at' => 'datetime',
+        'core_values_unlocked_at' => 'datetime',
         'finalized_at' => 'datetime',
         'locked_at' => 'datetime',
         'unlocked_at' => 'datetime',
@@ -71,6 +83,21 @@ class SectionFinalization extends Model
     public function unlockedByUser()
     {
         return $this->belongsTo(User::class, 'unlocked_by');
+    }
+
+    public function gradesUnlockedByUser()
+    {
+        return $this->belongsTo(User::class, 'grades_unlocked_by');
+    }
+
+    public function attendanceUnlockedByUser()
+    {
+        return $this->belongsTo(User::class, 'attendance_unlocked_by');
+    }
+
+    public function coreValuesUnlockedByUser()
+    {
+        return $this->belongsTo(User::class, 'core_values_unlocked_by');
     }
 
     // Scopes
@@ -128,5 +155,34 @@ class SectionFinalization extends Model
         } else {
             return ['text' => 'Pending', 'class' => 'bg-slate-100 text-slate-600'];
         }
+    }
+
+    /**
+     * Check if a specific component was unlocked by admin
+     */
+    public function isComponentUnlocked(string $component): bool
+    {
+        $unlockedAt = "{$component}_unlocked_at";
+        return $this->$unlockedAt !== null && $this->grades_finalized === false;
+    }
+
+    /**
+     * Get unlock info for a component
+     */
+    public function getComponentUnlockInfo(string $component): ?array
+    {
+        if (!$this->isComponentUnlocked($component)) {
+            return null;
+        }
+
+        $unlockedAt = "{$component}_unlocked_at";
+        $unlockedBy = "{$component}_unlocked_by";
+        $unlockReason = "{$component}_unlock_reason";
+
+        return [
+            'unlocked_at' => $this->$unlockedAt,
+            'unlocked_by' => $this->$unlockedBy,
+            'unlock_reason' => $this->$unlockReason,
+        ];
     }
 }

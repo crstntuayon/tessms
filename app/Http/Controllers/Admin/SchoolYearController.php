@@ -153,6 +153,92 @@ class SchoolYearController extends Controller
     }
 
     /**
+     * Unlock a specific component for editing (admin only)
+     */
+    public function unlockComponent(Request $request)
+    {
+        $request->validate([
+            'section_id' => 'required|exists:sections,id',
+            'school_year_id' => 'required|exists:school_years,id',
+            'component' => 'required|in:grades,attendance,core_values',
+            'reason' => 'required|string|max:500',
+        ]);
+
+        $result = $this->finalizationService->unlockComponent(
+            $request->section_id,
+            $request->school_year_id,
+            $request->component,
+            auth()->id(),
+            $request->reason
+        );
+
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json($result);
+        }
+
+        if ($result['success']) {
+            return redirect()->back()->with('success', $result['message']);
+        }
+
+        return redirect()->back()->with('error', $result['message']);
+    }
+
+    /**
+     * Unlock all components at once (admin only)
+     */
+    public function unlockAllComponents(Request $request)
+    {
+        $request->validate([
+            'section_id' => 'required|exists:sections,id',
+            'school_year_id' => 'required|exists:school_years,id',
+            'reason' => 'required|string|max:500',
+        ]);
+
+        $result = $this->finalizationService->unlockAllComponents(
+            $request->section_id,
+            $request->school_year_id,
+            auth()->id(),
+            $request->reason
+        );
+
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json($result);
+        }
+
+        if ($result['success']) {
+            return redirect()->back()->with('success', $result['message']);
+        }
+
+        return redirect()->back()->with('error', $result['message']);
+    }
+
+    /**
+     * Re-lock a specific component after admin edits (admin only)
+     */
+    public function relockComponent(Request $request)
+    {
+        $request->validate([
+            'section_id' => 'required|exists:sections,id',
+            'school_year_id' => 'required|exists:school_years,id',
+            'component' => 'required|in:grades,attendance,core_values',
+        ]);
+
+        $result = $this->finalizationService->relockComponent(
+            $request->section_id,
+            $request->school_year_id,
+            $request->component
+        );
+
+        if ($result['success']) {
+            return redirect()->back()->with('success', $result['message']);
+        }
+
+        return redirect()->back()->with('error', $result['message']);
+    }
+
+    /**
      * Force end school year (admin override)
      */
     public function forceEndSchoolYear(Request $request)

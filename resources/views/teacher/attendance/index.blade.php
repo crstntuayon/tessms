@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Attendance - {{ $section->name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -132,73 +133,52 @@
     </div>
 </div>
 
+{{-- Finalization Result Modal with Sound --}}
+<div id="finalizeResultModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div id="finalizeResultContent" class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 modal-pop">
+        {{-- Success State --}}
+        <div id="finalizeResultSuccess" class="hidden">
+            <div class="bg-emerald-50 rounded-t-2xl p-6 border-b border-emerald-100 text-center">
+                <div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-emerald-600 text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-emerald-900">Finalized Successfully!</h3>
+                <p class="text-sm text-emerald-600 mt-1">Attendance has been locked</p>
+            </div>
+            <div class="p-6 text-center">
+                <p class="text-slate-600 mb-4" id="finalizeSuccessMessage">Attendance has been finalized successfully.</p>
+                <button onclick="closeFinalizeResultModal()" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors">
+                    Continue
+                </button>
+            </div>
+        </div>
+        
+        {{-- Error State --}}
+        <div id="finalizeResultError" class="hidden">
+            <div class="bg-red-50 rounded-t-2xl p-6 border-b border-red-100 text-center">
+                <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-times-circle text-red-600 text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-red-900">Finalization Failed!</h3>
+                <p class="text-sm text-red-600 mt-1">Unable to finalize attendance</p>
+            </div>
+            <div class="p-6 text-center">
+                <p class="text-slate-600 mb-4" id="finalizeErrorMessage">An error occurred while finalizing attendance.</p>
+                <button onclick="closeFinalizeResultModal()" class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors">
+                    Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="flex">
     @include('teacher.includes.sidebar')
 
     <!-- Main Content -->
     <div class="ml-72 w-full min-h-screen p-8">
 
-        @if(session('success'))
-        <div id="successAlert" class="mb-6 relative overflow-hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 animate-fade-in">
-            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-check text-emerald-600"></i>
-            </div>
-            <div>
-                <p class="font-semibold text-emerald-900">Success!</p>
-                <p class="text-sm text-emerald-700">{{ session('success') }}</p>
-            </div>
-            <button onclick="closeSuccess()" class="ml-auto w-8 h-8 rounded-full hover:bg-emerald-100 flex items-center justify-center transition-colors">
-                <i class="fas fa-times text-emerald-600"></i>
-            </button>
-            <div id="progressBar" class="absolute bottom-0 left-0 h-1 bg-emerald-500"></div>
-        </div>
-        @endif
-
-        @if(session('error'))
-        <div id="errorAlert" class="mb-6 relative overflow-hidden p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-exclamation-circle text-red-600"></i>
-            </div>
-            <div>
-                <p class="font-semibold text-red-900">Error!</p>
-                <p class="text-sm text-red-700">{{ session('error') }}</p>
-            </div>
-            <button onclick="this.closest('#errorAlert').remove()" class="ml-auto w-8 h-8 rounded-full hover:bg-red-100 flex items-center justify-center transition-colors">
-                <i class="fas fa-times text-red-600"></i>
-            </button>
-        </div>
-        @endif
-
-        <script>
-        function closeSuccess() {
-            const alert = document.getElementById('successAlert');
-            if (alert) {
-                alert.style.transition = 'all 0.4s ease';
-                alert.style.opacity = '0';
-                alert.style.transform = 'translateY(-10px)';
-                setTimeout(() => alert.remove(), 400);
-            }
-        }
-        document.addEventListener('DOMContentLoaded', function () {
-            const alert = document.getElementById('successAlert');
-            const bar = document.getElementById('progressBar');
-            if (!alert || !bar) return;
-            let duration = 5000;
-            let start = Date.now();
-            function animate() {
-                let elapsed = Date.now() - start;
-                let progress = Math.max(0, 100 - (elapsed / duration) * 100);
-                bar.style.width = progress + '%';
-                if (elapsed < duration) {
-                    requestAnimationFrame(animate);
-                } else {
-                    closeSuccess();
-                }
-            }
-            bar.style.width = '100%';
-            animate();
-        });
-        </script>
+        {{-- Session messages are shown via modal below --}}
 
         <div class="mb-8">
             <nav class="flex items-center gap-2 text-sm text-slate-500 mb-4">
@@ -285,6 +265,30 @@
             </div>
         </div>
 
+        <!-- Attendance Locked Warning -->
+        @if(!$isEditable)
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-lock text-amber-600 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-amber-900 text-lg">Attendance Finalized</h3>
+                    <p class="text-amber-700 mt-1">
+                        Attendance for this section has been finalized and is locked. You cannot edit attendance records.
+                        Contact the administrator if you need to make changes.
+                    </p>
+                    @if($finalization?->attendance_finalized_at)
+                    <p class="text-sm text-amber-600 mt-2">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        Finalized on: {{ $finalization->attendance_finalized_at->format('F d, Y \a\t h:i A') }}
+                    </p>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Attendance Form -->
         <form id="attendanceForm" method="POST" action="{{ route('teacher.sections.attendance.store', $section) }}" class="space-y-6">
             @csrf
@@ -370,10 +374,10 @@
                                 <td class="px-6 py-4">
                                     <div class="relative">
                                         <select name="attendance[{{ $student->id }}]" 
-                                                class="attendance-select w-full appearance-none pl-10 pr-10 py-3 rounded-xl border-2 font-medium transition-all duration-200 focus:outline-none focus:ring-4 cursor-pointer {{ $statusColors[$currentStatus] }} {{ !$activeSchoolYear ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                                class="attendance-select w-full appearance-none pl-10 pr-10 py-3 rounded-xl border-2 font-medium transition-all duration-200 focus:outline-none focus:ring-4 cursor-pointer {{ $statusColors[$currentStatus] }} {{ !$activeSchoolYear || !$isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
                                                 data-student="{{ $student->id }}"
                                                 onchange="updateSelectStyle(this)"
-                                                {{ !$activeSchoolYear ? 'disabled' : '' }}>
+                                                {{ !$activeSchoolYear || !$isEditable ? 'disabled' : '' }}>
                                             <option value="present" {{ $currentStatus == 'present' ? 'selected' : '' }} class="bg-white text-emerald-700">Present</option>
                                             <option value="absent" {{ $currentStatus == 'absent' ? 'selected' : '' }} class="bg-white text-red-700">Absent</option>
                                             <option value="late" {{ $currentStatus == 'late' ? 'selected' : '' }} class="bg-white text-amber-700">Late</option>
@@ -383,17 +387,17 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex justify-center gap-2 {{ !$activeSchoolYear ? 'opacity-50 pointer-events-none' : '' }}">
+                                    <div class="flex justify-center gap-2 {{ !$activeSchoolYear || !$isEditable ? 'opacity-50 pointer-events-none' : '' }}">
                                         <button type="button" onclick="quickSet({{ $student->id }}, 'present')" 
-                                                class="w-10 h-10 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 transition-colors flex items-center justify-center tooltip" title="Present">
+                                                class="w-10 h-10 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 transition-colors flex items-center justify-center tooltip" title="Present" {{ !$isEditable ? 'disabled' : '' }}>
                                             <i class="fas fa-check"></i>
                                         </button>
                                         <button type="button" onclick="quickSet({{ $student->id }}, 'absent')" 
-                                                class="w-10 h-10 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors flex items-center justify-center tooltip" title="Absent">
+                                                class="w-10 h-10 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors flex items-center justify-center tooltip" title="Absent" {{ !$isEditable ? 'disabled' : '' }}>
                                             <i class="fas fa-times"></i>
                                         </button>
                                         <button type="button" onclick="quickSet({{ $student->id }}, 'late')" 
-                                                class="w-10 h-10 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 transition-colors flex items-center justify-center tooltip" title="Late">
+                                                class="w-10 h-10 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 transition-colors flex items-center justify-center tooltip" title="Late" {{ !$isEditable ? 'disabled' : '' }}>
                                             <i class="fas fa-clock"></i>
                                         </button>
                                     </div>
@@ -430,8 +434,8 @@
                             Cancel
                         </a>
                         <button type="submit" id="saveAttendanceBtn"
-                                class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5 transition-all flex items-center gap-2 {{ !$activeSchoolYear ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                {{ !$activeSchoolYear ? 'disabled' : '' }}>
+                                class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5 transition-all flex items-center gap-2 {{ !$activeSchoolYear || !$isEditable ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                {{ !$activeSchoolYear || !$isEditable ? 'disabled' : '' }}>
                             <i class="fas fa-save"></i>
                             Save Attendance
                         </button>
@@ -439,6 +443,167 @@
                 </div>
             </div>
         </form>
+
+        <!-- Finalize Attendance -->
+        @if($isEditable && !$finalization?->attendance_finalized)
+        <div class="mt-8 bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-xl shadow-slate-200/50 p-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-lock text-amber-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900">Finalize Attendance</h3>
+                        <p class="text-sm text-slate-500">Once finalized, attendance records will be locked and cannot be edited.</p>
+                    </div>
+                </div>
+                <button type="button" 
+                        onclick="showFinalizeAttendanceModal()"
+                        class="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-amber-500/30 hover:shadow-amber-500/40 transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                    <i class="fas fa-check-circle mr-2"></i>Finalize Attendance
+                </button>
+            </div>
+        </div>
+
+        <!-- Finalize Attendance Modal -->
+        <div id="finalizeAttendanceModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 transform transition-all modal-pop">
+                <div class="bg-amber-50 rounded-t-2xl p-6 border-b border-amber-100">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-amber-600 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-amber-900">Finalize Attendance?</h3>
+                            <p class="text-sm text-amber-600">This action cannot be undone</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="bg-slate-50 rounded-xl p-4 mb-4 space-y-3">
+                        <p class="text-sm text-slate-700">
+                            <i class="fas fa-info-circle text-amber-500 mr-2"></i>
+                            You are about to finalize attendance for <strong>{{ $section->name }}</strong>.
+                        </p>
+                        <div class="text-sm text-slate-600 space-y-2 ml-6">
+                            <p><i class="fas fa-check text-emerald-500 mr-2"></i>All attendance records will be locked</p>
+                            <p><i class="fas fa-check text-emerald-500 mr-2"></i>Monthly attendance summary will be finalized</p>
+                            <p><i class="fas fa-check text-emerald-500 mr-2"></i>Admin assistance required for any changes</p>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                        <p class="text-sm text-amber-800">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <strong>Important:</strong> Make sure you have recorded attendance for <strong>ALL school days</strong> before finalizing.
+                        </p>
+                    </div>
+                    <form id="finalizeAttendanceForm" action="{{ route('teacher.sections.attendance.finalize', $section) }}" method="POST">
+                        @csrf
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button type="button" 
+                                    onclick="document.getElementById('finalizeAttendanceModal').classList.add('hidden')"
+                                    class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                    class="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-amber-500/30">
+                                <i class="fas fa-lock mr-2"></i>Yes, Finalize Attendance
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Finalizing Loading Modal -->
+        <div id="finalizingModal" class="hidden fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-8 text-center">
+                <div class="w-16 h-16 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin mx-auto mb-4"></div>
+                <h3 class="text-lg font-semibold text-slate-800">Finalizing Attendance...</h3>
+                <p class="text-sm text-slate-500 mt-1">Please wait while we lock your attendance records</p>
+            </div>
+        </div>
+
+        <script>
+        function showFinalizeAttendanceModal() {
+            document.getElementById('finalizeAttendanceModal').classList.remove('hidden');
+        }
+        
+        // Handle finalize form submission via AJAX
+        document.getElementById('finalizeAttendanceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Hide confirmation modal and show loading
+            document.getElementById('finalizeAttendanceModal').classList.add('hidden');
+            document.getElementById('finalizingModal').classList.remove('hidden');
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    }
+                });
+                
+                // Handle 419 CSRF token expired error
+                if (response.status === 419) {
+                    document.getElementById('finalizingModal').classList.add('hidden');
+                    showFinalizeResultModal('error', 'Session expired. Please refresh the page and try again.');
+                    return;
+                }
+                
+                const data = await response.json().catch(() => ({
+                    success: response.ok,
+                    message: response.ok ? 'Attendance finalized successfully!' : 'Failed to finalize attendance'
+                }));
+                
+                // Hide loading modal
+                document.getElementById('finalizingModal').classList.add('hidden');
+                
+                if (data.success) {
+                    showFinalizeResultModal('success', data.message || 'Attendance finalized successfully!');
+                    // Reload page after showing success
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showFinalizeResultModal('error', data.message || 'Failed to finalize attendance');
+                }
+            } catch (error) {
+                console.error('Finalize error:', error);
+                document.getElementById('finalizingModal').classList.add('hidden');
+                showFinalizeResultModal('error', 'Network error. Please try again.');
+            }
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('finalizeAttendanceModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+        </script>
+        @elseif($finalization?->attendance_finalized)
+        <div class="mt-8 bg-emerald-50 rounded-2xl border border-emerald-200 p-6">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-check-double text-emerald-600 text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-emerald-900">Attendance Finalized</h3>
+                    <p class="text-sm text-emerald-700">
+                        Attendance for this section was finalized on {{ $finalization->attendance_finalized_at?->format('F d, Y \a\t h:i A') }}.
+                        Contact the administrator if you need to make changes.
+                    </p>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <!-- Attendance Summary Preview -->
         <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -800,6 +965,46 @@
         });
         updateCounts();
     });
+
+    // Finalize Result Modal Functions
+    function showFinalizeResultModal(type, message) {
+        const modal = document.getElementById('finalizeResultModal');
+        const success = document.getElementById('finalizeResultSuccess');
+        const error = document.getElementById('finalizeResultError');
+        const content = document.getElementById('finalizeResultContent');
+        
+        modal.classList.remove('hidden');
+        success.classList.add('hidden');
+        error.classList.add('hidden');
+        
+        if (type === 'success') {
+            success.classList.remove('hidden');
+            if (message) document.getElementById('finalizeSuccessMessage').textContent = message;
+            playSuccessSound();
+        } else if (type === 'error') {
+            error.classList.remove('hidden');
+            content.classList.add('shake-animation');
+            setTimeout(() => content.classList.remove('shake-animation'), 500);
+            if (message) document.getElementById('finalizeErrorMessage').textContent = message;
+            playErrorSound();
+        }
+    }
+    
+    function closeFinalizeResultModal() {
+        document.getElementById('finalizeResultModal').classList.add('hidden');
+    }
+    
+    // Show finalize result modal on page load if there's a session message
+    @if(session('success'))
+        document.addEventListener('DOMContentLoaded', function() {
+            showFinalizeResultModal('success', '{{ session('success') }}');
+        });
+    @endif
+    @if(session('error'))
+        document.addEventListener('DOMContentLoaded', function() {
+            showFinalizeResultModal('error', '{{ session('error') }}');
+        });
+    @endif
 </script>
 
 </body>

@@ -14,8 +14,16 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view (for Admin and Teachers).
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        // Ensure session is started with a valid CSRF token
+        if (!$request->session()->isStarted()) {
+            $request->session()->start();
+        }
+        
+        // Regenerate CSRF token to ensure it's fresh
+        $request->session()->regenerateToken();
+        
         $announcements = \App\Models\Announcement::latest()->take(6)->get();
         $teachers = \App\Models\Teacher::all();
         $students = \App\Models\Student::whereHas('enrollments', function($q) {
@@ -32,8 +40,16 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the student login view.
      */
-    public function createStudent(): View
+    public function createStudent(Request $request): View
     {
+        // Ensure session is started with a valid CSRF token
+        if (!$request->session()->isStarted()) {
+            $request->session()->start();
+        }
+        
+        // Regenerate CSRF token to ensure it's fresh
+        $request->session()->regenerateToken();
+        
         return view('auth.student-login');
     }
 
@@ -136,8 +152,11 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect('/');
+        
+        // Regenerate session ID but keep session data to avoid 419 errors
+        $request->session()->regenerate(true);
+        
+        // Flash message for successful logout
+        return redirect('/')->with('status', 'You have been logged out successfully.');
     }
 }
