@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>School Form 10 (SF10-ES) - Learner's Permanent Academic Record</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -15,10 +15,15 @@
         }
         
         .sf10-container {
-            max-width: 210mm;
+            width: 8.5in;
+            min-height: 11in;
             margin: 0 auto;
             background: white;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 2px solid #000;
+            padding: 0.3in;
+            position: relative;
+            box-sizing: border-box;
         }
         
         .sf10-table {
@@ -61,53 +66,291 @@
             justify-content: center;
         }
         
-        /* Print styles */
+        /* Print styles - Match SF9 */
         @media print {
             @page {
                 size: letter portrait;
-                margin: 0.3in 0.25in 0.3in 0.25in;
-            }
-            
-            aside,
-            nav[class*="w-72"],
-            div[class*="w-72"],
-            .sidebar,
-            #sidebar,
-            [class*="sidebar"],
-            .no-print {
-                display: none !important;
-            }
-            
-            .ml-72,
-            [class*="ml-72"] {
-                margin-left: 0 !important;
-                padding-left: 0 !important;
-                width: 100% !important;
+                margin: 0.25in;
             }
             
             body {
-                background: white;
-                font-size: 9pt;
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
             
-            .sf10-container {
-                box-shadow: none;
-                margin: 0;
-                padding: 0;
+            /* Hide sidebars */
+            aside,
+            nav,
+            .sidebar,
+            [class*="sidebar"],
+            #sidebar,
+            .no-print,
+            .fixed.w-72,
+            .fixed[class*="w-72"],
+            [x-show*="mobileOpen"],
+            .lg\:translate-x-0,
+            .backdrop-blur-xl {
+                display: none !important;
+                visibility: hidden !important;
+                width: 0 !important;
+                height: 0 !important;
+                position: absolute !important;
+                left: -9999px !important;
+            }
+            
+            /* Reset main content */
+            .ml-72,
+            [class*="ml-"],
+            main,
+            .main-content,
+            #main-content {
+                margin-left: 0 !important;
+                padding-left: 0 !important;
+                width: 100% !important;
                 max-width: 100% !important;
             }
             
+            /* Container - NO border/padding when printing */
+            .sf10-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                border: none !important;
+                min-height: auto !important;
+            }
+            
+            /* Fix two-column layout */
+            .flex.gap-6 {
+                display: block !important;
+            }
+            
+            .flex.gap-6 > div:last-child {
+                display: none !important;
+            }
+            
+            .flex-1 {
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: none !important;
+            }
+            
+            /* Fix all borders to 1px */
+            .border-2, .border-b-2, .border-t-2 {
+                border-width: 1px !important;
+            }
+            
+            /* Tables - prevent overflow */
             .sf10-table {
-                font-size: 8pt;
+                font-size: 7.5pt !important;
+                table-layout: fixed !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow: hidden !important;
             }
             
+            .sf10-table th,
+            .sf10-table td {
+                padding: 2px 3px !important;
+                border: 1px solid #000 !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+            
+            /* Prevent horizontal overflow */
+            * {
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Fix grid layouts */
+            .grid {
+                display: block !important;
+            }
+            
+            .grid > * {
+                width: 100% !important;
+                margin-bottom: 2px !important;
+            }
+            
+            /* Fix flex layouts */
+            .flex {
+                display: block !important;
+            }
+            
+            .flex > * {
+                width: 100% !important;
+            }
+            
+            /* Ensure sections don't overflow */
+            .border-2, .border, .border-black, [class*="border-"] {
+                box-sizing: border-box !important;
+                max-width: 100% !important;
+            }
+            
+            /* Fix underline fields */
+            .underline-field {
+                min-width: 20px !important;
+                max-width: 100% !important;
+            }
+            
+            /* Fix school info header - stack vertically */
+            .scholastic-record .bg-gray-100 .flex {
+                display: block !important;
+            }
+            
+            .scholastic-record .bg-gray-100 .flex span {
+                display: inline !important;
+                font-size: 6.5pt !important;
+            }
+            
+            /* Fix col-span layouts */
+            .col-span-1, .col-span-5, .col-span-6 {
+                grid-column: span 12 !important;
+                width: 100% !important;
+                display: block !important;
+            }
+            
+            /* Force all content to fit */
+            html, body {
+                width: 100% !important;
+                overflow-x: hidden !important;
+            }
+            
+            /* Fix learner information grid - organize for printing */
+            /* Names on left (rows 1-3), Other info on right (rows 1-3) */
+            .grid.grid-cols-2 {
+                display: grid !important;
+                grid-template-columns: 1.2fr 1fr !important;
+                grid-template-rows: repeat(3, auto) !important;
+                gap: 4px 16px !important;
+            }
+            
+            /* Row 1: Last Name | LRN */
+            .grid.grid-cols-2 > div:nth-child(1) { grid-row: 1; grid-column: 1; }
+            .grid.grid-cols-2 > div:nth-child(2) { grid-row: 1; grid-column: 2; }
+            
+            /* Row 2: First Name | Birthdate */
+            .grid.grid-cols-2 > div:nth-child(3) { grid-row: 2; grid-column: 1; }
+            .grid.grid-cols-2 > div:nth-child(4) { grid-row: 2; grid-column: 2; }
+            
+            /* Row 3: Middle Name | Sex */
+            .grid.grid-cols-2 > div:nth-child(5) { grid-row: 3; grid-column: 1; }
+            .grid.grid-cols-2 > div:nth-child(6) { grid-row: 3; grid-column: 2; }
+            
+            .grid.grid-cols-2 > div {
+                display: flex !important;
+                align-items: center !important;
+                margin-bottom: 0 !important;
+                padding: 2px 0 !important;
+            }
+            
+            .grid.grid-cols-2 > div > span:first-child {
+                width: auto !important;
+                white-space: nowrap !important;
+                font-size: 7.5pt !important;
+            }
+            
+            .grid.grid-cols-2 > div > span:last-child {
+                font-size: 8pt !important;
+                font-weight: bold !important;
+            }
+            
+            /* Reduce font sizes */
+            .text-\[10px\] {
+                font-size: 8pt !important;
+            }
+            
+            .text-\[11px\] {
+                font-size: 8pt !important;
+            }
+            
+            /* Reduce padding */
+            .p-2 {
+                padding: 2px !important;
+            }
+            
+            .p-3 {
+                padding: 3px !important;
+            }
+            
+            .section-header {
+                padding: 2px 4px !important;
+                font-size: 8pt !important;
+            }
+            
+            /* Make learner info box more compact */
+            .border-2.border-black.p-2 {
+                padding: 4px !important;
+            }
+            
+            /* Scholastic records */
             .scholastic-record {
-                page-break-inside: avoid;
-                margin-bottom: 10px;
+                margin-bottom: 6px !important;
+                border: 1px solid #000 !important;
+                page-break-inside: auto;
             }
             
-            .page-break {
-                page-break-before: always;
+            /* Background colors */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Fix text overflow in eligibility section */
+            .text-\[9px\] {
+                font-size: 7pt !important;
+            }
+            
+            /* Make eligibility section grid single column */
+            .grid.grid-cols-2 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            /* Tighten checkbox row */
+            .flex.gap-6.ml-4 {
+                flex-wrap: wrap !important;
+                gap: 0.25rem !important;
+            }
+            
+            /* Reduce checkbox size */
+            .checkbox {
+                width: 8px !important;
+                height: 8px !important;
+            }
+            
+            .space-y-2 > * + * {
+                margin-top: 1px !important;
+            }
+            
+            .gap-6 {
+                gap: 0.5rem !important;
+            }
+            
+            .gap-4 {
+                gap: 0.25rem !important;
+            }
+            
+            .gap-2 {
+                gap: 0.125rem !important;
+            }
+            
+            .ml-4 {
+                margin-left: 0.5rem !important;
+            }
+            
+            .mt-1, .mt-2, .mt-3 {
+                margin-top: 0.125rem !important;
+            }
+            
+            .mb-3 {
+                margin-bottom: 0.25rem !important;
+            }
+            
+            .p-2 {
+                padding: 0.25rem !important;
             }
         }
         
@@ -119,8 +362,8 @@
         }
         
         .scholastic-record {
-            margin-bottom: 15px;
-            border: 2px solid #000;
+            margin-bottom: 10px;
+            border: 1px solid #000;
         }
         
         .section-header {
@@ -147,7 +390,7 @@
     @include('teacher.includes.sidebar')
 
     <!-- Main Content -->
-    <div class="ml-72 p-6">
+    <div class="ml-72 p-6" id="main-content">
         
         <!-- Page Header -->
         <div class="mb-4 flex items-center justify-between no-print">
@@ -160,7 +403,8 @@
             </div>
         </div>
 
-        <!-- Student Selector -->
+        @if(!$selectedStudent)
+        <!-- Student Selector - Shows only when no student selected -->
         <div class="no-print mb-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
             <form method="GET" action="{{ route('teacher.sf10') }}" class="flex items-end gap-4">
                 <div class="flex-1">
@@ -169,8 +413,8 @@
                         class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">-- Select Student --</option>
                         @foreach($students as $student)
-                            <option value="{{ $student->id }}" {{ $selectedStudent && $selectedStudent->id == $student->id ? 'selected' : '' }}>
-                                {{ $student->user->last_name ?? '' }}, {{ $student->user->first_name ?? '' }} {{ $student->user->middle_name ?? '' }}
+                            <option value="{{ $student->id }}">
+                                {{ $student->user->last_name ?? '' }}, {{ $student->user->first_name ?? '' }} {{ $student->user->middle_name ?? '' }} ({{ $student->lrn ?? '' }})
                             </option>
                         @endforeach
                     </select>
@@ -180,6 +424,7 @@
                 </button>
             </form>
         </div>
+        @endif
 
         @if(!$selectedStudent)
             <div class="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center no-print mb-4">
@@ -189,8 +434,16 @@
         @endif
 
         @if($selectedStudent)
-        <!-- SF10 Permanent Record -->
-        <div class="sf10-container bg-white p-4 rounded-xl shadow-lg border border-slate-200">
+        @php
+            $user = $selectedStudent->user;
+        @endphp
+
+        <!-- TWO COLUMN LAYOUT: Report Card (Left) + Sidebar (Right) -->
+        <div class="flex gap-6" style="align-items: flex-start;">
+            
+            <!-- LEFT COLUMN: Official SF10 Permanent Record -->
+            <div class="flex-1">
+            <div class="sf10-container bg-white p-4 rounded-xl shadow-lg border border-slate-200">
             
             <!-- Header Section -->
             <div class="header-box mb-3">
@@ -219,29 +472,30 @@
                 <h3 class="section-header">LEARNER'S INFORMATION</h3>
                 
                 <div class="grid grid-cols-2 gap-x-6 gap-y-2 mt-3 text-[10px]">
+                    <!-- Left Side: Names -->
                     <div class="flex items-center gap-2">
                         <span class="font-semibold w-24">LAST NAME:</span>
-                        <span class="border-b-2 border-black flex-1 px-1 font-bold uppercase text-[11px]">{{ $user->last_name ?? '' }}</span>
+                        <span class="flex-1 px-1 font-bold uppercase text-[11px]">{{ $user->last_name ?? '' }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="font-semibold w-16">LRN:</span>
-                        <span class="border-b-2 border-black flex-1 px-1 font-mono text-[11px]">{{ $selectedStudent->lrn ?? '' }}</span>
+                        <span class="flex-1 px-1 font-mono text-[11px]">{{ $selectedStudent->lrn ?? '' }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="font-semibold w-24">FIRST NAME:</span>
-                        <span class="border-b-2 border-black flex-1 px-1 font-bold uppercase text-[11px]">{{ $user->first_name ?? '' }}</span>
+                        <span class="flex-1 px-1 font-bold uppercase text-[11px]">{{ $user->first_name ?? '' }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="font-semibold w-16">Birthdate:</span>
-                        <span class="border-b-2 border-black flex-1 px-1">{{ $selectedStudent->birthdate ? \Carbon\Carbon::parse($selectedStudent->birthdate)->format('m/d/Y') : '' }}</span>
+                        <span class="flex-1 px-1">{{ $selectedStudent->birthdate ? \Carbon\Carbon::parse($selectedStudent->birthdate)->format('m/d/Y') : '' }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="font-semibold w-24">MIDDLE NAME:</span>
-                        <span class="border-b-2 border-black flex-1 px-1 font-bold uppercase text-[11px]">{{ $user->middle_name ?? '' }}</span>
+                        <span class="flex-1 px-1 font-bold uppercase text-[11px]">{{ $user->middle_name ?? '' }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="font-semibold w-16">Sex:</span>
-                        <span class="border-b-2 border-black flex-1 px-1 uppercase">{{ $selectedStudent->gender ?? '' }}</span>
+                        <span class="flex-1 px-1 uppercase">{{ $selectedStudent->gender ?? '' }}</span>
                     </div>
                 </div>
             </div>
@@ -265,21 +519,19 @@
                     </div>
                     <div class="flex items-center gap-2 mt-2">
                         <span class="font-semibold">Other Credential Presented:</span>
-                        <span class="border-b border-black flex-1"></span>
+                        <span class="flex-1"></span>
                     </div>
                     <div class="flex items-center gap-2 mt-1">
                         <span class="font-semibold">Name and Address of Testing Center:</span>
-                        <span class="border-b border-black flex-1"></span>
+                        <span class="flex-1"></span>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 mt-1">
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold">Date of Examination/Assessment:</span>
-                            <span class="border-b border-black w-32"></span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold">Remark:</span>
-                            <span class="border-b border-black flex-1"></span>
-                        </div>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="font-semibold">Date of Examination/Assessment:</span>
+                        <span class="w-32"></span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="font-semibold">Remark:</span>
+                        <span class="flex-1"></span>
                     </div>
                 </div>
             </div>
@@ -575,6 +827,81 @@
             </div>
 
         </div>
+        </div>
+        <!-- /LEFT COLUMN -->
+
+        <!-- RIGHT COLUMN: Student Selector & Info Sidebar -->
+        <div class="no-print" style="width: 300px; flex-shrink: 0;">
+            
+            <!-- Student Selector Card -->
+            <div class="bg-white rounded-lg shadow-md border border-slate-200 mb-4 overflow-hidden">
+                <div class="bg-blue-600 text-white px-4 py-3 flex items-center gap-2">
+                    <i class="fas fa-user-graduate"></i>
+                    <span class="font-semibold">Select Student</span>
+                </div>
+                <div class="p-4">
+                    <form method="GET" action="{{ route('teacher.sf10') }}">
+                        <select name="student_id" onchange="this.form.submit()" 
+                            class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 text-sm bg-slate-50 mb-3">
+                            <option value="">-- Select Student --</option>
+                            @foreach($students as $student)
+                                <option value="{{ $student->id }}" {{ $selectedStudent && $selectedStudent->id == $student->id ? 'selected' : '' }}>
+                                    {{ $student->user->last_name ?? '' }}, {{ $student->user->first_name ?? '' }} {{ $student->user->middle_name ?? '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm flex items-center justify-center gap-2">
+                            <i class="fas fa-search"></i>
+                            Load
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Student Info Card -->
+            <div class="bg-white rounded-lg shadow-md border border-slate-200 mb-4 overflow-hidden">
+                <div class="bg-slate-100 text-slate-800 px-4 py-2 text-sm font-semibold border-b">Student Information</div>
+                <div class="p-4 text-sm">
+                    <div class="mb-2"><span class="text-slate-500">Name:</span> <span class="font-semibold">{{ $user->last_name ?? '' }}, {{ $user->first_name ?? '' }}</span></div>
+                    <div class="mb-2"><span class="text-slate-500">LRN:</span> <span class="font-semibold">{{ $selectedStudent->lrn ?? 'N/A' }}</span></div>
+                    <div class="mb-2"><span class="text-slate-500">Birthdate:</span> <span class="font-semibold">{{ $selectedStudent->birthdate ? \Carbon\Carbon::parse($selectedStudent->birthdate)->format('m/d/Y') : 'N/A' }}</span></div>
+                    <div><span class="text-slate-500">Sex:</span> <span class="font-semibold">{{ $selectedStudent->gender ?? 'N/A' }}</span></div>
+                </div>
+            </div>
+
+            <!-- Academic History Stats -->
+            <div class="bg-white rounded-lg shadow-md border border-slate-200 mb-4 overflow-hidden">
+                <div class="bg-blue-600 text-white px-4 py-3 flex items-center gap-2">
+                    <i class="fas fa-history"></i>
+                    <span class="font-semibold">Academic History</span>
+                </div>
+                <div class="p-4 space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 font-semibold uppercase">Grade Levels</p>
+                            <p class="text-lg font-bold text-slate-800">{{ count($scholasticRecords ?? []) }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                        <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-700">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 font-semibold uppercase">Status</p>
+                            <p class="text-sm font-bold text-green-700">Active</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /RIGHT COLUMN -->
+
+        </div>
+        <!-- /TWO COLUMN LAYOUT -->
         @endif
 
     </div>

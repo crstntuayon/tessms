@@ -9,6 +9,7 @@ use App\Models\Attendance;
 use App\Models\CoreValue;
 use App\Models\SchoolYear;
 use App\Models\Setting;
+use App\Models\KindergartenDomain;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -67,6 +68,22 @@ class GradesController extends Controller
             } else {
                 $adviserName = $student->section->teacher->name ?? '';
             }
+        }
+
+        // Check if student is in Kindergarten
+        $gradeLevelName = $student->section->gradeLevel->name ?? '';
+        $isKindergarten = stripos($gradeLevelName, 'kinder') !== false || 
+                          stripos($gradeLevelName, 'pre-school') !== false ||
+                          strtolower($gradeLevelName) === 'k';
+
+        // Get kindergarten domains data if applicable
+        $kindergartenDomains = collect();
+        $lang = 'english';
+        if ($isKindergarten) {
+            $kindergartenDomains = KindergartenDomain::where('student_id', $student->id)
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->get()
+                ->groupBy(['domain_key', 'indicator_key']);
         }
 
         // Get attendance records for the school year
@@ -158,7 +175,10 @@ class GradesController extends Controller
             'generalAverage',
             'attendances',
             'coreValues',
-            'attendanceRate'
+            'attendanceRate',
+            'isKindergarten',
+            'kindergartenDomains',
+            'lang'
         ));
     }
 }

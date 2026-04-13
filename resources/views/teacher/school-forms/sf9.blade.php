@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>School Form 9 (SF9) - Learner's Progress Report Card</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Arial:wght@400;700&display=swap');
@@ -188,7 +188,12 @@
             .sidebar,
             [class*="sidebar"],
             #sidebar,
-            .no-print {
+            .no-print,
+            .fixed.w-72,
+            .fixed[class*="w-72"],
+            [x-show*="mobileOpen"],
+            .lg\:translate-x-0,
+            .backdrop-blur-xl {
                 display: none !important;
                 visibility: hidden !important;
                 width: 0 !important;
@@ -418,39 +423,33 @@
             </div>
         </div>
 
-        <!-- Student Selector -->
-        <div class="no-print mb-6 student-selector-card">
+        @if(!$selectedStudent)
+        <!-- Student Selector - Shows only when no student selected -->
+        <div class="no-print mb-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
             <form method="GET" action="{{ route('teacher.sf9') }}" class="flex items-end gap-4">
                 <div class="flex-1">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                        <i class="fas fa-user-graduate text-blue-800"></i>
-                        Select Student
-                    </label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Student</label>
                     <select name="student_id" onchange="this.form.submit()" 
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-700 font-medium bg-gray-50">
-                        <option value="">-- Select a Student --</option>
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+                        <option value="">-- Select Student --</option>
                         @foreach($students as $student)
-                            <option value="{{ $student->id }}" {{ $selectedStudent && $selectedStudent->id == $student->id ? 'selected' : '' }}>
-                                {{ $student->user->last_name ?? '' }}, {{ $student->user->first_name ?? '' }} {{ $student->user->middle_name ?? '' }} 
-                                - {{ $student->section->name ?? '' }} ({{ $student->section->gradeLevel->name ?? '' }})
+                            <option value="{{ $student->id }}">
+                                {{ $student->user->last_name ?? '' }}, {{ $student->user->first_name ?? '' }} {{ $student->user->middle_name ?? '' }} ({{ $student->lrn ?? '' }})
                             </option>
                         @endforeach
                     </select>
                 </div>
-                <button type="submit" class="px-6 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition font-semibold shadow flex items-center gap-2">
-                    <i class="fas fa-search"></i>
+                <button type="submit" class="px-6 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition font-medium">
                     Load Report Card
                 </button>
             </form>
         </div>
+        @endif
 
         @if(!$selectedStudent)
-            <div class="bg-amber-50 border-2 border-amber-300 rounded-lg p-8 text-center no-print mb-6">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
-                    <i class="fas fa-exclamation-triangle text-amber-600 text-2xl"></i>
-                </div>
-                <h3 class="text-amber-800 font-bold text-lg mb-2">No Student Selected</h3>
-                <p class="text-amber-700">Please select a student from the dropdown above to view their report card.</p>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center no-print mb-4">
+                <i class="fas fa-exclamation-triangle text-amber-500 text-3xl mb-2"></i>
+                <p class="text-amber-800 font-medium">Please select a student to view their report card.</p>
             </div>
         @endif
 
@@ -468,48 +467,12 @@
             }
         @endphp
 
-        <!-- Quick Stats -->
-        <div class="stats-grid no-print">
-            <div class="stat-card">
-                <div class="stat-icon blue">
-                    <i class="fas fa-book"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-semibold uppercase">Subjects</p>
-                    <p class="text-xl font-bold text-gray-800">{{ $subjectGrades->count() }}</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon green">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-semibold uppercase">Passed</p>
-                    <p class="text-xl font-bold text-green-700">{{ $subjectGrades->where('remarks', 'Passed')->count() }}</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon purple">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-semibold uppercase">General Average</p>
-                    <p class="text-xl font-bold text-purple-700">{{ $generalAverage ?? 'N/A' }}</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon amber">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-semibold uppercase">Attendance</p>
-                    <p class="text-xl font-bold text-amber-700">{{ $attendances->where('status', 'present')->count() }} Days</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- OFFICIAL SF9 REPORT CARD -->
-        <div class="sf9-container bg-white">
+        <!-- TWO COLUMN LAYOUT: Report Card (Left) + Sidebar (Right) -->
+        <div class="flex gap-6" style="align-items: flex-start;">
+            
+            <!-- LEFT COLUMN: Official SF9 Report Card -->
+            <div class="flex-1">
+            <div class="sf9-container bg-white">
             
             <!-- Header Section - Official DepEd Format -->
             <div class="header-box">
@@ -1152,6 +1115,137 @@ $getBehaviorStatement = function($coreValue, $statementKey) use ($sortedCoreValu
             </div>
 
         </div>
+        </div>
+        <!-- /LEFT COLUMN -->
+
+        <!-- RIGHT COLUMN: Student Selector & Stats Sidebar -->
+        <div class="no-print" style="width: 300px; flex-shrink: 0;">
+            
+            <!-- Student Selector Card -->
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-4 overflow-hidden">
+                <div class="bg-blue-900 text-white px-4 py-3 flex items-center gap-2">
+                    <i class="fas fa-user-graduate"></i>
+                    <span class="font-semibold">Select Student</span>
+                </div>
+                <div class="p-4">
+                    <form method="GET" action="{{ route('teacher.sf9') }}">
+                        <select name="student_id" onchange="this.form.submit()" 
+                            class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-700 text-sm bg-gray-50 mb-3">
+                            <option value="">-- Select Student --</option>
+                            @foreach($students as $student)
+                                <option value="{{ $student->id }}" {{ $selectedStudent && $selectedStudent->id == $student->id ? 'selected' : '' }}>
+                                    {{ $student->user->last_name ?? '' }}, {{ $student->user->first_name ?? '' }} {{ $student->user->middle_name ?? '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="w-full px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition font-semibold text-sm flex items-center justify-center gap-2">
+                            <i class="fas fa-search"></i>
+                            Load
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            @if($isKindergarten)
+            <!-- KINDERGARTEN STATS -->
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-4 overflow-hidden">
+                <div class="bg-purple-900 text-white px-4 py-3 flex items-center gap-2">
+                    <i class="fas fa-child"></i>
+                    <span class="font-semibold">Kindergarten Progress</span>
+                </div>
+                <div class="p-4 space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700">
+                            <i class="fas fa-puzzle-piece"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold uppercase">Developmental Domains</p>
+                            <p class="text-lg font-bold text-gray-800">{{ count(config('kindergarten.domains', [])) }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-amber-50 rounded-lg">
+                        <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold uppercase">Days Present</p>
+                            <p class="text-lg font-bold text-amber-700">{{ $attendances->where('status', 'present')->count() }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Rating Scale -->
+                    <div class="border-t border-gray-200 pt-3 mt-3">
+                        <p class="text-xs font-semibold text-gray-600 mb-2">Rating Scale:</p>
+                        <div class="space-y-1 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-purple-700 w-6 text-center bg-purple-100 rounded">B</span>
+                                <span><strong>Beginning</strong> - Starting to develop</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-purple-700 w-6 text-center bg-purple-100 rounded">D</span>
+                                <span><strong>Developing</strong> - Shows progress</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-purple-700 w-6 text-center bg-purple-100 rounded">C</span>
+                                <span><strong>Consolidating</strong> - Has mastered</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @else
+            <!-- GRADES 1-6 STATS -->
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-4 overflow-hidden">
+                <div class="bg-blue-900 text-white px-4 py-3 flex items-center gap-2">
+                    <i class="fas fa-chart-pie"></i>
+                    <span class="font-semibold">Academic Summary</span>
+                </div>
+                <div class="p-4 space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold uppercase">Subjects</p>
+                            <p class="text-lg font-bold text-gray-800">{{ $subjectGrades->count() }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                        <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-700">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold uppercase">Passed</p>
+                            <p class="text-lg font-bold text-green-700">{{ $subjectGrades->where('remarks', 'Passed')->count() }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold uppercase">General Average</p>
+                            <p class="text-lg font-bold text-purple-700">{{ $generalAverage ?? 'N/A' }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-amber-50 rounded-lg">
+                        <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold uppercase">Days Present</p>
+                            <p class="text-lg font-bold text-amber-700">{{ $attendances->where('status', 'present')->count() }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+        </div>
+        <!-- /RIGHT COLUMN -->
+
+        </div>
+        <!-- /TWO COLUMN LAYOUT -->
         @endif
 
     </div>

@@ -21,9 +21,6 @@ class AuthenticatedSessionController extends Controller
             $request->session()->start();
         }
         
-        // Regenerate CSRF token to ensure it's fresh
-        $request->session()->regenerateToken();
-        
         $announcements = \App\Models\Announcement::latest()->take(6)->get();
         $teachers = \App\Models\Teacher::all();
         $students = \App\Models\Student::whereHas('enrollments', function($q) {
@@ -46,9 +43,6 @@ class AuthenticatedSessionController extends Controller
         if (!$request->session()->isStarted()) {
             $request->session()->start();
         }
-        
-        // Regenerate CSRF token to ensure it's fresh
-        $request->session()->regenerateToken();
         
         return view('auth.student-login');
     }

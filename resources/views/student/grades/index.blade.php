@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>School Form 9 (SF9) - Learner's Progress Report Card</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -411,42 +411,65 @@
 
         <!-- Quick Stats -->
         <div class="stats-grid no-print max-w-[8.5in] mx-auto">
-            <div class="stat-card">
-                <div class="stat-icon blue">
-                    <i class="fas fa-book"></i>
+            @if($isKindergarten)
+                <!-- Kindergarten Stats -->
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase">Developmental Domains</p>
+                        <p class="text-xl font-bold text-gray-800">{{ count(config('kindergarten.domains', [])) }}</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-semibold uppercase">Subjects</p>
-                    <p class="text-xl font-bold text-gray-800">{{ $subjectGrades->count() }}</p>
+                <div class="stat-card">
+                    <div class="stat-icon amber">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase">Days Present</p>
+                        <p class="text-xl font-bold text-amber-700">{{ $attendances->where('status', 'present')->count() }}</p>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon green">
-                    <i class="fas fa-check-circle"></i>
+            @else
+                <!-- Grades 1-6 Stats -->
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase">Subjects</p>
+                        <p class="text-xl font-bold text-gray-800">{{ $subjectGrades->count() }}</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-semibold uppercase">Passed</p>
-                    <p class="text-xl font-bold text-green-700">{{ $subjectGrades->where('remarks', 'Passed')->count() }}</p>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase">Passed</p>
+                        <p class="text-xl font-bold text-green-700">{{ $subjectGrades->where('remarks', 'Passed')->count() }}</p>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon purple">
-                    <i class="fas fa-chart-line"></i>
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase">General Average</p>
+                        <p class="text-xl font-bold text-purple-700">{{ $generalAverage ?? 'N/A' }}</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-semibold uppercase">General Average</p>
-                    <p class="text-xl font-bold text-purple-700">{{ $generalAverage ?? 'N/A' }}</p>
+                <div class="stat-card">
+                    <div class="stat-icon amber">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase">Attendance Rate</p>
+                        <p class="text-xl font-bold text-amber-700">{{ $attendanceRate ?? 0 }}%</p>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon amber">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-semibold uppercase">Attendance Rate</p>
-                    <p class="text-xl font-bold text-amber-700">{{ $attendanceRate ?? 0 }}%</p>
-                </div>
-            </div>
+            @endif
         </div>
 
         <!-- OFFICIAL SF9 REPORT CARD -->
@@ -493,99 +516,227 @@
                 </div>
             </div>
 
-            <!-- Report on Learning Progress -->
-            <div class="section-header">Report on Learning Progress and Achievement</div>
-            
-            <table class="sf9-table">
-                <thead>
-                    <tr>
-                        <th rowspan="2" style="width: 32%; text-align: left; padding-left: 8px;">Learning Areas</th>
-                        <th colspan="4">Quarterly Rating</th>
-                        <th rowspan="2" style="width: 12%;">Final Rating</th>
-                        <th rowspan="2" style="width: 12%;">Remarks</th>
-                    </tr>
-                    <tr>
-                        <th style="width: 9%;">1st</th>
-                        <th style="width: 9%;">2nd</th>
-                        <th style="width: 9%;">3rd</th>
-                        <th style="width: 9%;">4th</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($subjectGrades as $subjectGrade)
-                    <tr>
-                        <td class="text-left pl-2 text-sm" style="font-size: 9pt;">{{ $subjectGrade['subject_name'] }}</td>
-                        <td>{{ $subjectGrade['quarter_1'] ?: '' }}</td>
-                        <td>{{ $subjectGrade['quarter_2'] ?: '' }}</td>
-                        <td>{{ $subjectGrade['quarter_3'] ?: '' }}</td>
-                        <td>{{ $subjectGrade['quarter_4'] ?: '' }}</td>
-                        <td class="font-bold {{ $subjectGrade['final_grade'] >= 75 ? '' : 'grade-failed' }}">
-                            {{ $subjectGrade['final_grade'] ?: '' }}
-                        </td>
-                        <td class="{{ $subjectGrade['remarks'] == 'Failed' ? 'grade-failed' : '' }}">
-                            {{ $subjectGrade['remarks'] ?: '' }}
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="py-6 text-gray-500 text-center">
-                            No subjects found for your grade level.
-                        </td>
-                    </tr>
-                    @endforelse
-
-                    @if($generalAverage !== null)
-                    <tr style="background: #f3f4f6; font-weight: bold;">
-                        <td colspan="5" class="text-right pr-4" style="font-size: 9pt;">GENERAL AVERAGE</td>
-                        <td class="{{ $generalAverage >= 75 ? '' : 'grade-failed' }}">{{ $generalAverage }}</td>
-                        <td class="{{ $generalAverage >= 75 ? '' : 'grade-failed' }}">
-                            {{ $generalAverage >= 75 ? 'Passed' : 'Failed' }}
-                        </td>
-                    </tr>
-                    @endif
-                </tbody>
-            </table>
-
-            <!-- Descriptors and Grading Scale -->
-            <div class="two-column">
-                <div class="border border-black p-2">
-                    <h4 class="font-bold text-xs mb-2 uppercase text-center border-b border-black pb-1">Descriptors & Grading Scale</h4>
+            <!-- Report on Learning Progress - Different for Kindergarten vs Grades 1-6 -->
+            @if($isKindergarten)
+                <!-- KINDERGARTEN: Developmental Domains -->
+                <div class="section-header">
+                    Developmental Progress Report
+                </div>
+                
+                @php
+                $kinderConfig = config('kindergarten.domains');
+                $ratingScale = config('kindergarten.rating_scale');
+                
+                // Helper function to get rating for domain indicator
+                $getKinderRating = function($domainKey, $indicatorKey, $quarter) use ($kindergartenDomains) {
+                    $domainData = $kindergartenDomains->get($domainKey);
+                    if (!$domainData) return '';
+                    
+                    $indicatorData = $domainData->get($indicatorKey);
+                    if (!$indicatorData) return '';
+                    
+                    $record = $indicatorData->firstWhere('quarter', $quarter);
+                    return $record ? $record->rating : '';
+                };
+                @endphp
+                
+                @foreach($kinderConfig as $domainKey => $domainData)
+                <div class="border border-black mb-2">
+                    <div class="bg-gray-100 p-2 border-b border-black">
+                        <strong style="font-size: 9pt; text-transform: uppercase;">{{ $domainData['name'][$lang] ?? $domainData['name']['cebuano'] }}</strong>
+                    </div>
+                    <table class="sf9-table" style="font-size: 8pt;">
+                        <thead>
+                            <tr style="background-color: #f9fafb;">
+                                <th rowspan="2" style="width: 50%; text-align: left; padding-left: 8px;">Indicators</th>
+                                <th colspan="4" style="text-align: center;">Quarter</th>
+                            </tr>
+                            <tr style="background-color: #f9fafb;">
+                                <th style="width: 12.5%;">1</th>
+                                <th style="width: 12.5%;">2</th>
+                                <th style="width: 12.5%;">3</th>
+                                <th style="width: 12.5%;">4</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(isset($domainData['indicators']))
+                                @foreach($domainData['indicators'] as $indicatorKey => $indicatorData)
+                                <tr style="{{ $loop->even ? 'background-color: #f9fafb;' : '' }}">
+                                    <td class="text-left pl-2" style="font-size: 7.5pt; padding: 4px 8px; line-height: 1.4;">{{ $indicatorData[$lang] ?? $indicatorData['cebuano'] }}</td>
+                                    <td class="font-bold">{{ $getKinderRating($domainKey, $indicatorKey, 1) }}</td>
+                                    <td class="font-bold">{{ $getKinderRating($domainKey, $indicatorKey, 2) }}</td>
+                                    <td class="font-bold">{{ $getKinderRating($domainKey, $indicatorKey, 3) }}</td>
+                                    <td class="font-bold">{{ $getKinderRating($domainKey, $indicatorKey, 4) }}</td>
+                                </tr>
+                                @endforeach
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+                @endforeach
+                
+                <!-- Rating Scale for Kindergarten -->
+                <div class="border border-black p-2 mb-3">
+                    <h4 class="font-bold text-xs mb-2 uppercase text-center border-b border-black pb-1">Rating Scale</h4>
                     <table class="grading-scale-table">
                         <tbody>
                             <tr>
-                                <td class="text-left">Outstanding</td>
-                                <td class="text-center font-bold">90-100</td>
-                                <td class="text-center">Passed</td>
+                                <td class="text-center font-bold" style="width: 15%;">B</td>
+                                <td class="text-left"><strong>Beginning</strong> - Starting to develop skills</td>
                             </tr>
                             <tr>
-                                <td class="text-left">Very Satisfactory</td>
-                                <td class="text-center font-bold">85-89</td>
-                                <td class="text-center">Passed</td>
+                                <td class="text-center font-bold">D</td>
+                                <td class="text-left"><strong>Developing</strong> - Shows progress</td>
                             </tr>
                             <tr>
-                                <td class="text-left">Satisfactory</td>
-                                <td class="text-center font-bold">80-84</td>
-                                <td class="text-center">Passed</td>
-                            </tr>
-                            <tr>
-                                <td class="text-left">Fairly Satisfactory</td>
-                                <td class="text-center font-bold">75-79</td>
-                                <td class="text-center">Passed</td>
-                            </tr>
-                            <tr>
-                                <td class="text-left">Did Not Meet Expectations</td>
-                                <td class="text-center font-bold">Below 75</td>
-                                <td class="text-center font-bold">Failed</td>
+                                <td class="text-center font-bold">C</td>
+                                <td class="text-left"><strong>Consolidating</strong> - Has mastered skills</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="border border-black p-2 flex flex-col justify-center">
-                    <p class="text-xs italic text-center leading-relaxed">
-                        "This report card shows the ability and progress your child has made in different learning areas as well as their growth in core values. The school welcomes you should you desire to know more about your child's progress."
-                    </p>
+                
+                <!-- Teacher's Remarks for Kindergarten -->
+                <div class="section-header">Teacher's Comments/Remarks</div>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <div class="border border-black p-2">
+                        <p class="text-xs font-bold text-center border-b border-black pb-1 mb-2">First Quarter (Weeks 1-10)</p>
+                        <div class="h-20 border-b border-black mb-1"></div>
+                        <p class="text-xs text-center">Guardian's Signature</p>
+                    </div>
+                    <div class="border border-black p-2">
+                        <p class="text-xs font-bold text-center border-b border-black pb-1 mb-2">Second Quarter (Weeks 11-20)</p>
+                        <div class="h-20 border-b border-black mb-1"></div>
+                        <p class="text-xs text-center">Guardian's Signature</p>
+                    </div>
+                    <div class="border border-black p-2">
+                        <p class="text-xs font-bold text-center border-b border-black pb-1 mb-2">Third Quarter (Weeks 21-30)</p>
+                        <div class="h-20 border-b border-black mb-1"></div>
+                        <p class="text-xs text-center">Guardian's Signature</p>
+                    </div>
+                    <div class="border border-black p-2">
+                        <p class="text-xs font-bold text-center border-b border-black pb-1 mb-2">Fourth Quarter (Weeks 31-40)</p>
+                        <div class="h-20 border-b border-black mb-1"></div>
+                        <p class="text-xs text-center">Guardian's Signature</p>
+                    </div>
                 </div>
-            </div>
+                
+                <!-- Certification for Kindergarten -->
+                <div class="border border-black p-3 mb-3">
+                    <p class="text-xs leading-relaxed">
+                        This certifies that <strong class="underline">{{ $user->first_name ?? '' }} {{ $user->middle_name ?? '' }} {{ $user->last_name ?? '' }}</strong> 
+                        of <strong>{{ $section->name ?? '' }}</strong> has completed the Kindergarten Curriculum Guide.
+                    </p>
+                    <div class="mt-4 flex justify-between">
+                        <div class="text-center">
+                            <div class="border-t border-black pt-1 w-48">
+                                <p class="font-bold uppercase text-xs">{{ $adviserName ?? '_________________' }}</p>
+                                <p class="text-xs">Teacher</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="border-t border-black pt-1 w-48">
+                                <p class="font-bold uppercase text-xs">{{ $schoolHead ?? '_________________' }}</p>
+                                <p class="text-xs">School Head</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <!-- GRADES 1-6: Regular Subject Grades -->
+                <div class="section-header">Report on Learning Progress and Achievement</div>
+                
+                <table class="sf9-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 32%; text-align: left; padding-left: 8px;">Learning Areas</th>
+                            <th colspan="4">Quarterly Rating</th>
+                            <th rowspan="2" style="width: 12%;">Final Rating</th>
+                            <th rowspan="2" style="width: 12%;">Remarks</th>
+                        </tr>
+                        <tr>
+                            <th style="width: 9%;">1st</th>
+                            <th style="width: 9%;">2nd</th>
+                            <th style="width: 9%;">3rd</th>
+                            <th style="width: 9%;">4th</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($subjectGrades as $subjectGrade)
+                        <tr>
+                            <td class="text-left pl-2 text-sm" style="font-size: 9pt;">{{ $subjectGrade['subject_name'] }}</td>
+                            <td>{{ $subjectGrade['quarter_1'] ?: '' }}</td>
+                            <td>{{ $subjectGrade['quarter_2'] ?: '' }}</td>
+                            <td>{{ $subjectGrade['quarter_3'] ?: '' }}</td>
+                            <td>{{ $subjectGrade['quarter_4'] ?: '' }}</td>
+                            <td class="font-bold {{ $subjectGrade['final_grade'] >= 75 ? '' : 'grade-failed' }}">
+                                {{ $subjectGrade['final_grade'] ?: '' }}
+                            </td>
+                            <td class="{{ $subjectGrade['remarks'] == 'Failed' ? 'grade-failed' : '' }}">
+                                {{ $subjectGrade['remarks'] ?: '' }}
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="py-6 text-gray-500 text-center">
+                                No subjects found for your grade level.
+                            </td>
+                        </tr>
+                        @endforelse
+
+                        @if($generalAverage !== null)
+                        <tr style="background: #f3f4f6; font-weight: bold;">
+                            <td colspan="5" class="text-right pr-4" style="font-size: 9pt;">GENERAL AVERAGE</td>
+                            <td class="{{ $generalAverage >= 75 ? '' : 'grade-failed' }}">{{ $generalAverage }}</td>
+                            <td class="{{ $generalAverage >= 75 ? '' : 'grade-failed' }}">
+                                {{ $generalAverage >= 75 ? 'Passed' : 'Failed' }}
+                            </td>
+                        </tr>
+                        @endif
+                    </tbody>
+                </table>
+
+                <!-- Descriptors and Grading Scale -->
+                <div class="two-column">
+                    <div class="border border-black p-2">
+                        <h4 class="font-bold text-xs mb-2 uppercase text-center border-b border-black pb-1">Descriptors & Grading Scale</h4>
+                        <table class="grading-scale-table">
+                            <tbody>
+                                <tr>
+                                    <td class="text-left">Outstanding</td>
+                                    <td class="text-center font-bold">90-100</td>
+                                    <td class="text-center">Passed</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-left">Very Satisfactory</td>
+                                    <td class="text-center font-bold">85-89</td>
+                                    <td class="text-center">Passed</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-left">Satisfactory</td>
+                                    <td class="text-center font-bold">80-84</td>
+                                    <td class="text-center">Passed</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-left">Fairly Satisfactory</td>
+                                    <td class="text-center font-bold">75-79</td>
+                                    <td class="text-center">Passed</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-left">Did Not Meet Expectations</td>
+                                    <td class="text-center font-bold">Below 75</td>
+                                    <td class="text-center font-bold">Failed</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="border border-black p-2 flex flex-col justify-center">
+                        <p class="text-xs italic text-center leading-relaxed">
+                            "This report card shows the ability and progress your child has made in different learning areas as well as their growth in core values. The school welcomes you should you desire to know more about your child's progress."
+                        </p>
+                    </div>
+                </div>
+            @endif
 
             <!-- Core Values -->
             <div class="section-header">Report on Learner's Observed Values</div>
@@ -684,7 +835,13 @@
             </div>
 
             <!-- Attendance -->
-            <div class="section-header">Report on Attendance</div>
+            <div class="section-header">
+                @if($isKindergarten)
+                    Attendance Record
+                @else
+                    Report on Attendance
+                @endif
+            </div>
             
             @php
                 $months = ['JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR', 'APR', 'MAY'];
@@ -754,7 +911,8 @@
                 </tbody>
             </table>
 
-            <!-- Parent Signature -->
+            @if(!$isKindergarten)
+            <!-- Parent Signature (Grades 1-6 only) -->
             <div class="parent-sig-box">
                 <h4 class="font-bold text-xs mb-2 uppercase">Parent/Guardian's Signature</h4>
                 <div class="parent-sig-grid">
@@ -767,7 +925,7 @@
                 </div>
             </div>
 
-            <!-- Signatures -->
+            <!-- Signatures (Grades 1-6 only) -->
             <div class="grid grid-cols-2 gap-8 mt-6 px-8">
                 <div class="text-center">
                     <div class="signature-line w-56 mx-auto">
@@ -783,7 +941,7 @@
                 </div>
             </div>
 
-            <!-- Certificate of Transfer -->
+            <!-- Certificate of Transfer (Grades 1-6 only) -->
             <div class="certificate-box">
                 <h3 class="text-xs font-bold mb-2 uppercase border-b border-black pb-1">Certificate of Transfer</h3>
                 <div class="space-y-2 text-xs">
@@ -808,7 +966,7 @@
                 </div>
             </div>
 
-            <!-- Cancellation -->
+            <!-- Cancellation (Grades 1-6 only) -->
             <div class="certificate-box" style="margin-top: 8px;">
                 <h3 class="text-xs font-bold mb-2 uppercase border-b border-black pb-1">Cancellation of Eligibility to Transfer</h3>
                 <div class="space-y-2 text-xs">
@@ -827,6 +985,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Footer -->
             <div class="sf9-footer">
