@@ -126,6 +126,8 @@
                             </select>
                         </div>
 
+                        <input type="hidden" name="student_id" id="filter-student-id" value="">
+
                         <!-- Subject Filter -->
                         <div class="filter-card">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
@@ -230,6 +232,27 @@
                         <!-- Summary cards will be inserted here -->
                     </div>
 
+                    <!-- Student Selector (for SF9/SF10 etc.) -->
+                    <div id="preview-student-selector" class="mb-4 hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
+                        <select id="preview-student-select" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="">-- Select Student --</option>
+                        </select>
+                    </div>
+
+                    <!-- Real-time Search -->
+                    <div id="report-search-container" class="mb-4 hidden">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <input type="text" id="report-search" placeholder="Search students..." 
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+
                     <!-- Chart Preview (if applicable) -->
                     @if(in_array($template->type, ['chart', 'combined']))
                         <div id="chart-container" class="chart-preview mb-6 {{ $template->type === 'combined' ? '' : 'hidden' }}">
@@ -278,6 +301,15 @@
     </div>
 </div>
 
+<!-- Floating Back Button -->
+<a href="{{ route('admin.reports.index') }}" 
+   class="fixed bottom-6 right-6 z-50 inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
+   title="Back to Reports">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+    </svg>
+</a>
+
 <!-- Save Report Modal -->
 <div id="save-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -321,9 +353,70 @@
     let currentPage = 1;
     let reportChart = null;
 
+    // Pre-fill saved report parameters
+    @if($savedReport)
+        const savedParams = @json($savedReport->parameters);
+        document.addEventListener('DOMContentLoaded', function() {
+            Object.entries(savedParams).forEach(([key, value]) => {
+                const el = document.querySelector(`[name="${key}"]`);
+                if (el) el.value = value;
+            });
+            
+            // Also set the saved format if available
+            @if($savedReport->format)
+                const formatEl = document.querySelector(`input[name="format"][value="{{ $savedReport->format }}"]`);
+                if (formatEl) formatEl.checked = true;
+            @endif
+        });
+    @endif
+
     // Form submission
     document.getElementById('report-filters').addEventListener('submit', function(e) {
         e.preventDefault();
+        generateReport();
+    });
+
+    // Expose student list for student-specific report partials (SF9, SF10, etc.)
+    window.reportStudents = @json($filterOptions['students'] ?? []);
+    window.sectionStudents = @json($filterOptions['section_students'] ?? []);
+
+    function getStudentsForSelectedSection() {
+        const sectionSelect = document.querySelector('select[name="section_id"]');
+        const sectionId = sectionSelect ? sectionSelect.value : '';
+        if (!sectionId) return window.reportStudents;
+        const ids = window.sectionStudents[sectionId] || [];
+        return window.reportStudents.filter(s => ids.includes(s.id));
+    }
+
+    function populatePreviewStudentSelector(selectedId = '') {
+        const container = document.getElementById('preview-student-selector');
+        const select = document.getElementById('preview-student-select');
+        if (!select) return;
+        select.innerHTML = '<option value="">-- Select Student --</option>';
+        const students = getStudentsForSelectedSection();
+        students.forEach(function(s){
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            const lrn = (s.lrn && String(s.lrn).trim() !== '') ? s.lrn : 'N/A';
+            opt.textContent = s.name + ' (LRN: ' + lrn + ')';
+            opt.title = s.name + ' | LRN: ' + lrn;
+            if (String(s.id) === String(selectedId)) opt.selected = true;
+            select.appendChild(opt);
+        });
+    }
+
+    // Update student selector when section filter changes
+    document.querySelector('select[name="section_id"]')?.addEventListener('change', function(){
+        const container = document.getElementById('preview-student-selector');
+        if (container && !container.classList.contains('hidden')) {
+            populatePreviewStudentSelector(document.getElementById('filter-student-id').value);
+        }
+    });
+
+    // When a student is chosen from the preview selector, regenerate the report
+    document.getElementById('preview-student-select')?.addEventListener('change', function(){
+        const hidden = document.getElementById('filter-student-id');
+        if (hidden) hidden.value = this.value;
         generateReport();
     });
 
@@ -339,14 +432,27 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
             },
             body: JSON.stringify({
                 parameters: params,
                 format: format
             })
         })
-        .then(response => {
+        .then(async response => {
+            if (!response.ok) {
+                const text = await response.text();
+                let message = 'Server error ' + response.status;
+                try {
+                    const json = JSON.parse(text);
+                    message = json.message || json.error || message;
+                } catch (e) {
+                    // If it's HTML, try to extract the exception message
+                    const match = text.match(/<title>(.*?)<\/title>/);
+                    if (match) message = match[1];
+                }
+                throw new Error(message);
+            }
             if (format === 'html') {
                 return response.json();
             }
@@ -372,7 +478,7 @@
         .catch(error => {
             document.getElementById('loading-overlay').classList.add('hidden');
             console.error('Error:', error);
-            alert('Error generating report');
+            alert(error.message || 'Error generating report');
         });
     }
 
@@ -381,6 +487,31 @@
         // Update title
         document.getElementById('report-title').textContent = data.title || '{{ $template->name }}';
         document.getElementById('report-date').textContent = 'Generated: ' + new Date().toLocaleString();
+
+        const templateSlug = '{{ $template->slug }}';
+
+        // Reset and show search (hide for SF10)
+        const searchInput = document.getElementById('report-search');
+        searchInput.value = '';
+        const searchContainer = document.getElementById('report-search-container');
+        if (templateSlug === 'sf10-permanent-record' || templateSlug === 'sf9-report-card') {
+            searchContainer.classList.add('hidden');
+        } else {
+            searchContainer.classList.remove('hidden');
+        }
+
+        // Show/hide preview student selector for SF9 and SF10
+        const studentSelectorContainer = document.getElementById('preview-student-selector');
+        if (templateSlug === 'sf9-report-card' || templateSlug === 'sf10-permanent-record') {
+            studentSelectorContainer.classList.remove('hidden');
+            populatePreviewStudentSelector(document.getElementById('filter-student-id').value);
+        } else {
+            studentSelectorContainer.classList.add('hidden');
+        }
+
+        // Remove any previous no-results message
+        const noResults = document.getElementById('search-no-results');
+        if (noResults) noResults.remove();
 
         // Display summary
         const summaryContainer = document.getElementById('report-summary');
@@ -407,7 +538,7 @@
                 }
 
                 reportChart = new Chart(document.getElementById('report-chart'), {
-                    type: '{{ $template->chart_config?.type ?? "line" }}',
+                    type: '{{ $template->chart_config['type'] ?? 'line' }}',
                     data: {
                         labels: data.chart_data.map(d => d.date || d.label),
                         datasets: [{
@@ -433,11 +564,124 @@
             }
         @endif
 
-        // Display table
+        // Display report card, table, or raw HTML
         const tableContainer = document.getElementById('table-container');
         const emptyState = document.getElementById('empty-state');
-        
-        if (data.rows && data.rows.length > 0) {
+
+        if (data.html) {
+            emptyState.classList.add('hidden');
+            tableContainer.classList.remove('hidden');
+            document.getElementById('pagination').classList.add('hidden');
+
+            const thead = document.getElementById('report-table-head');
+            thead.innerHTML = '';
+            const tbody = document.getElementById('report-table-body');
+            tbody.innerHTML = '<tr><td colspan="100" class="px-0">' + data.html + '</td></tr>';
+        } else if (data.report_card && data.students && data.students.length > 0) {
+            emptyState.classList.add('hidden');
+            tableContainer.classList.remove('hidden');
+            document.getElementById('pagination').classList.add('hidden');
+
+            // Render report card HTML
+            const thead = document.getElementById('report-table-head');
+            thead.innerHTML = '';
+            
+            const tbody = document.getElementById('report-table-body');
+            tbody.innerHTML = data.students.map(student => {
+                if (student.kindergarten) {
+                    return `
+                    <tr class="bg-white">
+                        <td colspan="100" class="px-0 py-4">
+                            <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm mb-6">
+                                <div class="bg-gradient-to-r from-pink-500 to-rose-500 px-6 py-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h3 class="text-lg font-bold text-white">${student.student_name}</h3>
+                                            <p class="text-pink-100 text-sm">${student.grade_level} | Section: ${student.section}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-white/20 text-white text-sm font-medium">Kindergarten</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                ${student.domains.map(domain => `
+                                    <div class="border-t border-gray-200">
+                                        <div class="bg-rose-50 px-6 py-2 font-semibold text-rose-800 text-sm">${domain.domain_name}</div>
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Indicator</th>
+                                                    <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Q1</th>
+                                                    <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Q2</th>
+                                                    <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Q3</th>
+                                                    <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Q4</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                ${domain.indicators.map(ind => `
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-6 py-2 text-sm text-gray-700">${ind.indicator_text}</td>
+                                                        <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-semibold ${ind.q1 === 'C' ? 'text-green-600' : ind.q1 === 'D' ? 'text-amber-600' : ind.q1 === 'B' ? 'text-red-600' : 'text-gray-400'}">${ind.q1}</td>
+                                                        <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-semibold ${ind.q2 === 'C' ? 'text-green-600' : ind.q2 === 'D' ? 'text-amber-600' : ind.q2 === 'B' ? 'text-red-600' : 'text-gray-400'}">${ind.q2}</td>
+                                                        <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-semibold ${ind.q3 === 'C' ? 'text-green-600' : ind.q3 === 'D' ? 'text-amber-600' : ind.q3 === 'B' ? 'text-red-600' : 'text-gray-400'}">${ind.q3}</td>
+                                                        <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-semibold ${ind.q4 === 'C' ? 'text-green-600' : ind.q4 === 'D' ? 'text-amber-600' : ind.q4 === 'B' ? 'text-red-600' : 'text-gray-400'}">${ind.q4}</td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                }
+                return `
+                <tr class="bg-white">
+                    <td colspan="100" class="px-0 py-4">
+                        <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm mb-6">
+                            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-bold text-white">${student.student_name}</h3>
+                                        <p class="text-blue-100 text-sm">${student.grade_level} | Section: ${student.section}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm text-blue-100">General Average</p>
+                                        <p class="text-2xl font-bold text-white">${student.general_average}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Q1</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Q2</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Q3</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Q4</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Final</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    ${student.subjects.map(subj => `
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${subj.subject}</td>
+                                            <td class="px-6 py-3 whitespace-nowrap text-sm text-center text-gray-600">${subj.q1}</td>
+                                            <td class="px-6 py-3 whitespace-nowrap text-sm text-center text-gray-600">${subj.q2}</td>
+                                            <td class="px-6 py-3 whitespace-nowrap text-sm text-center text-gray-600">${subj.q3}</td>
+                                            <td class="px-6 py-3 whitespace-nowrap text-sm text-center text-gray-600">${subj.q4}</td>
+                                            <td class="px-6 py-3 whitespace-nowrap text-sm text-center font-semibold ${subj.final !== '-' && subj.final >= 75 ? 'text-green-600' : 'text-red-600'}">${subj.final}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        } else if (data.rows && data.rows.length > 0) {
             emptyState.classList.add('hidden');
             tableContainer.classList.remove('hidden');
 
@@ -465,6 +709,7 @@
             emptyState.classList.remove('hidden');
             tableContainer.classList.add('hidden');
             document.getElementById('pagination').classList.add('hidden');
+            document.getElementById('report-search-container').classList.add('hidden');
         }
     }
 
@@ -501,7 +746,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
             },
             body: JSON.stringify({
                 name: name,
@@ -526,9 +771,66 @@
         });
     }
 
+    // Real-time search
+    document.getElementById('report-search').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase().trim();
+        filterReportResults(term);
+    });
+
+    function filterReportResults(term) {
+        const tbody = document.getElementById('report-table-body');
+        const rows = tbody.querySelectorAll('tr');
+        let visibleCount = 0;
+
+        if (currentReportData && currentReportData.data && currentReportData.data.report_card) {
+            // Report card view: each top-level tr is a student card
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(term)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        } else {
+            // Table view: filter individual data rows
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(term)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Show/hide no-results message
+        let noResults = document.getElementById('search-no-results');
+        if (visibleCount === 0 && rows.length > 0) {
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.id = 'search-no-results';
+                noResults.className = 'text-center py-8 text-gray-500';
+                noResults.innerHTML = `
+                    <svg class="mx-auto h-10 w-10 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <p class="text-sm">No matching results found.</p>
+                `;
+                tbody.parentElement.appendChild(noResults);
+            }
+            noResults.classList.remove('hidden');
+        } else if (noResults) {
+            noResults.classList.add('hidden');
+        }
+    }
+
     // Reset filters
     function resetFilters() {
         document.getElementById('report-filters').reset();
+        document.getElementById('report-search').value = '';
     }
 
     // Pagination functions

@@ -50,6 +50,11 @@ class ReportTemplate extends Model
     const TYPE_CHART = 'chart';
     const TYPE_COMBINED = 'combined';
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

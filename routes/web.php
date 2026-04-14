@@ -692,6 +692,7 @@ Route::delete('/pending-registrations/{student}',
         Route::get('/templates/{template}/builder', [App\Http\Controllers\Admin\ReportingController::class, 'builder'])->name('builder');
         Route::post('/templates/{template}/generate', [App\Http\Controllers\Admin\ReportingController::class, 'generate'])->name('generate');
         Route::post('/templates/{template}/save', [App\Http\Controllers\Admin\ReportingController::class, 'save'])->name('save');
+        Route::get('/saved/{savedReport}/run', [App\Http\Controllers\Admin\ReportingController::class, 'runSavedReport'])->name('run-saved');
         Route::delete('/saved/{savedReport}', [App\Http\Controllers\Admin\ReportingController::class, 'destroySaved'])->name('destroy-saved');
     });
 });

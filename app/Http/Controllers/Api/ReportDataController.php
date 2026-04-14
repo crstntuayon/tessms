@@ -264,8 +264,8 @@ class ReportDataController extends Controller
         $currentSchoolYear = SchoolYear::where('is_active', true)->first();
 
         return response()->json([
-            'school_years' => SchoolYear::orderBy('year_start', 'desc')->get(['id', 'name']),
-            'grade_levels' => DB::table('grade_levels')->orderBy('sort_order')->get(['id', 'name']),
+            'school_years' => SchoolYear::orderBy('start_date', 'desc')->get(['id', 'name']),
+            'grade_levels' => DB::table('grade_levels')->orderBy('order')->get(['id', 'name']),
             'sections' => Section::with(['gradeLevel:id,name'])
                 ->when($currentSchoolYear, fn($q) => $q->where('school_year_id', $currentSchoolYear->id))
                 ->orderBy('name')

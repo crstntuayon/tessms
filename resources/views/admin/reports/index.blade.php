@@ -289,7 +289,10 @@
                         </h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             @foreach($categoryTemplates as $template)
-                                <a href="{{ route('admin.reports.builder', $template) }}" 
+                                @php
+                                    $templateUrl = route('admin.reports.builder', $template);
+                                @endphp
+                                <a href="{{ $templateUrl }}"
                                    class="report-card block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all">
                                     <div class="flex items-start">
                                         <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-{{ $template->color ?? 'blue' }}-100 flex items-center justify-center mr-3">
@@ -321,6 +324,15 @@
         </div>
     </div>
 </div>
+
+<!-- Floating Back Button -->
+<a href="{{ route('admin.dashboard') }}" 
+   class="fixed bottom-6 right-6 z-50 inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
+   title="Back to Dashboard">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+    </svg>
+</a>
 @endsection
 
 @push('scripts')

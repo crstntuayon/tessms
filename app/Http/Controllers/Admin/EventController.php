@@ -95,9 +95,24 @@ class EventController extends Controller
     /**
      * Remove the specified event.
      */
-    public function destroy(Event $event)
+    public function destroy($id, Request $request)
     {
+        $event = Event::find($id);
+        
+        if (!$event) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Event not found.'], 404);
+            }
+            return redirect()->route('admin.events.index')
+                ->with('error', 'Event not found or has been deleted.');
+        }
+        
         $event->delete();
+
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Event deleted successfully.']);
+        }
 
         return redirect()->route('admin.events.index')
             ->with('success', 'Event deleted successfully.');
