@@ -65,6 +65,15 @@ class DashboardController extends Controller
         ));
     }
 
+    public function idCard()
+    {
+        $student = Auth::user()->student;
+        if (!$student) {
+            abort(404);
+        }
+        return view('student.id-card', compact('student'));
+    }
+
     private function getGradesData($studentId)
     {
         $currentQuarter = $this->getCurrentQuarter();

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use App\Models\GradeLevel;
+use App\Services\SettingsEnforcer;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -64,6 +65,12 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerate();
             $user = Auth::user();
 
+            // Check password expiry
+            if (SettingsEnforcer::isPasswordExpired($user)) {
+                Auth::logout();
+                return redirect()->route('password.expired');
+            }
+
             // BLOCK students from logging in via admin/teacher portal
             if ($user->role->name === 'Student' || $user->role->name === 'student') {
                 Auth::logout();
@@ -112,6 +119,12 @@ class AuthenticatedSessionController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             $user = Auth::user();
+
+            // Check password expiry
+            if (SettingsEnforcer::isPasswordExpired($user)) {
+                Auth::logout();
+                return redirect()->route('password.expired');
+            }
 
             // BLOCK non-students from logging in via student portal
             if ($user->role->name !== 'Student' && $user->role->name !== 'student') {

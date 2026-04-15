@@ -36,12 +36,7 @@
                     </div>
                     <div class="flex items-center space-x-3">
                         {{-- Notification Bell --}}
-                        <button @click="showNotifications = true" class="relative p-2 bg-white/20 rounded-full hover:bg-white/30 transition">
-                            <i class="fas fa-bell text-lg"></i>
-                            @if($unreadNotifications > 0)
-                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center font-bold">{{ $unreadNotifications }}</span>
-                            @endif
-                        </button>
+                        @include('components.notification-bell')
                         {{-- Profile --}}
                         <a href="{{ route('student.profile') }}" class="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center overflow-hidden">
                             @if(auth()->user()->photo)

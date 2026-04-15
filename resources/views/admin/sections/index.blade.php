@@ -583,6 +583,9 @@
                                         <a href="{{ route('admin.sections.show', $section) }}" class="action-btn view-btn text-slate-400 hover:text-blue-600" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        <a href="{{ route('admin.sections.id-cards', $section) }}" class="action-btn text-slate-400 hover:text-emerald-600" title="Generate ID Cards">
+                                            <i class="fas fa-id-card"></i>
+                                        </a>
                                         <a href="{{ route('admin.sections.edit', $section) }}" class="action-btn edit-btn text-slate-400 hover:text-amber-600" title="Edit Section">
                                             <i class="fas fa-edit"></i>
                                         </a>

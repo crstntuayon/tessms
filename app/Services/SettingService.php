@@ -28,7 +28,9 @@ class SettingService
             ],
             'school' => [
                 'school_name', 'school_code', 'deped_school_id', 'school_address',
-                'school_email', 'school_phone', 'school_logo'
+                'school_email', 'school_phone', 'school_logo',
+                'school_division', 'school_region', 'school_district', 'school_head',
+                'active_school_year_id'
             ],
             'academic' => [
                 'current_school_year', 'school_year_start', 'school_year_end',
@@ -141,12 +143,22 @@ class SettingService
             // School
             ['key' => 'school_name', 'value' => 'Tugawe Elementary School', 'type' => 'string', 'group' => 'school'],
             ['key' => 'school_code', 'value' => 'TES-2024', 'type' => 'string', 'group' => 'school'],
+            ['key' => 'deped_school_id', 'value' => '', 'type' => 'string', 'group' => 'school'],
             ['key' => 'school_address', 'value' => '', 'type' => 'string', 'group' => 'school'],
             ['key' => 'school_email', 'value' => '', 'type' => 'string', 'group' => 'school'],
             ['key' => 'school_phone', 'value' => '', 'type' => 'string', 'group' => 'school'],
+            ['key' => 'school_logo', 'value' => '', 'type' => 'string', 'group' => 'school'],
+            // Legacy keys preserved
+            ['key' => 'school_division', 'value' => '', 'type' => 'string', 'group' => 'school'],
+            ['key' => 'school_region', 'value' => '', 'type' => 'string', 'group' => 'school'],
+            ['key' => 'school_head', 'value' => '', 'type' => 'string', 'group' => 'school'],
+            ['key' => 'active_school_year_id', 'value' => '', 'type' => 'string', 'group' => 'school'],
+            ['key' => 'school_district', 'value' => '', 'type' => 'string', 'group' => 'school'],
 
             // Academic
             ['key' => 'current_school_year', 'value' => '2024-2025', 'type' => 'string', 'group' => 'academic'],
+            ['key' => 'school_year_start', 'value' => '', 'type' => 'string', 'group' => 'academic'],
+            ['key' => 'school_year_end', 'value' => '', 'type' => 'string', 'group' => 'academic'],
             ['key' => 'grading_system', 'value' => 'quarterly', 'type' => 'string', 'group' => 'academic'],
             ['key' => 'passing_grade', 'value' => '75', 'type' => 'integer', 'group' => 'academic'],
             ['key' => 'enrollment_start_date', 'value' => '', 'type' => 'string', 'group' => 'academic'],
@@ -157,7 +169,9 @@ class SettingService
             ['key' => 'notify_new_student', 'value' => '1', 'type' => 'boolean', 'group' => 'notifications'],
             ['key' => 'notify_attendance', 'value' => '1', 'type' => 'boolean', 'group' => 'notifications'],
             ['key' => 'notify_grades', 'value' => '1', 'type' => 'boolean', 'group' => 'notifications'],
+            ['key' => 'notify_announcements', 'value' => '1', 'type' => 'boolean', 'group' => 'notifications'],
             ['key' => 'sms_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'notifications'],
+            ['key' => 'sms_provider', 'value' => '', 'type' => 'string', 'group' => 'notifications'],
 
             // Email (SMTP)
             ['key' => 'mail_driver', 'value' => 'smtp', 'type' => 'string', 'group' => 'email'],
@@ -192,6 +206,7 @@ class SettingService
 
             // Advanced
             ['key' => 'api_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'advanced'],
+            ['key' => 'api_key', 'value' => '', 'type' => 'string', 'group' => 'advanced'],
 
             // Enrollment
             ['key' => 'enrollment_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'enrollment'],

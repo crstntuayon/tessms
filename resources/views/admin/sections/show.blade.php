@@ -653,6 +653,11 @@
 
             <!-- Floating Action Buttons -->
             <div class="fixed bottom-8 right-8 flex flex-col gap-3 z-50">
+                <a href="{{ route('admin.sections.id-cards', $section) }}"
+                   class="w-14 h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/40 transition-all hover:scale-110"
+                   title="Generate Section ID Cards">
+                    <i class="fas fa-id-card text-lg"></i>
+                </a>
                 <a href="{{ route('admin.sections.edit', $section) }}" 
                    class="w-14 h-14 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/40 transition-all hover:scale-110 hover:rotate-3"
                    title="Edit Section">

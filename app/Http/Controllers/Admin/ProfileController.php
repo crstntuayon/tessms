@@ -75,7 +75,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'current_password' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'string', \App\Services\SettingsEnforcer::getPasswordRules(), 'confirmed'],
         ]);
 
         if (!Hash::check($validated['current_password'], $user->password)) {
@@ -84,6 +84,7 @@ class ProfileController extends Controller
 
         $user->update([
             'password' => Hash::make($validated['password']),
+            'password_updated_at' => now(),
         ]);
 
         return redirect()->route('admin.profile')->with('success', 'Password updated successfully!');

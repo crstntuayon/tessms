@@ -356,6 +356,34 @@ class TeacherController extends Controller
     // Delete teacher
     public function destroy(Teacher $teacher)
     {
+        $relations = [];
+        if ($teacher->sections()->exists()) {
+            $relations[] = 'assigned sections';
+        }
+        if ($teacher->assignments()->exists()) {
+            $relations[] = 'assignments';
+        }
+        if ($teacher->schedules()->exists()) {
+            $relations[] = 'schedules';
+        }
+        if ($teacher->interventions()->exists()) {
+            $relations[] = 'interventions';
+        }
+        if (\App\Models\SectionFinalization::where('teacher_id', $teacher->id)->exists()) {
+            $relations[] = 'section finalizations';
+        }
+        if (\App\Models\TeachingProgram::where('teacher_id', $teacher->id)->exists()) {
+            $relations[] = 'teaching programs';
+        }
+        if ($teacher->subjects()->exists()) {
+            $relations[] = 'subjects';
+        }
+
+        if (!empty($relations)) {
+            return redirect()->route('admin.teachers.index')
+                ->with('error', 'Cannot delete teacher. Please reassign or remove related records first: ' . implode(', ', $relations) . '.');
+        }
+
         DB::beginTransaction();
         try {
             if ($teacher->user) {
@@ -365,10 +393,9 @@ class TeacherController extends Controller
             DB::commit();
 
             return redirect()->route('admin.teachers.index')->with('success', 'Teacher deleted successfully.');
-
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Failed to delete teacher.');
+            return redirect()->route('admin.teachers.index')->with('error', 'Failed to delete teacher: ' . $e->getMessage());
         }
     }
 }

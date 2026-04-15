@@ -13,32 +13,84 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Setting;
+use App\Services\SettingsEnforcer;
 
 class StudentController extends Controller
 {
-public function index()
-{
-    $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
-    
-    // Get students who are ENROLLED in a SECTION for the active school year
-    $students = Student::with(['user', 'section', 'gradeLevel'])
-        ->whereHas('enrollments', function ($query) use ($activeSchoolYear) {
-            $query->where('school_year_id', $activeSchoolYear?->id)
-                  ->where('status', 'enrolled')
-                  ->whereNotNull('section_id');
-        })
-        ->with(['enrollments' => function ($query) use ($activeSchoolYear) {
-            // Load only the active year enrollment with section
-            $query->where('school_year_id', $activeSchoolYear?->id)
-                  ->where('status', 'enrolled')
-                  ->with('section');
-        }])
-        ->where('status', 'active')
-        ->latest()
-        ->paginate(10);
-    
-    return view('admin.students.index', compact('students', 'activeSchoolYear'));
-}
+    public function index(Request $request)
+    {
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        
+        $query = Student::with(['user', 'section', 'gradeLevel', 'enrollments' => function ($query) use ($activeSchoolYear) {
+                $query->where('school_year_id', $activeSchoolYear?->id)
+                      ->where('status', 'enrolled')
+                      ->with('section.gradeLevel');
+            }])
+            ->whereHas('enrollments', function ($query) use ($activeSchoolYear) {
+                $query->where('school_year_id', $activeSchoolYear?->id)
+                      ->where('status', 'enrolled')
+                      ->whereNotNull('section_id');
+            })
+            ->where('students.status', 'active')
+            ->join('users', 'users.id', '=', 'students.user_id');
+
+        // Server-side grade filter
+        if ($request->filled('grade')) {
+            $gradeName = $request->grade;
+            $query->whereHas('enrollments.section.gradeLevel', function ($q) use ($gradeName) {
+                $q->where('name', $gradeName);
+            });
+        }
+
+        // Server-side section filter
+        if ($request->filled('section')) {
+            $sectionName = $request->section;
+            $query->whereHas('enrollments.section', function ($q) use ($sectionName) {
+                $q->where('name', $sectionName);
+            });
+        }
+
+        // Apply sort
+        $sortBy = $request->get('sort', 'default');
+        if ($sortBy === 'name') {
+            $query->orderBy('users.last_name', 'asc')->orderBy('users.first_name', 'asc');
+        } elseif ($sortBy === 'grade') {
+            $query->orderByRaw("(
+                SELECT grade_levels.name
+                FROM enrollments
+                JOIN sections ON sections.id = enrollments.section_id
+                JOIN grade_levels ON grade_levels.id = sections.grade_level_id
+                WHERE enrollments.student_id = students.id
+                AND enrollments.school_year_id = ?
+                AND enrollments.status = 'enrolled'
+                LIMIT 1
+            ) ASC", [$activeSchoolYear?->id])
+            ->orderBy('users.last_name', 'asc')
+            ->orderBy('users.first_name', 'asc');
+        } else {
+            // Default: section → males first → last name → first name
+            $query->orderByRaw("(
+                SELECT sections.name 
+                FROM enrollments 
+                JOIN sections ON sections.id = enrollments.section_id 
+                WHERE enrollments.student_id = students.id 
+                AND enrollments.school_year_id = ? 
+                AND enrollments.status = 'enrolled' 
+                LIMIT 1
+            ) ASC", [$activeSchoolYear?->id])
+            ->orderByRaw("CASE WHEN students.gender = 'Male' THEN 0 ELSE 1 END")
+            ->orderBy('users.last_name', 'asc')
+            ->orderBy('users.first_name', 'asc');
+        }
+
+        $students = $query
+            ->select('students.*')
+            ->paginate(10)
+            ->appends($request->only(['grade', 'section', 'sort']));
+        
+        return view('admin.students.index', compact('students', 'activeSchoolYear'));
+    }
+
     public function create()
     {
         $gradeLevels = \App\Models\GradeLevel::orderBy('name')->get();
@@ -46,316 +98,339 @@ public function index()
         return view('admin.students.create', compact('gradeLevels', 'sections'));
     }
 
-      public function store(Request $request)
+    public function store(Request $request)
     {
+        $fullLrn = $request->filled('lrn_suffix') ? '120231' . $request->lrn_suffix : null;
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'lrn_suffix' => [
+                'nullable',
+                'digits:6',
+                function ($attribute, $value, $fail) use ($fullLrn) {
+                    if ($fullLrn && Student::where('lrn', $fullLrn)->exists()) {
+                        $fail('The LRN is already taken.');
+                    }
+                },
+            ],
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'suffix' => 'nullable|string|max:10',
+            'email' => 'required|email|max:255|unique:users',
+            'gender' => 'required|in:Male,Female,Other',
+            'birthday' => 'required|date',
+            'birth_place' => 'required|string|max:255',
+            'nationality' => 'required|string|max:255',
+            'religion' => 'required|string|max:255',
+            'ethnicity' => 'required|string|max:100',
+            'mother_tongue' => 'required|string|max:100',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'section_id' => 'required|exists:sections,id',
+            'type' => 'required|in:new,transferee,continuing',
+            'previous_school' => 'nullable|string|max:255|required_if:type,transferee',
+            'father_name' => 'required|string|max:255',
+            'father_occupation' => 'required|string|max:255',
+            'mother_name' => 'required|string|max:255',
+            'mother_occupation' => 'required|string|max:255',
+            'guardian_name' => 'required|string|max:255',
+            'guardian_relationship' => 'required|string|max:255',
+            'guardian_contact' => 'nullable|string|max:50',
+            'street_address' => 'required|string|max:255',
+            'barangay' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'province' => 'required|string|max:255',
+            'zip_code' => 'required|string|max:20',
+            'remarks' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|max:2048',
+            'username' => 'required|string|max:50|unique:users,username',
+            'password' => ['required', 'string', SettingsEnforcer::getPasswordRules(), 'confirmed'],
+            'birth_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'report_card' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'good_moral' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'transfer_credential' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        DB::beginTransaction();
         try {
-            // VALIDATION
-            $validated = $request->validate([
-                'first_name' => 'required|string|max:255',
-                 'middle_name' => 'nullable|string|max:255',
-                'last_name'  => 'required|string|max:255',
-                'username'   => 'required|string|max:255|alpha_dash|unique:users,username',
-                'email'      => 'required|email|max:255|unique:users,email',
-                'password'   => 'required|min:8|confirmed',
+            $studentRole = Role::where('name', 'Student')->firstOrFail();
 
-                'lrn_full' => 'nullable|string|size:12|unique:students,lrn',
-                'birthdate' => 'nullable|date|before_or_equal:today',
-                'birth_place' => 'nullable|string|max:255',
-                'gender' => 'nullable|in:Male,Female,Other',
-                'nationality' => 'nullable|string|max:100',
-                'religion' => 'nullable|string|max:100',
+            $photoPath = $request->hasFile('photo')
+                ? $request->file('photo')->store('photos', 'public')
+                : null;
 
-                'father_name' => 'nullable|string|max:255',
-                'father_occupation' => 'nullable|string|max:255',
-                'mother_name' => 'nullable|string|max:255',
-                'mother_occupation' => 'nullable|string|max:255',
-
-                'guardian_name' => 'nullable|string|max:255',
-                'guardian_relationship' => 'nullable|string|max:100',
-                'guardian_contact' => 'nullable|string|max:11',
-
-                'street_address' => 'nullable|string|max:255',
-                'barangay' => 'nullable|string|max:255',
-                'city' => 'nullable|string|max:255',
-                'province' => 'nullable|string|max:255',
-                'zip_code' => 'nullable|string|max:10',
-
-                'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'grade_level_id' => 'nullable|exists:grade_levels,id',
-                'section_id' => 'nullable|exists:sections,id',
-                
-
-                // STUDENT TYPE
-                'type' => 'required|in:new,continuing,transferee',
-                'previous_school' => 'nullable|required_if:type,transferee|string|max:255',
-
-                'ethnicity' => 'nullable|string|max:100',           // ADD THIS
-                'mother_tongue' => 'nullable|string|max:100',       // ADD THIS   
-                'remarks' => 'nullable|string|max:10|in:TI,TO,DO,LE,CCT,BA,LWD',  // ADD THIS
-            ]);
-
-            DB::beginTransaction();
-
-            // Get student role
-            $studentRole = Role::where('name', 'student')->first();
-            if (!$studentRole) {
-                throw new \Exception('Student role not found!');
-            }
-
-            // Get active school year
-            $schoolYear = SchoolYear::where('is_active', 1)->first();
-            if (!$schoolYear) {
-                throw new \Exception('No active school year found!');
-            }
-
-            // Handle photo upload
-            $photoPath = null;
-            if ($request->hasFile('photo')) {
-                $photoPath = $request->file('photo')->store('photos', 'public');
-            }
-
-            // CREATE USER
             $user = User::create([
                 'role_id' => $studentRole->id,
-                'first_name' => $validated['first_name'],
-                  'middle_name' => $validated['middle_name'],
-                'last_name' => $validated['last_name'],
-                'username' => $validated['username'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
+                'first_name' => $request->first_name,
+                'middle_name' => $request->middle_name,
+                'last_name' => $request->last_name,
+                'suffix' => $request->suffix,
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'password_updated_at' => now(),
                 'photo' => $photoPath,
-                'is_active' => 1,
-                'email_verified_at' => now(),
             ]);
 
-            // CREATE STUDENT
-            $student = Student::create([
-                'user_id' => $user->id,
-                'grade_level_id' => $validated['grade_level_id'] ?? null,
-                'section_id' => $validated['section_id'] ?? null,
-                'lrn' => $validated['lrn_full'] ?? null,
-                'birthdate' => $validated['birthdate'] ?? null,
-                'birth_place' => $validated['birth_place'] ?? null,
-                'gender' => $validated['gender'] ?? null,
-                'nationality' => $validated['nationality'] ?? null,
-                'religion' => $validated['religion'] ?? null,
-                'father_name' => $validated['father_name'] ?? null,
-                'father_occupation' => $validated['father_occupation'] ?? null,
-                'mother_name' => $validated['mother_name'] ?? null,
-                'mother_occupation' => $validated['mother_occupation'] ?? null,
-                'guardian_name' => $validated['guardian_name'] ?? null,
-                'guardian_relationship' => $validated['guardian_relationship'] ?? null,
-                'guardian_contact' => $validated['guardian_contact'] ?? null,
-                'street_address' => $validated['street_address'] ?? null,
-                'barangay' => $validated['barangay'] ?? null,
-                'city' => $validated['city'] ?? null,
-                'province' => $validated['province'] ?? null,
-                'zip_code' => $validated['zip_code'] ?? null,
-                'ethnicity' => $validated['ethnicity'] ?? null,         // ADD THIS
-                 'mother_tongue' => $validated['mother_tongue'] ?? null, // ADD THIS
-                 'remarks' => $validated['remarks'] ?? null,  // ADD THIS
+            $student = $user->student()->create([
+                'lrn' => $fullLrn,
+                'birthdate' => $request->birthday,
+                'birth_place' => $request->birth_place,
+                'gender' => $request->gender,
+                'nationality' => $request->nationality,
+                'religion' => $request->religion,
+                'father_name' => $request->father_name,
+                'father_occupation' => $request->father_occupation,
+                'mother_name' => $request->mother_name,
+                'mother_occupation' => $request->mother_occupation,
+                'guardian_name' => $request->guardian_name,
+                'guardian_relationship' => $request->guardian_relationship,
+                'guardian_contact' => $request->guardian_contact,
+                'street_address' => $request->street_address,
+                'barangay' => $request->barangay,
+                'city' => $request->city,
+                'province' => $request->province,
+                'zip_code' => $request->zip_code,
+                'grade_level_id' => $request->grade_level_id,
+                'section_id' => $request->section_id,
+                'ethnicity' => $request->ethnicity,
+                'mother_tongue' => $request->mother_tongue,
+                'remarks' => $request->remarks,
+                'status' => 'active',
             ]);
 
-            // ✅ CREATE ENROLLMENT
-            $existingEnrollment = Enrollment::where('student_id', $student->id)
-                ->where('school_year_id', $schoolYear->id)
-                ->first();
+            // Handle document uploads
+            $documentPaths = [];
+            if ($request->hasFile('birth_certificate')) {
+                $documentPaths['birth_certificate_path'] = $request->file('birth_certificate')->store('student-documents/' . $student->id, 'public');
+            }
+            if ($request->hasFile('report_card')) {
+                $documentPaths['report_card_path'] = $request->file('report_card')->store('student-documents/' . $student->id, 'public');
+            }
+            if ($request->hasFile('good_moral')) {
+                $documentPaths['good_moral_path'] = $request->file('good_moral')->store('student-documents/' . $student->id, 'public');
+            }
+            if ($request->hasFile('transfer_credential')) {
+                $documentPaths['transfer_credential_path'] = $request->file('transfer_credential')->store('student-documents/' . $student->id, 'public');
+            }
+            if (!empty($documentPaths)) {
+                $student->update($documentPaths);
+            }
 
-            if (!$existingEnrollment) {
+            $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+            if ($activeSchoolYear) {
                 Enrollment::create([
-                    'school_year_id' => $schoolYear->id,
-                    'grade_level_id' => $validated['grade_level_id'] ?? null,
                     'student_id' => $student->id,
-                    'section_id' => $validated['section_id'] ?? null,
-                    'type' => $validated['type'], // must match ENUM
-                    'status' => 'pending',
-                    'previous_school' => $validated['type'] === 'transferee' ? $validated['previous_school'] : null,
+                    'section_id' => $request->section_id,
+                    'school_year_id' => $activeSchoolYear->id,
+                    'grade_level_id' => $request->grade_level_id,
+                    'status' => 'enrolled',
+                    'type' => $request->type ?? 'new',
+                    'previous_school' => $request->previous_school,
                     'enrollment_date' => now(),
-
-                     // Store current school info at time of enrollment
-    'school_name' => Setting::get('school_name'),
-    'school_id' => Setting::get('deped_school_id'),
-    'school_district' => Setting::get('school_district'),
-    'school_division' => Setting::get('school_division'),
-    'school_region' => Setting::get('school_region'),
                 ]);
             }
 
             DB::commit();
-
-            return redirect()->route('admin.students.index')
-                ->with('success', 'Student created & enrolled successfully!');
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->validator)
-                ->withInput();
-
+            return redirect()->route('admin.students.index')->with('success', 'Student created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return redirect()->back()
-                ->with('error', 'Error: ' . $e->getMessage())
-                ->withInput();
+            return redirect()->back()->with('error', 'Failed to create student: ' . $e->getMessage())->withInput();
         }
     }
-// In your Controller show() method
-public function show($id)
-{
-    $student = Student::with(['user', 'gradeLevel', 'section', 'enrollments.schoolYear'])
-        ->findOrFail($id);
-        
-    return view('admin.students.show', compact('student'));
-}
 
-    public function edit($id)
+    public function show(Student $student)
     {
-        $student = Student::with('user')->findOrFail($id);
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        $student->load(['user', 'gradeLevel', 'enrollments' => function ($query) use ($activeSchoolYear) {
+            $query->where('school_year_id', $activeSchoolYear?->id)
+                  ->where('status', 'enrolled')
+                  ->with('section.gradeLevel');
+        }]);
+        
+        return view('admin.students.show', compact('student'));
+    }
+
+    public function edit(Student $student)
+    {
+        $student->load('user');
         $gradeLevels = \App\Models\GradeLevel::orderBy('name')->get();
         $sections = \App\Models\Section::orderBy('name')->get();
-
-        return view('admin.students.edit', compact('student', 'gradeLevels', 'sections'));
+        
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        $activeEnrollment = $student->enrollments()
+            ->where('school_year_id', $activeSchoolYear?->id)
+            ->where('status', 'enrolled')
+            ->first();
+        
+        return view('admin.students.edit', compact('student', 'gradeLevels', 'sections', 'activeEnrollment'));
     }
 
-   public function update(Request $request, $id)
-{
-    $student = Student::with('user')->findOrFail($id);
-    $user = $student->user;
-
-    $validated = $request->validate([
-        'first_name' => 'required|string|max:255',
-        'middle_name' => 'nullable|string|max:255',
-        'last_name' => 'required|string|max:255',
-        'username' => 'required|string|max:255|alpha_dash|unique:users,username,' . $user->id,
-        'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-        'password' => 'nullable|string|min:8|confirmed',
-
-        // STUDENT INFO
-        'lrn' => 'nullable|string|size:12|unique:students,lrn,' . $student->id,
-        'birthdate' => 'nullable|date',
-        'birth_place' => 'nullable|string|max:255',
-        'gender' => 'nullable|in:Male,Female,Other',
-        'mother_tongue' => 'nullable|string|max:100',
-        'ethnicity' => 'nullable|string|max:100',
-        'nationality' => 'nullable|string|max:100',
-        'religion' => 'nullable|string|max:100',
-
-        // FAMILY
-        'father_name' => 'nullable|string|max:255',
-        'father_occupation' => 'nullable|string|max:255',
-        'mother_name' => 'nullable|string|max:255',
-        'mother_occupation' => 'nullable|string|max:255',
-
-        // GUARDIAN
-        'guardian_name' => 'nullable|string|max:255',
-        'guardian_relationship' => 'nullable|string|max:100',
-        'guardian_contact' => 'nullable|string|max:20',
-
-        // ADDRESS
-        'street_address' => 'nullable|string|max:255',
-        'barangay' => 'nullable|string|max:255',
-        'city' => 'nullable|string|max:255',
-        'province' => 'nullable|string|max:255',
-        'zip_code' => 'nullable|string|max:10',
-
-        // SCHOOL
-        'grade_level_id' => 'nullable|exists:grade_levels,id',
-        'section_id' => 'nullable|exists:sections,id',
-
-        // EXTRA
-        'remarks' => 'nullable|string|max:10|in:TI,TO,DO,LE,CCT,BA,LWD',
-
-        // PHOTO
-        'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
-
-    // HANDLE PHOTO
-    $photoPath = $user->photo;
-
-    if ($request->has('remove_photo') && $request->remove_photo == '1') {
-        if ($user->photo) {
-            Storage::disk('public')->delete($user->photo);
-        }
-        $photoPath = null;
-    } elseif ($request->hasFile('photo')) {
-        if ($user->photo) {
-            Storage::disk('public')->delete($user->photo);
-        }
-        $photoPath = $request->file('photo')->store('photos', 'public');
-    }
-
-    // UPDATE USER
-    $user->update([
-        'first_name' => $validated['first_name'],
-        'middle_name' => $validated['middle_name'] ?? null,
-        'last_name' => $validated['last_name'],
-        'username' => $validated['username'],
-        'email' => $validated['email'],
-        'photo' => $photoPath,
-    ]);
-
-    if (!empty($validated['password'])) {
-        $user->update([
-            'password' => Hash::make($validated['password'])
-        ]);
-    }
-
-    // UPDATE STUDENT (FULL)
-    $student->update([
-        'lrn' => $validated['lrn'] ?? null,
-        'birthdate' => $validated['birthdate'] ?? null,
-        'birth_place' => $validated['birth_place'] ?? null,
-        'gender' => $validated['gender'] ?? null,
-        'mother_tongue' => $validated['mother_tongue'] ?? null,
-        'ethnicity' => $validated['ethnicity'] ?? null,
-        'nationality' => $validated['nationality'] ?? null,
-        'religion' => $validated['religion'] ?? null,
-
-        'father_name' => $validated['father_name'] ?? null,
-        'father_occupation' => $validated['father_occupation'] ?? null,
-        'mother_name' => $validated['mother_name'] ?? null,
-        'mother_occupation' => $validated['mother_occupation'] ?? null,
-
-        'guardian_name' => $validated['guardian_name'] ?? null,
-        'guardian_relationship' => $validated['guardian_relationship'] ?? null,
-        'guardian_contact' => $validated['guardian_contact'] ?? null,
-
-        'street_address' => $validated['street_address'] ?? null,
-        'barangay' => $validated['barangay'] ?? null,
-        'city' => $validated['city'] ?? null,
-        'province' => $validated['province'] ?? null,
-        'zip_code' => $validated['zip_code'] ?? null,
-
-        'grade_level_id' => $validated['grade_level_id'] ?? null,
-        'section_id' => $validated['section_id'] ?? null,
-
-        'remarks' => $validated['remarks'] ?? null,
-    ]);
-
-    return redirect()->route('admin.students.index')
-        ->with('success', 'Student updated successfully.');
-}
-
-    public function destroy($id)
+    public function update(Request $request, Student $student)
     {
-        $student = Student::findOrFail($id);
+        $fullLrn = $request->filled('lrn_suffix') ? '120231' . $request->lrn_suffix : null;
 
-        if ($student->user) {
-            $student->user->delete();
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'lrn_suffix' => [
+                'nullable',
+                'digits:6',
+                function ($attribute, $value, $fail) use ($fullLrn, $student) {
+                    if ($fullLrn && Student::where('lrn', $fullLrn)->where('id', '!=', $student->id)->exists()) {
+                        $fail('The LRN is already taken.');
+                    }
+                },
+            ],
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'suffix' => 'nullable|string|max:10',
+            'email' => 'required|email|max:255|unique:users,email,' . $student->user_id,
+            'gender' => 'required|in:Male,Female,Other',
+            'birthday' => 'required|date',
+            'birth_place' => 'required|string|max:255',
+            'nationality' => 'required|string|max:255',
+            'religion' => 'required|string|max:255',
+            'ethnicity' => 'required|string|max:100',
+            'mother_tongue' => 'required|string|max:100',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'section_id' => 'required|exists:sections,id',
+            'type' => 'required|in:new,transferee,continuing',
+            'previous_school' => 'nullable|string|max:255|required_if:type,transferee',
+            'father_name' => 'required|string|max:255',
+            'father_occupation' => 'required|string|max:255',
+            'mother_name' => 'required|string|max:255',
+            'mother_occupation' => 'required|string|max:255',
+            'guardian_name' => 'required|string|max:255',
+            'guardian_relationship' => 'required|string|max:255',
+            'guardian_contact' => 'nullable|string|max:50',
+            'street_address' => 'required|string|max:255',
+            'barangay' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'province' => 'required|string|max:255',
+            'zip_code' => 'required|string|max:20',
+            'remarks' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|max:2048',
+            'username' => 'required|string|max:50|unique:users,username,' . $student->user_id,
+            'password' => ['nullable', 'string', SettingsEnforcer::getPasswordRules(), 'confirmed'],
+            'birth_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'report_card' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'good_moral' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'transfer_credential' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $student->delete();
+        DB::beginTransaction();
+        try {
+            $userData = [
+                'username' => $request->username,
+                'email' => $request->email,
+                'first_name' => $request->first_name,
+                'middle_name' => $request->middle_name,
+                'last_name' => $request->last_name,
+                'suffix' => $request->suffix,
+                'photo' => $request->hasFile('photo') ? $request->file('photo')->store('photos', 'public') : $student->user->photo,
+            ];
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+                $userData['password_updated_at'] = now();
+            }
+            $student->user->update($userData);
 
-        return redirect()->route('admin.students.index')
-            ->with('success', 'Student deleted successfully.');
+            $studentData = [
+                'lrn' => $fullLrn,
+                'birthdate' => $request->birthday,
+                'birth_place' => $request->birth_place,
+                'gender' => $request->gender,
+                'nationality' => $request->nationality,
+                'religion' => $request->religion,
+                'father_name' => $request->father_name,
+                'father_occupation' => $request->father_occupation,
+                'mother_name' => $request->mother_name,
+                'mother_occupation' => $request->mother_occupation,
+                'guardian_name' => $request->guardian_name,
+                'guardian_relationship' => $request->guardian_relationship,
+                'guardian_contact' => $request->guardian_contact,
+                'street_address' => $request->street_address,
+                'barangay' => $request->barangay,
+                'city' => $request->city,
+                'province' => $request->province,
+                'zip_code' => $request->zip_code,
+                'grade_level_id' => $request->grade_level_id,
+                'section_id' => $request->section_id,
+                'ethnicity' => $request->ethnicity,
+                'mother_tongue' => $request->mother_tongue,
+                'remarks' => $request->remarks,
+            ];
+
+            if ($request->hasFile('birth_certificate')) {
+                $studentData['birth_certificate_path'] = $request->file('birth_certificate')->store('student-documents/' . $student->id, 'public');
+            }
+            if ($request->hasFile('report_card')) {
+                $studentData['report_card_path'] = $request->file('report_card')->store('student-documents/' . $student->id, 'public');
+            }
+            if ($request->hasFile('good_moral')) {
+                $studentData['good_moral_path'] = $request->file('good_moral')->store('student-documents/' . $student->id, 'public');
+            }
+            if ($request->hasFile('transfer_credential')) {
+                $studentData['transfer_credential_path'] = $request->file('transfer_credential')->store('student-documents/' . $student->id, 'public');
+            }
+
+            $student->update($studentData);
+
+            $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+            if ($activeSchoolYear) {
+                Enrollment::updateOrCreate(
+                    [
+                        'student_id' => $student->id,
+                        'school_year_id' => $activeSchoolYear->id,
+                    ],
+                    [
+                        'section_id' => $request->section_id,
+                        'grade_level_id' => $request->grade_level_id,
+                        'status' => 'enrolled',
+                        'type' => $request->type ?? 'new',
+                        'previous_school' => $request->previous_school,
+                        'enrollment_date' => now(),
+                    ]
+                );
+            }
+
+            DB::commit();
+            return redirect()->route('admin.students.index')->with('success', 'Student updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Failed to update student: ' . $e->getMessage())->withInput();
+        }
     }
 
-    /**
-     * View uploaded student document securely
-     */
+    public function destroy(Student $student)
+    {
+        DB::beginTransaction();
+        try {
+            $student->user->delete();
+            $student->delete();
+            DB::commit();
+            return redirect()->route('admin.students.index')->with('success', 'Student deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Failed to delete student: ' . $e->getMessage());
+        }
+    }
+
+    public function idCard(Student $student)
+    {
+        return view('admin.students.id-card', compact('student'));
+    }
+
     public function viewDocument(Student $student, $type)
     {
-        // Validate document type
         $validTypes = ['birth_certificate', 'report_card', 'good_moral', 'transfer_credential', 'medical_record', 'id_picture', 'enrollment_form'];
         if (!in_array($type, $validTypes)) {
             abort(404, 'Invalid document type.');
@@ -368,13 +443,12 @@ public function show($id)
             abort(404, 'Document not found.');
         }
         
-        // Check all possible paths (public disk, private disk, etc.)
         $possiblePaths = [
             storage_path('app/public/' . $filePath),
             storage_path('app/' . $filePath),
             public_path('storage/' . $filePath),
-            storage_path('app/private/public/' . $filePath), // Legacy path for old uploads
-            storage_path('app/private/' . $filePath), // Alternative private path
+            storage_path('app/private/public/' . $filePath),
+            storage_path('app/private/' . $filePath),
         ];
         
         $fullPath = null;

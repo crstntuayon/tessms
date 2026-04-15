@@ -560,6 +560,7 @@
                     id="usernameInput"
                     class="form-input input-with-icon" 
                     placeholder="Enter unique username"
+                    value="{{ old('username') }}"
                     required
                     minlength="4"
                     maxlength="20"
@@ -583,6 +584,7 @@
                     name="email" 
                     class="form-input input-with-icon" 
                     placeholder="student@tugaweelem.edu"
+                    value="{{ old('email') }}"
                     required
                 >
             </div>
@@ -779,7 +781,7 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                                 <label class="form-label required">First Name</label>
                                 <div class="input-group">
                                     <i class="fas fa-user input-icon"></i>
-                                    <input type="text" name="first_name" class="form-input input-with-icon" placeholder="First name" required>
+                                    <input type="text" name="first_name" class="form-input input-with-icon" placeholder="First name" value="{{ old('first_name') }}" required>
                                 </div>
                             </div>
 
@@ -788,7 +790,7 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                                 <label class="form-label">Middle Name</label>
                                 <div class="input-group">
                                     <i class="fas fa-user input-icon"></i>
-                                    <input type="text" name="middle_name" class="form-input input-with-icon" placeholder="Middle name">
+                                    <input type="text" name="middle_name" class="form-input input-with-icon" placeholder="Middle name" value="{{ old('middle_name') }}">
                                 </div>
                             </div>
 
@@ -797,8 +799,21 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                                 <label class="form-label required">Last Name</label>
                                 <div class="input-group">
                                     <i class="fas fa-user input-icon"></i>
-                                    <input type="text" name="last_name" class="form-input input-with-icon" placeholder="Last name" required>
+                                    <input type="text" name="last_name" class="form-input input-with-icon" placeholder="Last name" value="{{ old('last_name') }}" required>
                                 </div>
+                            </div>
+
+                            <!-- Suffix -->
+                            <div>
+                                <label class="form-label">Suffix</label>
+                                <select name="suffix" class="form-select">
+                                    <option value="" {{ old('suffix') == '' ? 'selected' : '' }}>None</option>
+                                    <option value="Jr." {{ old('suffix') == 'Jr.' ? 'selected' : '' }}>Jr.</option>
+                                    <option value="Sr." {{ old('suffix') == 'Sr.' ? 'selected' : '' }}>Sr.</option>
+                                    <option value="II" {{ old('suffix') == 'II' ? 'selected' : '' }}>II</option>
+                                    <option value="III" {{ old('suffix') == 'III' ? 'selected' : '' }}>III</option>
+                                    <option value="IV" {{ old('suffix') == 'IV' ? 'selected' : '' }}>IV</option>
+                                </select>
                             </div>
 
                             <!-- LRN -->
@@ -806,91 +821,94 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                                 <label class="form-label">LRN (Learner Reference Number)</label>
                                 <div class="input-group">
                                     <span class="lrn-prefix">120231</span>
-                                   <input 
-    type="text" 
-    name="lrn" 
-    id="lrnInput"
-    class="form-input input-with-prefix" 
-    placeholder="XXXXXX"
-    maxlength="6"
-    pattern="\d{6}"
-    inputmode="numeric"
-    oninput="validateLRN(this)"
-    title="Please enter exactly 6 numbers"
->
+                                    <input 
+                                        type="text" 
+                                        name="lrn_suffix" 
+                                        id="lrnInput"
+                                        class="form-input input-with-prefix" 
+                                        placeholder="XXXXXX"
+                                        maxlength="6"
+                                        pattern="\d{6}"
+                                        inputmode="numeric"
+                                        title="Please enter exactly 6 numbers"
+                                        value="{{ old('lrn_suffix') }}"
+                                    >
                                 </div>
                                 <p class="input-hint">Enter last 6 digits only (12 digits total)</p>
                             </div>
 
                             <!-- Birthdate -->
                             <div>
-                                <label class="form-label">Birthdate</label>
+                                <label class="form-label required">Birthdate</label>
                                 <div class="input-group">
                                     <i class="fas fa-calendar input-icon"></i>
                                     <input 
                                         type="date" 
-                                        name="birthdate" 
+                                        name="birthday" 
                                         class="form-input input-with-icon"
                                         min="1900-01-01"
                                         max="{{ date('Y-m-d') }}"
+                                        value="{{ old('birthday') }}"
+                                        required
                                     >
                                 </div>
                             </div>
 
                             <!-- Birth Place -->
                             <div>
-                                <label class="form-label">Birth Place</label>
+                                <label class="form-label required">Birth Place</label>
                                 <div class="input-group">
                                     <i class="fas fa-map-marker-alt input-icon"></i>
-                                    <input type="text" name="birth_place" class="form-input input-with-icon" placeholder="City, Province">
+                                    <input type="text" name="birth_place" class="form-input input-with-icon" placeholder="City, Province" value="{{ old('birth_place') }}" required>
                                 </div>
                             </div>
 
                             <!-- Gender -->
                             <div>
-                                <label class="form-label">Gender</label>
-                                <select name="gender" class="form-select">
+                                <label class="form-label required">Gender</label>
+                                <select name="gender" class="form-select" required>
                                     <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
+                                    <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
+                                    <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
+                                    <option value="Other" {{ old('gender') == 'Other' ? 'selected' : '' }}>Other</option>
                                 </select>
                             </div>
 
                             <!-- Nationality -->
                             <div>
-                                <label class="form-label">Nationality</label>
+                                <label class="form-label required">Nationality</label>
                                 <div class="input-group">
                                     <i class="fas fa-globe input-icon"></i>
-                                    <input type="text" name="nationality" class="form-input input-with-icon" placeholder="e.g., Filipino">
+                                    <input type="text" name="nationality" class="form-input input-with-icon" placeholder="e.g., Filipino" value="{{ old('nationality') }}" required>
                                 </div>
                             </div>
 
                             <!-- Religion -->
                             <div>
-                                <label class="form-label">Religion</label>
+                                <label class="form-label required">Religion</label>
                                 <div class="input-group">
                                     <i class="fas fa-praying-hands input-icon"></i>
-                                    <input type="text" name="religion" class="form-input input-with-icon" placeholder="e.g., Roman Catholic">
+                                    <input type="text" name="religion" class="form-input input-with-icon" placeholder="e.g., Roman Catholic" value="{{ old('religion') }}" required>
                                 </div>
                             </div>
 
-                            <!-- ADD THESE TWO FIELDS HERE -->
-<div>
-    <label class="form-label">Ethnicity</label>
-    <div class="input-group">
-        <i class="fas fa-users input-icon"></i>
-        <input type="text" name="ethnicity" class="form-input input-with-icon" placeholder="e.g., Cebuano, Tagalog">
-    </div>
-</div>
+                            <!-- Ethnicity -->
+                            <div>
+                                <label class="form-label required">Ethnicity</label>
+                                <div class="input-group">
+                                    <i class="fas fa-users input-icon"></i>
+                                    <input type="text" name="ethnicity" class="form-input input-with-icon" placeholder="e.g., Cebuano, Tagalog" value="{{ old('ethnicity') }}" required>
+                                </div>
+                            </div>
 
-<div>
-    <label class="form-label">Mother Tongue</label>
-    <div class="input-group">
-        <i class="fas fa-language input-icon"></i>
-        <input type="text" name="mother_tongue" class="form-input input-with-icon" placeholder="e.g., Cebuano, Filipino">
-    </div>
-</div>
+                            <!-- Mother Tongue -->
+                            <div>
+                                <label class="form-label required">Mother Tongue</label>
+                                <div class="input-group">
+                                    <i class="fas fa-language input-icon"></i>
+                                    <input type="text" name="mother_tongue" class="form-input input-with-icon" placeholder="e.g., Cebuano, Filipino" value="{{ old('mother_tongue') }}" required>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -904,21 +922,32 @@ document.getElementById('removePhoto').addEventListener('click', function() {
         <span>Enrollment Information</span>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Grade Level -->
         <div>
             <label class="form-label required">Grade Level</label>
-            <select name="grade_level_id" id="gradeLevel" class="form-select" required>
+            <select name="grade_level_id" id="gradeLevel" class="form-select" required onchange="updateSections()">
                 <option value="">Select Grade Level</option>
-                <option value="1">Kindergarten</option>
-                <option value="2">Grade 1</option>
-                <option value="3">Grade 2</option>
-                <option value="4">Grade 3</option>
-                <option value="5">Grade 4</option>
-                <option value="6">Grade 5</option>
-                <option value="7">Grade 6</option>
+                @foreach($gradeLevels as $level)
+                    <option value="{{ $level->id }}" {{ old('grade_level_id') == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
+                @endforeach
             </select>
             <p class="input-hint">Select current grade level for enrollment</p>
+            @error('grade_level_id')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <!-- Section -->
+        <div>
+            <label class="form-label required">Section</label>
+            <select name="section_id" id="sectionId" class="form-select" required>
+                <option value="">Select Section</option>
+            </select>
+            <p class="input-hint">Select section for enrollment</p>
+            @error('section_id')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Student Type -->
@@ -926,11 +955,14 @@ document.getElementById('removePhoto').addEventListener('click', function() {
             <label class="form-label required">Student Type</label>
             <select name="type" id="studentType" class="form-select" required onchange="togglePreviousSchool()">
                 <option value="">Select Type</option>
-                <option value="new">New Student</option>
-                <option value="continuing">Continuing Student</option>
-                <option value="transferee">Transferee</option>
+                <option value="new" {{ old('type') == 'new' ? 'selected' : '' }}>New Student</option>
+                <option value="continuing" {{ old('type') == 'continuing' ? 'selected' : '' }}>Continuing Student</option>
+                <option value="transferee" {{ old('type') == 'transferee' ? 'selected' : '' }}>Transferee</option>
             </select>
             <p class="input-hint">Select based on student's enrollment status</p>
+            @error('type')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Previous School (for Transferees) -->
@@ -944,14 +976,45 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                     id="previousSchoolInput"
                     class="form-input input-with-icon" 
                     placeholder="Name of previous school"
+                    value="{{ old('previous_school') }}"
                 >
             </div>
             <p class="input-hint">Required for transferee students</p>
+            @error('previous_school')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            @enderror
         </div>
     </div>
 </div>
 
 <script>
+    // Sections data from server
+    const allSections = @json($sections->map(fn($s) => ['id' => $s->id, 'name' => $s->name, 'grade_level_id' => $s->grade_level_id]));
+    const oldSectionId = "{{ old('section_id', request('section_id')) }}";
+
+    function updateSections() {
+        const gradeLevelId = document.getElementById('gradeLevel').value;
+        const sectionSelect = document.getElementById('sectionId');
+        
+        // Clear current options
+        sectionSelect.innerHTML = '<option value="">Select Section</option>';
+        
+        if (!gradeLevelId) return;
+        
+        // Filter sections by grade level
+        const filteredSections = allSections.filter(s => String(s.grade_level_id) === String(gradeLevelId));
+        
+        filteredSections.forEach(section => {
+            const option = document.createElement('option');
+            option.value = section.id;
+            option.textContent = section.name;
+            if (String(section.id) === String(oldSectionId)) {
+                option.selected = true;
+            }
+            sectionSelect.appendChild(option);
+        });
+    }
+
     function togglePreviousSchool() {
         const typeSelect = document.getElementById('studentType');
         const previousSchoolContainer = document.getElementById('previousSchoolContainer');
@@ -966,6 +1029,11 @@ document.getElementById('removePhoto').addEventListener('click', function() {
             previousSchoolInput.value = '';
         }
     }
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSections();
+        togglePreviousSchool();
+    });
 </script>
 
 
@@ -990,12 +1058,12 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                             
                             <div>
                                 <label class="form-label">Father's Name</label>
-                                <input type="text" name="father_name" class="form-input" placeholder="Full name">
+                                <input type="text" name="father_name" class="form-input" placeholder="Full name" value="{{ old('father_name') }}">
                             </div>
 
                             <div>
                                 <label class="form-label">Father's Occupation</label>
-                                <input type="text" name="father_occupation" class="form-input" placeholder="e.g., Farmer, Teacher, OFW">
+                                <input type="text" name="father_occupation" class="form-input" placeholder="e.g., Farmer, Teacher, OFW" value="{{ old('father_occupation') }}">
                             </div>
 
                             <!-- Mother -->
@@ -1008,12 +1076,12 @@ document.getElementById('removePhoto').addEventListener('click', function() {
 
                             <div>
                                 <label class="form-label">Mother's Name</label>
-                                <input type="text" name="mother_name" class="form-input" placeholder="Full name">
+                                <input type="text" name="mother_name" class="form-input" placeholder="Full name" value="{{ old('mother_name') }}">
                             </div>
 
                             <div>
                                 <label class="form-label">Mother's Occupation</label>
-                                <input type="text" name="mother_occupation" class="form-input" placeholder="e.g., Housewife, Teacher, OFW">
+                                <input type="text" name="mother_occupation" class="form-input" placeholder="e.g., Housewife, Teacher, OFW" value="{{ old('mother_occupation') }}">
                             </div>
 
                             <!-- Guardian -->
@@ -1026,12 +1094,12 @@ document.getElementById('removePhoto').addEventListener('click', function() {
 
                             <div>
                                 <label class="form-label">Guardian's Name</label>
-                                <input type="text" name="guardian_name" class="form-input" placeholder="Full name">
+                                <input type="text" name="guardian_name" class="form-input" placeholder="Full name" value="{{ old('guardian_name') }}">
                             </div>
 
                             <div>
                                 <label class="form-label">Relationship to Student</label>
-                                <input type="text" name="guardian_relationship" class="form-input" placeholder="e.g., Grandmother, Uncle">
+                                <input type="text" name="guardian_relationship" class="form-input" placeholder="e.g., Grandmother, Uncle" value="{{ old('guardian_relationship') }}">
                             </div>
 
                             <div class="md:col-span-2">
@@ -1047,10 +1115,10 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                                         maxlength="11"
                                         pattern="[0-9]{11}"
                                         inputmode="numeric"
-                                        oninput="validateContact(this)"
+                                        value="{{ old('guardian_contact') }}"
                                     >
                                 </div>
-                                <p class="input-hint">Must be 11 digits (e.g., 09123456789)</p>
+                                <p class="input-hint">Optional. Must be 11 digits (e.g., 09123456789)</p>
                             </div>
                         </div>
                     </div>
@@ -1069,30 +1137,30 @@ document.getElementById('removePhoto').addEventListener('click', function() {
                                 <label class="form-label">Street Address</label>
                                 <div class="input-group">
                                     <i class="fas fa-road input-icon"></i>
-                                    <input type="text" name="street_address" class="form-input input-with-icon" placeholder="House number, Street name">
+                                    <input type="text" name="street_address" class="form-input input-with-icon" placeholder="House number, Street name" value="{{ old('street_address') }}">
                                 </div>
                             </div>
 
                             <div>
                                 <label class="form-label">Barangay</label>
-                                <input type="text" name="barangay" class="form-input" placeholder="Barangay name">
+                                <input type="text" name="barangay" class="form-input" placeholder="Barangay name" value="{{ old('barangay') }}">
                             </div>
 
                             <div>
                                 <label class="form-label">City / Municipality</label>
-                                <input type="text" name="city" class="form-input" placeholder="City name">
+                                <input type="text" name="city" class="form-input" placeholder="City name" value="{{ old('city') }}">
                             </div>
 
                             <div>
                                 <label class="form-label">Province</label>
-                                <input type="text" name="province" class="form-input" placeholder="Province name">
+                                <input type="text" name="province" class="form-input" placeholder="Province name" value="{{ old('province') }}">
                             </div>
 
                             <div>
                                 <label class="form-label">Zip Code</label>
                                 <div class="input-group">
                                     <i class="fas fa-mail-bulk input-icon"></i>
-                                    <input type="text" name="zip_code" class="form-input input-with-icon" placeholder="4-digit code">
+                                    <input type="text" name="zip_code" class="form-input input-with-icon" placeholder="4-digit code" value="{{ old('zip_code') }}">
                                 </div>
                             </div>
                         </div>
@@ -1112,12 +1180,44 @@ document.getElementById('removePhoto').addEventListener('click', function() {
         <select name="remarks" class="form-select">
             <option value="">Select Remark (Optional)</option>
             @foreach(\App\Models\Student::$remarksLegend as $code => $description)
-                <option value="{{ $code }}">{{ $code }} - {{ $description }}</option>
+                <option value="{{ $code }}" {{ old('remarks') == $code ? 'selected' : '' }}>{{ $code }} - {{ $description }}</option>
             @endforeach
         </select>
         <p class="input-hint">Select a remark code for this student's status</p>
     </div>
 </div>
+
+                    <!-- Documents -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <div class="section-icon bg-indigo-50 text-indigo-600">
+                                <i class="fas fa-file-upload"></i>
+                            </div>
+                            <span>Documents</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="form-label">Birth Certificate <span class="text-xs text-slate-400">(Optional)</span></label>
+                                <input type="file" name="birth_certificate" accept=".pdf,.jpg,.jpeg,.png" class="form-input">
+                                <p class="input-hint">PDF, JPG, PNG (MAX. 5MB)</p>
+                            </div>
+                            <div>
+                                <label class="form-label">Report Card / Form 138 <span class="text-xs text-slate-400">(Optional)</span></label>
+                                <input type="file" name="report_card" accept=".pdf,.jpg,.jpeg,.png" class="form-input">
+                                <p class="input-hint">PDF, JPG, PNG (MAX. 5MB)</p>
+                            </div>
+                            <div>
+                                <label class="form-label">Certificate of Good Moral <span class="text-xs text-slate-400">(Optional)</span></label>
+                                <input type="file" name="good_moral" accept=".pdf,.jpg,.jpeg,.png" class="form-input">
+                                <p class="input-hint">PDF, JPG, PNG (MAX. 5MB)</p>
+                            </div>
+                            <div>
+                                <label class="form-label">Transfer Credentials <span class="text-xs text-slate-400">(Optional)</span></label>
+                                <input type="file" name="transfer_credential" accept=".pdf,.jpg,.jpeg,.png" class="form-input">
+                                <p class="input-hint">PDF, JPG, PNG (MAX. 5MB)</p>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Submit Buttons -->
                     <div class="flex items-center justify-between pt-4">
@@ -1244,25 +1344,6 @@ document.getElementById('studentForm').addEventListener('submit', function(e) {
         return false;
     }
     
-    // ✅ Create hidden input with FULL 12-digit LRN (120231 + 6 user digits)
-    if (lrnInput.value && lrnInput.value.length === 6) {
-        // Remove any existing hidden field
-        const existingHidden = this.querySelector('input[name="lrn_full"]');
-        if (existingHidden) {
-            existingHidden.remove();
-        }
-        
-        // Create hidden input with full LRN
-        const fullLRN = '120231' + lrnInput.value;
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'lrn_full';
-        hiddenInput.value = fullLRN;
-        this.appendChild(hiddenInput);
-        
-        // Disable original input so only lrn_full submits
-        lrnInput.disabled = true;
-    }
 });
         // Auto-hide success message after 5 seconds (backup)
         setTimeout(function() {

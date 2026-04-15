@@ -27,6 +27,20 @@ class SettingsController extends Controller
     {
         $settings = $this->settingService->getAllSettings();
         
+        // Get all school years for the academic dropdown
+        $schoolYears = \App\Models\SchoolYear::orderBy('name', 'desc')->get();
+        
+        // Get active school year for real-time academic sync
+        $activeSchoolYear = \App\Models\SchoolYear::getActive();
+        
+        // Override academic settings with active school year data
+        if ($activeSchoolYear) {
+            $settings['active_school_year_id'] = $activeSchoolYear->id;
+            $settings['current_school_year'] = $activeSchoolYear->name;
+            $settings['school_year_start'] = $activeSchoolYear->start_date ? $activeSchoolYear->start_date->format('Y-m-d') : '';
+            $settings['school_year_end'] = $activeSchoolYear->end_date ? $activeSchoolYear->end_date->format('Y-m-d') : '';
+        }
+        
         // Get recent activity logs for the logs tab
         $recentLogs = ActivityLog::with('user')
             ->orderBy('created_at', 'desc')
@@ -41,6 +55,8 @@ class SettingsController extends Controller
         
         return view('admin.settings.index', compact(
             'settings', 
+            'schoolYears',
+            'activeSchoolYear',
             'recentLogs', 
             'activityStats',
             'health'
@@ -62,6 +78,23 @@ class SettingsController extends Controller
                     'school_logo'
                 );
                 $data['school_logo'] = $path;
+            }
+
+            // Sync active school year from school_years table
+            if ($request->filled('active_school_year_id')) {
+                $selectedYear = \App\Models\SchoolYear::find($request->input('active_school_year_id'));
+                if ($selectedYear) {
+                    // Deactivate all other school years
+                    \App\Models\SchoolYear::where('id', '!=', $selectedYear->id)->update(['is_active' => false]);
+                    // Activate selected
+                    $selectedYear->update(['is_active' => true]);
+                    
+                    // Sync settings
+                    $data['active_school_year_id'] = $selectedYear->id;
+                    $data['current_school_year'] = $selectedYear->name;
+                    $data['school_year_start'] = $selectedYear->start_date ? $selectedYear->start_date->format('Y-m-d') : '';
+                    $data['school_year_end'] = $selectedYear->end_date ? $selectedYear->end_date->format('Y-m-d') : '';
+                }
             }
 
             $this->settingService->updateSettings($data);

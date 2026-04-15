@@ -161,11 +161,119 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <!-- Notifications -->
-                    <button class="relative p-2.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
-                        <i class="fas fa-bell text-lg"></i>
-                        <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
-                    </button>
+                    <div class="relative" x-data="notificationDropdown()" x-init="initNotifications()">
+                        <button @click="open = !open" class="relative p-2.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span x-show="unreadCount > 0" x-text="unreadCount > 9 ? '9+' : unreadCount" class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-rose-500 rounded-full border-2 border-white flex items-center justify-center"></span>
+                        </button>
+                        
+                        <!-- Dropdown -->
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden">
+                            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
+                                <h3 class="font-semibold text-sm text-slate-800">Notifications</h3>
+                                <button x-show="unreadCount > 0" @click="markAllRead()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Mark all read</button>
+                            </div>
+                            <div class="max-h-80 overflow-y-auto custom-scrollbar">
+                                <template x-if="loading">
+                                    <div class="p-4 text-center text-sm text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
+                                </template>
+                                <template x-if="!loading && notifications.length === 0">
+                                    <div class="p-6 text-center text-sm text-slate-500">
+                                        <i class="fas fa-bell-slash text-slate-300 text-2xl mb-2"></i>
+                                        <p>No notifications yet</p>
+                                    </div>
+                                </template>
+                                <template x-for="n in notifications" :key="n.id">
+                                    <div @click="handleClick(n)" class="px-4 py-3 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors" :class="n.read_at ? 'opacity-70' : 'bg-indigo-50/30'">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-2 h-2 mt-2 rounded-full flex-shrink-0" :class="n.read_at ? 'bg-slate-300' : 'bg-indigo-500'"></div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-semibold text-slate-800 leading-tight" x-text="n.title"></p>
+                                                <p class="text-xs text-slate-600 mt-0.5 line-clamp-2" x-text="n.body"></p>
+                                                <p class="text-[10px] text-slate-400 mt-1" x-text="timeAgo(n.created_at)"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <a href="{{ route('notifications.index') }}" class="block text-center px-4 py-2 text-xs font-medium text-indigo-600 bg-slate-50 hover:bg-slate-100 border-t border-slate-100">View all notifications</a>
+                        </div>
+                    </div>
                 </div>
+                
+                <script>
+                function notificationDropdown() {
+                    return {
+                        open: false,
+                        loading: false,
+                        notifications: [],
+                        unreadCount: 0,
+                        initNotifications() {
+                            this.fetchUnreadCount();
+                            this.$watch('open', value => { if (value) this.fetchRecent(); });
+                            setInterval(() => this.fetchUnreadCount(), 30000);
+                        },
+                        fetchUnreadCount() {
+                            fetch('{{ route('notifications.unread-count') }}')
+                                .then(r => r.json())
+                                .then(data => this.unreadCount = data.count || 0)
+                                .catch(() => {});
+                        },
+                        fetchRecent() {
+                            this.loading = true;
+                            fetch('{{ route('notifications.recent') }}')
+                                .then(r => r.json())
+                                .then(data => {
+                                    this.notifications = data.notifications || [];
+                                    this.unreadCount = data.unread_count || 0;
+                                    this.loading = false;
+                                })
+                                .catch(() => { this.loading = false; });
+                        },
+                        markAllRead() {
+                            fetch('{{ route('notifications.mark-all-read') }}', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '' }
+                            })
+                            .then(r => r.json())
+                            .then(() => {
+                                this.notifications.forEach(n => n.read_at = new Date().toISOString());
+                                this.unreadCount = 0;
+                            })
+                            .catch(() => {});
+                        },
+                        handleClick(n) {
+                            if (!n.read_at) {
+                                fetch(`{{ url('notifications') }}/${n.id}/read`, {
+                                    method: 'POST',
+                                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '' }
+                                })
+                                .then(() => {
+                                    n.read_at = new Date().toISOString();
+                                    this.unreadCount = Math.max(0, this.unreadCount - 1);
+                                })
+                                .catch(() => {});
+                            }
+                            if (n.data && n.data.url) {
+                                window.location.href = n.data.url;
+                            }
+                        },
+                        timeAgo(dateString) {
+                            const date = new Date(dateString);
+                            const now = new Date();
+                            const seconds = Math.floor((now - date) / 1000);
+                            if (seconds < 60) return 'Just now';
+                            const minutes = Math.floor(seconds / 60);
+                            if (minutes < 60) return minutes + 'm ago';
+                            const hours = Math.floor(minutes / 60);
+                            if (hours < 24) return hours + 'h ago';
+                            const days = Math.floor(hours / 24);
+                            if (days < 7) return days + 'd ago';
+                            return date.toLocaleDateString();
+                        }
+                    }
+                }
+                </script>
             </header>
             
             <!-- Main Content -->

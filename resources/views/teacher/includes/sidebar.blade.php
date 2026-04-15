@@ -33,8 +33,6 @@ $sections = $teacher
                     <p class="text-xs text-slate-500">Tugawe Elementary</p>
                 </div>
             </div>
-            <!-- Notification Bell -->
-            @include('components.notification-bell')
         </div>
     </div>
 

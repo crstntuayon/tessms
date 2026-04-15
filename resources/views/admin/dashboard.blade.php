@@ -190,16 +190,8 @@
         .status-inactive { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
         .status-pending { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
         
-        .notification-badge {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 8px;
-            height: 8px;
-            background: #ef4444;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
+        #dashboard-notif-list::-webkit-scrollbar { width: 6px; }
+        #dashboard-notif-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         
         .mobile-overlay {
             background: rgba(15, 23, 42, 0.5);
@@ -292,10 +284,22 @@
                             <kbd class="hidden lg:inline-block px-2 py-0.5 text-[10px] font-semibold text-slate-400 bg-slate-100 rounded border border-slate-200">⌘K</kbd>
                         </div>
 
-                        <button class="relative p-2 sm:p-2.5 text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-                            <i class="fas fa-bell text-lg"></i>
-                            <span class="notification-badge animate-pulse"></span>
-                        </button>
+                        <div class="relative" id="dashboard-notif-wrapper">
+                            <button id="dashboard-notif-btn" class="relative p-2 sm:p-2.5 text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
+                                <i class="fas fa-bell text-lg"></i>
+                                <span id="dashboard-notif-badge" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-rose-500 rounded-full border-2 border-white flex items-center justify-center">0</span>
+                            </button>
+                            <div id="dashboard-notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden">
+                                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
+                                    <h3 class="font-semibold text-sm text-slate-800">Notifications</h3>
+                                    <button id="dashboard-mark-all" class="hidden text-xs text-indigo-600 hover:text-indigo-800 font-medium">Mark all read</button>
+                                </div>
+                                <div id="dashboard-notif-list" class="max-h-80 overflow-y-auto" style="scrollbar-width: thin;">
+                                    <div class="p-4 text-center text-sm text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
+                                </div>
+                                <a href="{{ route('notifications.index') }}" class="block text-center px-4 py-2 text-xs font-medium text-indigo-600 bg-slate-50 hover:bg-slate-100 border-t border-slate-100">View all notifications</a>
+                            </div>
+                        </div>
 
                         <button onclick="openQuickActions()" class="fab bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl font-semibold transition-all flex items-center gap-2 flex-shrink-0">
                             <i class="fas fa-plus text-sm"></i>
@@ -978,6 +982,141 @@
                 }
             }
         });
+    </script>
+
+    <!-- Notification Dropdown Script -->
+    <script>
+    (function(){
+        const btn = document.getElementById('dashboard-notif-btn');
+        const dropdown = document.getElementById('dashboard-notif-dropdown');
+        const badge = document.getElementById('dashboard-notif-badge');
+        const list = document.getElementById('dashboard-notif-list');
+        const markAll = document.getElementById('dashboard-mark-all');
+        const csrf = document.querySelector('meta[name=csrf-token]')?.content || '';
+        let unreadCount = 0;
+
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return minutes + 'm ago';
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return hours + 'h ago';
+            const days = Math.floor(hours / 24);
+            if (days < 7) return days + 'd ago';
+            return date.toLocaleDateString();
+        }
+
+        function updateBadge(count) {
+            unreadCount = count;
+            if (count > 0) {
+                badge.classList.remove('hidden');
+                badge.textContent = count > 9 ? '9+' : count;
+                markAll.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                markAll.classList.add('hidden');
+            }
+        }
+
+        function renderNotifications(notifications) {
+            if (!notifications || notifications.length === 0) {
+                list.innerHTML = '<div class="p-6 text-center text-sm text-slate-500"><i class="fas fa-bell-slash text-slate-300 text-2xl mb-2 block"></i>No notifications yet</div>';
+                return;
+            }
+            list.innerHTML = notifications.map(n => {
+                const unread = !n.read_at;
+                return `<div class="px-4 py-3 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors ${unread ? 'bg-indigo-50/30' : 'opacity-70'}" data-id="${n.id}">
+                    <div class="flex items-start gap-3">
+                        <div class="w-2 h-2 mt-2 rounded-full flex-shrink-0 ${unread ? 'bg-indigo-500' : 'bg-slate-300'}"></div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-slate-800 leading-tight">${escapeHtml(n.title)}</p>
+                            <p class="text-xs text-slate-600 mt-0.5 line-clamp-2">${escapeHtml(n.body)}</p>
+                            <p class="text-[10px] text-slate-400 mt-1">${timeAgo(n.created_at)}</p>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            list.querySelectorAll('[data-id]').forEach(el => {
+                el.addEventListener('click', function(){
+                    const id = this.dataset.id;
+                    const n = notifications.find(item => String(item.id) === id);
+                    if (n && !n.read_at) {
+                        fetch(`{{ url('notifications') }}/${id}/read`, {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': csrf }
+                        }).then(() => {
+                            n.read_at = new Date().toISOString();
+                            updateBadge(Math.max(0, unreadCount - 1));
+                            renderNotifications(notifications);
+                        }).catch(() => {});
+                    }
+                    if (n && n.data && n.data.url) {
+                        window.location.href = n.data.url;
+                    }
+                });
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function fetchUnreadCount() {
+            fetch('{{ route('notifications.unread-count') }}')
+                .then(r => r.json())
+                .then(data => updateBadge(data.count || 0))
+                .catch(() => {});
+        }
+
+        function fetchRecent() {
+            list.innerHTML = '<div class="p-4 text-center text-sm text-slate-500"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>';
+            fetch('{{ route('notifications.recent') }}')
+                .then(r => r.json())
+                .then(data => {
+                    updateBadge(data.unread_count || 0);
+                    renderNotifications(data.notifications || []);
+                })
+                .catch(() => {
+                    list.innerHTML = '<div class="p-4 text-center text-sm text-red-500">Failed to load</div>';
+                });
+        }
+
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isHidden = dropdown.classList.contains('hidden');
+            dropdown.classList.toggle('hidden');
+            if (isHidden) fetchRecent();
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!dropdown.classList.contains('hidden') && !dropdown.contains(e.target) && e.target !== btn) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        markAll.addEventListener('click', function(e) {
+            e.stopPropagation();
+            fetch('{{ route('notifications.mark-all-read') }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf }
+            })
+            .then(r => r.json())
+            .then(() => {
+                updateBadge(0);
+                fetchRecent();
+            })
+            .catch(() => {});
+        });
+
+        fetchUnreadCount();
+        setInterval(fetchUnreadCount, 30000);
+    })();
     </script>
 </body>
 </html>

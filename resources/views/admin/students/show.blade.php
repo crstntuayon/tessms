@@ -7,6 +7,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
@@ -1775,7 +1776,7 @@
     </div>
 
     <!-- Floating Action Buttons -->
-    <div class="fab-container">
+    <div class="fab-container" x-data="{ idCardOpen: false }">
         <form id="deleteForm" action="{{ route('admin.students.destroy', $student->id) }}" method="POST" class="m-0 p-0">
             @csrf
             @method('DELETE')
@@ -1794,6 +1795,52 @@
             <i class="fas fa-edit"></i>
             <span class="fab-tooltip">Edit Student</span>
         </a>
+
+        <button @click="idCardOpen = true" class="fab-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+            <i class="fas fa-id-card"></i>
+            <span class="fab-tooltip">View ID Card</span>
+        </button>
+
+        <!-- ID Card Modal (teleported to body) -->
+        <template x-teleport="body">
+            <div x-show="idCardOpen"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 z-[9999]"
+                 style="display: none;"
+                 @keydown.escape.window="idCardOpen = false">
+                <div class="relative flex min-h-screen items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="idCardOpen = false"></div>
+                    <div x-show="idCardOpen"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+                         class="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl p-5"
+                         style="display: none;"
+                         @click.away="idCardOpen = false">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-lg font-bold text-slate-800">Student ID Card</h3>
+                            <div class="flex items-center gap-2">
+                                <button onclick="window.print()" class="inline-flex h-8 px-3 items-center justify-center rounded-full bg-blue-900 text-white hover:bg-blue-800 transition text-xs font-medium">
+                                    <i class="fas fa-print mr-1"></i> Print
+                                </button>
+                                <button @click="idCardOpen = false" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
+                                    <i class="fas fa-times text-base"></i>
+                                </button>
+                            </div>
+                        </div>
+                        @include('components.student-id-card', ['student' => $student, 'showPrint' => false])
+                    </div>
+                </div>
+            </div>
+        </template>
         
         <a href="{{ route('admin.students.index') }}" class="fab-btn back">
             <i class="fas fa-arrow-left"></i>

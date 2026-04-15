@@ -234,45 +234,7 @@
                         </div>
                         
                         <!-- Notifications -->
-                        <div class="relative">
-                            <button class="relative p-2.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" onclick="toggleNotifications()">
-                                <i class="fas fa-bell text-lg"></i>
-                                @if(($unreadNotifications ?? 0) > 0)
-                                    <span class="absolute top-1 right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-pulse">
-                                        {{ $unreadNotifications }}
-                                    </span>
-                                @endif
-                            </button>
-                            
-                            <div id="notificationDropdown" class="hidden absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 max-h-96 overflow-hidden">
-                                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                    <h4 class="font-bold text-slate-800">Notifications</h4>
-                                    <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">{{ $unreadNotifications ?? 0 }} new</span>
-                                </div>
-                                <div class="max-h-64 overflow-y-auto custom-scrollbar">
-                                    @forelse($notifications ?? [] as $notification)
-                                        <div class="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors {{ $notification->read_at ? '' : 'bg-indigo-50/30 border-l-4 border-l-indigo-500' }}">
-                                            <div class="flex gap-3">
-                                                <div class="w-8 h-8 rounded-full {{ $notification->read_at ? 'bg-slate-100' : 'bg-indigo-100' }} flex items-center justify-center flex-shrink-0">
-                                                    <i class="fas {{ $notification->data['icon'] ?? 'fa-info' }} text-xs {{ $notification->read_at ? 'text-slate-500' : 'text-indigo-600' }}"></i>
-                                                </div>
-                                                <div class="flex-1">
-                                                    <p class="text-sm font-semibold text-slate-800">{{ $notification->data['title'] ?? 'Notification' }}</p>
-                                                    <p class="text-xs text-slate-500 mt-1">{{ $notification->created_at->diffForHumans() ?? 'Just now' }}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @empty
-                                        <div class="p-8 text-center">
-                                            <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <i class="fas fa-bell-slash text-slate-400"></i>
-                                            </div>
-                                            <p class="text-sm text-slate-500">No notifications</p>
-                                        </div>
-                                    @endforelse
-                                </div>
-                            </div>
-                        </div>
+                        @include('components.notification-bell')
                         
                         <!-- User Profile -->
                         <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
@@ -1202,10 +1164,6 @@ generateCalendar();
         }
         
         // UI Functions
-        function toggleNotifications() {
-            document.getElementById('notificationDropdown').classList.toggle('hidden');
-        }
-        
         function toggleMobileMenu() {
             const sidebar = document.querySelector('aside');
             const overlay = document.getElementById('mobileOverlay');
@@ -1268,14 +1226,6 @@ function printClassRecord() {
             if (e.target === e.currentTarget) closeInterventionModal();
         });
         
-        document.addEventListener('click', e => {
-            const dropdown = document.getElementById('notificationDropdown');
-            const bell = e.target.closest('[onclick="toggleNotifications()"]');
-            if (!bell && dropdown && !dropdown.classList.contains('hidden') && !dropdown.contains(e.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-        
         document.getElementById('interventionForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = this.querySelector('button[type="submit"]');
@@ -1316,7 +1266,6 @@ function printClassRecord() {
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 closeInterventionModal();
-                document.getElementById('notificationDropdown')?.classList.add('hidden');
             }
             if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                 e.preventDefault();

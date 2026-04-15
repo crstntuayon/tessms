@@ -11,6 +11,7 @@ use App\Models\SchoolYear;
 use App\Models\Enrollment; // Add this import
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class SectionController extends Controller
 {
@@ -83,6 +84,28 @@ class SectionController extends Controller
         $section->setRelation('active_students', $students);
 
         return view('admin.sections.show', compact('section'));
+    }
+
+    public function idCards(Section $section)
+    {
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        $students = collect();
+        if ($activeSchoolYear) {
+            $students = Student::with(['user', 'enrollments'])
+                ->whereHas('enrollments', function($q) use ($section, $activeSchoolYear) {
+                    $q->where('section_id', $section->id)
+                      ->where('school_year_id', $activeSchoolYear->id)
+                      ->where('status', 'enrolled');
+                })
+                ->get()
+                ->sortBy(function ($student) {
+                    return strtolower($student->full_name);
+                })
+                ->values();
+        }
+        
+        return view('admin.sections.id-cards', compact('section', 'students'));
     }
 
     public function create()
@@ -178,5 +201,20 @@ class SectionController extends Controller
 
         return redirect()->route('admin.sections.index')
             ->with('success', 'Section updated successfully.');
+    }
+
+    public function destroy(Section $section)
+    {
+        DB::beginTransaction();
+        try {
+            $section->delete();
+            DB::commit();
+            return redirect()->route('admin.sections.index')
+                ->with('success', 'Section deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('admin.sections.index')
+                ->with('error', 'Failed to delete section: ' . $e->getMessage());
+        }
     }
 }

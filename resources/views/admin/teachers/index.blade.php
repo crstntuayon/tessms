@@ -608,7 +608,7 @@
                     <div class="flex items-center gap-3 flex-wrap">
                         <div class="flex items-center gap-2">
                             <i class="fas fa-filter text-slate-400"></i>
-                            <select class="filter-select" onchange="filterByStatus(this.value)">
+                            <select id="statusFilter" class="filter-select" onchange="filterByStatus(this.value)">
                                 <option value="">All Status</option>
                                 <option value="active">🟢 Active</option>
                                 <option value="on_leave">🟡 On Leave</option>
@@ -642,7 +642,7 @@
                         
                         <div class="flex items-center gap-3">
                             <span class="text-sm text-slate-500 font-medium">Sort by:</span>
-                            <select class="filter-select py-2" onchange="sortTable(this.value)">
+                            <select id="sortSelect" class="filter-select py-2" onchange="sortTable(this.value)">
                                 <option value="newest">📅 Newest First</option>
                                 <option value="name">🔤 Name (A-Z)</option>
                                
@@ -1064,14 +1064,109 @@
             showToast('CSV exported successfully');
         }
 
-        function showToast(message) {
+        function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
+            const icon = toast.querySelector('i');
+            const title = toast.querySelector('p.font-semibold');
+            
             toast.querySelector('p.text-xs').textContent = message;
+            
+            if (type === 'error') {
+                toast.style.borderLeftColor = '#ef4444';
+                icon.className = 'fas fa-times-circle text-red-500 text-xl';
+                title.textContent = 'Error';
+                playSound('error');
+            } else {
+                toast.style.borderLeftColor = '#10b981';
+                icon.className = 'fas fa-check-circle text-emerald-500 text-xl';
+                title.textContent = 'Success';
+                playSound('success');
+            }
+            
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
         }
+
+        function playSound(type) {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.4);
+                } else {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.3);
+                }
+            } catch (e) {
+                // ignore audio errors
+            }
+        }
+
+        // Handle Laravel flash messages
+        @if(session('success'))
+            document.addEventListener('DOMContentLoaded', () => {
+                showToast(@json(session('success')), 'success');
+            });
+        @endif
+        @if(session('error'))
+            document.addEventListener('DOMContentLoaded', () => {
+                showToast(@json(session('error')), 'error');
+            });
+        @endif
+
+        // Persist filter and sort using localStorage
+        const STATUS_KEY = 'teachers_status_filter';
+        const SORT_KEY = 'teachers_sort_by';
+
+        const savedStatus = localStorage.getItem(STATUS_KEY);
+        const savedSort = localStorage.getItem(SORT_KEY);
+
+        if (savedStatus) {
+            const statusSelect = document.getElementById('statusFilter');
+            if (statusSelect) {
+                statusSelect.value = savedStatus;
+                filterByStatus(savedStatus);
+            }
+        }
+
+        if (savedSort) {
+            const sortSelect = document.getElementById('sortSelect');
+            if (sortSelect) {
+                sortSelect.value = savedSort;
+                sortTable(savedSort);
+            }
+        }
+
+        // Override original functions to save state
+        const originalFilterByStatus = filterByStatus;
+        filterByStatus = function(status) {
+            localStorage.setItem(STATUS_KEY, status);
+            originalFilterByStatus(status);
+        };
+
+        const originalSortTable = sortTable;
+        sortTable = function(sortBy) {
+            localStorage.setItem(SORT_KEY, sortBy);
+            originalSortTable(sortBy);
+        };
 
         // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {

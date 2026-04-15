@@ -40,10 +40,11 @@ class SettingsController extends Controller
             }
             
             $request->validate([
-                'new_password' => 'required|min:8|confirmed',
+                'new_password' => ['required', \App\Services\SettingsEnforcer::getPasswordRules(), 'confirmed'],
             ]);
             
             $user->password = Hash::make($request->new_password);
+            $user->password_updated_at = now();
         }
         
         // Handle 2FA toggle

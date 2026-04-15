@@ -87,5 +87,13 @@ public function section()
         return $this->hasMany(\App\Models\Assignment::class, 'teacher_id');
     }
 
-    
+    public function schedules()
+    {
+        return $this->hasMany(\App\Models\Schedule::class, 'teacher_id');
+    }
+
+    public function interventions()
+    {
+        return $this->hasMany(\App\Models\Intervention::class, 'teacher_id');
+    }
 }

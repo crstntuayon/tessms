@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Notification;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserNotificationSetting;
 use Illuminate\Support\Facades\Mail;
@@ -22,6 +23,20 @@ class NotificationService
         bool $sendEmail = true,
         bool $sendSms = false
     ): ?Notification {
+        // Check global admin settings for this notification type
+        $globalSettingKey = match ($type) {
+            'announcement', 'message' => 'notify_announcements',
+            'grade' => 'notify_grades',
+            'attendance' => 'notify_attendance',
+            'student', 'enrollment' => 'notify_new_student',
+            default => null,
+        };
+
+        if ($globalSettingKey && !(bool) Setting::get($globalSettingKey, true)) {
+            Log::info("Notification skipped: Global setting {$globalSettingKey} is disabled");
+            return null;
+        }
+
         // Get user and their settings
         $user = User::find($userId);
         if (!$user) {
@@ -107,6 +122,11 @@ class NotificationService
      */
     private static function sendSms(string $phoneNumber, Notification $notification): void
     {
+        if (!(bool) Setting::get('sms_enabled', false)) {
+            Log::info("SMS skipped: Global sms_enabled setting is disabled");
+            return;
+        }
+
         // For now, log the SMS (integrate with real SMS provider later)
         // Philippine SMS providers: Semaphore, Chikka, Twilio, etc.
         

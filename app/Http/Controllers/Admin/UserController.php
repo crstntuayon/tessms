@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use App\Services\SettingsEnforcer;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -40,7 +41,7 @@ class UserController extends Controller
             'last_name' => 'required|string|max:255',
             'username' => 'required|string|unique:users',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:8|confirmed',
+            'password' => ['required', SettingsEnforcer::getPasswordRules(), 'confirmed'],
             'role_id' => 'required|exists:roles,id',
             'status' => 'required|in:active,inactive',
         ]);
@@ -55,6 +56,7 @@ class UserController extends Controller
             'username' => $validated['username'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'password_updated_at' => now(),
             'role_id' => $validated['role_id'],
             'status' => $validated['status'],
         ]);
@@ -86,7 +88,7 @@ class UserController extends Controller
             'address' => 'nullable|string|max:255',
             'role_id' => 'required|exists:roles,id',
             'status' => 'required|in:active,inactive',
-            'password' => 'nullable|min:8|confirmed',
+            'password' => ['nullable', SettingsEnforcer::getPasswordRules(), 'confirmed'],
         ]);
 
         $data = [
@@ -107,6 +109,7 @@ class UserController extends Controller
         // Only update password if provided
         if (!empty($validated['password'])) {
             $data['password'] = Hash::make($validated['password']);
+            $data['password_updated_at'] = now();
         }
 
         $user->update($data);

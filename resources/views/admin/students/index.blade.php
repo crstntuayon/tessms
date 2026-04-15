@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         * {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -371,34 +372,43 @@
             <!-- Scrollable Content -->
             <main class="main-content">
                 
+                @php
+                    $allGrades = \App\Models\GradeLevel::whereHas('sections.enrollments', function($q) use ($activeSchoolYear) {
+                        $q->where('school_year_id', $activeSchoolYear?->id)->where('status', 'enrolled');
+                    })->orderBy('name')->pluck('name');
+
+                    $allSections = \App\Models\Section::whereHas('enrollments', function($q) use ($activeSchoolYear) {
+                        $q->where('school_year_id', $activeSchoolYear?->id)->where('status', 'enrolled');
+                    })->orderBy('name')->pluck('name');
+                @endphp
                 <!-- Filters & Actions Bar -->
                 <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in-up">
                     <div class="flex items-center gap-3">
                         <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
                             <i class="fas fa-filter text-slate-400"></i>
-                            <select class="bg-transparent border-none outline-none text-sm text-slate-700 cursor-pointer font-medium" onchange="filterByGrade(this.value)">
+                            <select class="bg-transparent border-none outline-none text-sm text-slate-700 cursor-pointer font-medium" onchange="updateFilter('grade', this.value)">
                                 <option value="">All Grades</option>
-                                @php
-                                    $grades = $students->pluck('grade_level')->unique()->sort()->values();
-                                @endphp
-                                @foreach($grades as $grade)
-                                    <option value="{{ $grade }}">Grade {{ $grade }}</option>
+                                @foreach($allGrades as $grade)
+                                    <option value="{{ $grade }}" {{ request('grade') == $grade ? 'selected' : '' }}>Grade {{ $grade }}</option>
                                 @endforeach
                             </select>
                         </div>
                         
                         <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
                             <i class="fas fa-layer-group text-slate-400"></i>
-                            <select class="bg-transparent border-none outline-none text-sm text-slate-700 cursor-pointer font-medium">
+                            <select class="bg-transparent border-none outline-none text-sm text-slate-700 cursor-pointer font-medium" onchange="updateFilter('section', this.value)">
                                 <option value="">All Sections</option>
-                                @php
-                                    $sections = $students->pluck('section.name')->unique()->filter()->sort()->values();
-                                @endphp
-                                @foreach($sections as $section)
-                                    <option value="{{ $section }}">{{ $section }}</option>
+                                @foreach($allSections as $section)
+                                    <option value="{{ $section }}" {{ request('section') == $section ? 'selected' : '' }}>{{ $section }}</option>
                                 @endforeach
                             </select>
                         </div>
+
+                        @if(request('grade') || request('section'))
+                            <a href="{{ route('admin.students.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium underline">
+                                Clear Filters
+                            </a>
+                        @endif
                     </div>
 
                     <div class="flex items-center gap-3">
@@ -428,10 +438,10 @@
                         
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-slate-500">Sort by:</span>
-                            <select class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 outline-none focus:border-blue-500" onchange="sortTable(this.value)">
-                                <option value="newest">Newest First</option>
-                                <option value="name">Name (A-Z)</option>
-                                <option value="grade">Grade Level</option>
+                            <select class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 outline-none focus:border-blue-500" onchange="updateFilter('sort', this.value)">
+                                <option value="" {{ request('sort') == '' || request('sort') == 'newest' ? 'selected' : '' }}>Newest First</option>
+                                <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>Name (A-Z)</option>
+                                <option value="grade" {{ request('sort') == 'grade' ? 'selected' : '' }}>Grade Level</option>
                             </select>
                         </div>
                     </div>
@@ -452,8 +462,28 @@
     </tr>
 </thead>
                            <tbody>
+    @php $currentSection = null; @endphp
     @forelse($students as $student)
-    <tr class="student-row" data-grade="{{ $student->grade_level }}" data-name="{{ strtolower($student->full_name) }}" data-lrn="{{ strtolower($student->lrn ?? '') }}">
+    @php
+        $enrollment = $student->enrollments->first();
+        $sectionName = $enrollment?->section?->name ?? $student->section?->name ?? 'Unassigned';
+        $gradeLevelName = $enrollment?->section?->gradeLevel?->name ?? $student->gradeLevel?->name ?? 'N/A';
+    @endphp
+    @if((!request('sort') || request('sort') === 'newest') && $currentSection !== $sectionName)
+        <tr class="bg-slate-100 border-y border-slate-200">
+            <td colspan="7" class="px-4 py-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                        <i class="fas fa-users text-xs"></i>
+                    </div>
+                    <span class="font-bold text-slate-700 text-sm">{{ $sectionName }}</span>
+                    <span class="text-xs text-slate-500">— {{ $gradeLevelName }}</span>
+                </div>
+            </td>
+        </tr>
+        @php $currentSection = $sectionName; @endphp
+    @endif
+    <tr class="student-row" data-grade="{{ $gradeLevelName }}" data-section="{{ $sectionName }}" data-name="{{ strtolower($student->full_name) }}" data-lrn="{{ strtolower($student->lrn ?? '') }}">
         <td>
             <input type="checkbox" class="custom-checkbox student-checkbox" value="{{ $student->id }}">
         </td>
@@ -473,16 +503,13 @@
         <!-- Grade & Section -->
         <td>
             <div class="flex flex-col gap-1">
-                @php
-                    $enrollment = $student->enrollments->first();
-                @endphp
-                   <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-sm font-semibold">
-        <i class="fas fa-graduation-cap text-xs"></i>
-        {{ $student->gradeLevel?->name ?? 'N/A' }}
-    </span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-sm font-semibold">
+                    <i class="fas fa-graduation-cap text-xs"></i>
+                    {{ $gradeLevelName }}
+                </span>
                 <span class="text-xs text-slate-500 font-medium">
                     <i class="fas fa-door-open mr-1 text-slate-400"></i>
-                    {{ $enrollment?->section?->name ?? $student->section?->name ?? 'No Section Assigned' }}
+                    {{ $sectionName }}
                 </span>
             </div>
         </td>
@@ -541,16 +568,60 @@
         
         <!-- Actions -->
         <td class="text-right">
-            <div class="flex items-center justify-end gap-1">
+            <div class="flex items-center justify-end gap-1" x-data="{ idCardOpen: false }">
                 <a href="{{ route('admin.students.show', $student) }}" class="action-btn text-blue-600 hover:bg-blue-50" title="View Details">
                     <i class="fas fa-eye"></i>
                 </a>
+                <button @click="idCardOpen = true" class="action-btn text-emerald-600 hover:bg-emerald-50" title="ID Card">
+                    <i class="fas fa-id-card"></i>
+                </button>
                 <a href="{{ route('admin.students.edit', $student) }}" class="action-btn text-amber-600 hover:bg-amber-50" title="Edit">
                     <i class="fas fa-edit"></i>
                 </a>
                 <button onclick="deleteStudent({{ $student->id }})" class="action-btn text-red-600 hover:bg-red-50" title="Delete">
                     <i class="fas fa-trash-alt"></i>
                 </button>
+
+                <!-- ID Card Modal (teleported to body) -->
+                <template x-teleport="body">
+                    <div x-show="idCardOpen"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="fixed inset-0 z-[9999]"
+                         style="display: none;"
+                         @keydown.escape.window="idCardOpen = false">
+                        <div class="relative flex min-h-screen items-center justify-center p-4">
+                            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="idCardOpen = false"></div>
+                            <div x-show="idCardOpen"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+                                 class="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl p-5"
+                                 style="display: none;"
+                                 @click.away="idCardOpen = false">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-lg font-bold text-slate-800">Student ID Card</h3>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="window.print()" class="inline-flex h-8 px-3 items-center justify-center rounded-full bg-blue-900 text-white hover:bg-blue-800 transition text-xs font-medium">
+                                            <i class="fas fa-print mr-1"></i> Print
+                                        </button>
+                                        <button @click="idCardOpen = false" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
+                                            <i class="fas fa-times text-base"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                @include('components.student-id-card', ['student' => $student, 'showPrint' => false])
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </div>
         </td>
     </tr>
@@ -733,16 +804,14 @@ document.getElementById('searchInput')?.addEventListener('input', function(e) {
 });
 
         // Filter by Grade
-        function filterByGrade(grade) {
-            const rows = document.querySelectorAll('.student-row');
-            
-            rows.forEach(row => {
-                if (!grade || row.getAttribute('data-grade') === grade) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+        function updateFilter(key, value) {
+            const url = new URL(window.location.href);
+            if (value) {
+                url.searchParams.set(key, value);
+            } else {
+                url.searchParams.delete(key);
+            }
+            window.location.href = url.toString();
         }
 
         // Select All Checkbox

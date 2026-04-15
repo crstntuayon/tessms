@@ -543,6 +543,22 @@
                                 @enderror
                             </div>
 
+                            <!-- Suffix -->
+                            <div>
+                                <label class="form-label">Suffix</label>
+                                <select name="suffix" class="form-select">
+                                    <option value="" {{ old('suffix', $student->user->suffix) == '' ? 'selected' : '' }}>None</option>
+                                    <option value="Jr." {{ old('suffix', $student->user->suffix) == 'Jr.' ? 'selected' : '' }}>Jr.</option>
+                                    <option value="Sr." {{ old('suffix', $student->user->suffix) == 'Sr.' ? 'selected' : '' }}>Sr.</option>
+                                    <option value="II" {{ old('suffix', $student->user->suffix) == 'II' ? 'selected' : '' }}>II</option>
+                                    <option value="III" {{ old('suffix', $student->user->suffix) == 'III' ? 'selected' : '' }}>III</option>
+                                    <option value="IV" {{ old('suffix', $student->user->suffix) == 'IV' ? 'selected' : '' }}>IV</option>
+                                </select>
+                                @error('suffix')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             <!-- Username (from users table) -->
                             <div>
                                 <label class="form-label required">Username</label>
@@ -631,48 +647,48 @@
                                     <span class="lrn-prefix">120231</span>
                                     <input 
                                         type="text" 
-                                        name="lrn" 
+                                        name="lrn_suffix" 
                                         id="lrnInput"
                                         class="form-input input-with-prefix" 
                                         placeholder="XXXXXX"
                                         maxlength="6"
                                         pattern="[0-9]{6}"
                                         inputmode="numeric"
-                                        oninput="validateLRN(this)"
-                                        value="{{ old('lrn', $student->lrn ? substr($student->lrn, 6) : '') }}"
+                                        value="{{ old('lrn_suffix', $student->lrn ? substr($student->lrn, 6) : '') }}"
                                     >
                                 </div>
                                 <p class="input-hint">Enter last 6 digits only (12 digits total)</p>
-                                @error('lrn')
+                                @error('lrn_suffix')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <!-- Birthdate -->
                             <div>
-                                <label class="form-label">Birthdate</label>
+                                <label class="form-label required">Birthdate</label>
                                 <div class="input-group">
                                     <i class="fas fa-calendar input-icon"></i>
                                     <input 
                                         type="date" 
-                                        name="birthdate" 
+                                        name="birthday" 
                                         class="form-input input-with-icon"
                                         min="1900-01-01"
                                         max="{{ date('Y-m-d') }}"
-                                        value="{{ old('birthdate', $student->birthdate ? $student->birthdate->format('Y-m-d') : '') }}"
+                                        value="{{ old('birthday', $student->birthdate ? $student->birthdate->format('Y-m-d') : '') }}"
+                                        required
                                     >
                                 </div>
-                                @error('birthdate')
+                                @error('birthday')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <!-- Birth Place -->
                             <div>
-                                <label class="form-label">Birth Place</label>
+                                <label class="form-label required">Birth Place</label>
                                 <div class="input-group">
                                     <i class="fas fa-map-marker-alt input-icon"></i>
-                                    <input type="text" name="birth_place" class="form-input input-with-icon" placeholder="City, Province" value="{{ old('birth_place', $student->birth_place) }}">
+                                    <input type="text" name="birth_place" class="form-input input-with-icon" placeholder="City, Province" value="{{ old('birth_place', $student->birth_place) }}" required>
                                 </div>
                                 @error('birth_place')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -681,8 +697,8 @@
 
                             <!-- Gender -->
                             <div>
-                                <label class="form-label">Gender</label>
-                                <select name="gender" class="form-select">
+                                <label class="form-label required">Gender</label>
+                                <select name="gender" class="form-select" required>
                                     <option value="">Select Gender</option>
                                     <option value="Male" {{ old('gender', $student->gender) == 'Male' ? 'selected' : '' }}>Male</option>
                                     <option value="Female" {{ old('gender', $student->gender) == 'Female' ? 'selected' : '' }}>Female</option>
@@ -695,10 +711,10 @@
 
                             <!-- Nationality -->
                             <div>
-                                <label class="form-label">Nationality</label>
+                                <label class="form-label required">Nationality</label>
                                 <div class="input-group">
                                     <i class="fas fa-globe input-icon"></i>
-                                    <input type="text" name="nationality" class="form-input input-with-icon" placeholder="e.g., Filipino" value="{{ old('nationality', $student->nationality) }}">
+                                    <input type="text" name="nationality" class="form-input input-with-icon" placeholder="e.g., Filipino" value="{{ old('nationality', $student->nationality) }}" required>
                                 </div>
                                 @error('nationality')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -707,34 +723,34 @@
 
                             <!-- Religion -->
                             <div>
-                                <label class="form-label">Religion</label>
+                                <label class="form-label required">Religion</label>
                                 <div class="input-group">
                                     <i class="fas fa-praying-hands input-icon"></i>
-                                    <input type="text" name="religion" class="form-input input-with-icon" placeholder="e.g., Roman Catholic" value="{{ old('religion', $student->religion) }}">
+                                    <input type="text" name="religion" class="form-input input-with-icon" placeholder="e.g., Roman Catholic" value="{{ old('religion', $student->religion) }}" required>
                                 </div>
                                 @error('religion')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
-                                <!-- ✅ ETHNICITY (NEW) -->
+                            <!-- Ethnicity -->
                             <div>
-                                <label class="form-label">Ethnicity</label>
+                                <label class="form-label required">Ethnicity</label>
                                 <div class="input-group">
                                     <i class="fas fa-users input-icon"></i>
-                                    <input type="text" name="ethnicity" class="form-input input-with-icon" placeholder="e.g., Tagalog, Cebuano, Ilocano" value="{{ old('ethnicity', $student->ethnicity) }}">
+                                    <input type="text" name="ethnicity" class="form-input input-with-icon" placeholder="e.g., Tagalog, Cebuano, Ilocano" value="{{ old('ethnicity', $student->ethnicity) }}" required>
                                 </div>
                                 @error('ethnicity')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
-                            <!-- ✅ MOTHER TONGUE (NEW) -->
+                            <!-- Mother Tongue -->
                             <div>
-                                <label class="form-label">Mother Tongue</label>
+                                <label class="form-label required">Mother Tongue</label>
                                 <div class="input-group">
                                     <i class="fas fa-language input-icon"></i>
-                                    <input type="text" name="mother_tongue" class="form-input input-with-icon" placeholder="e.g., Tagalog, Cebuano, English" value="{{ old('mother_tongue', $student->mother_tongue) }}">
+                                    <input type="text" name="mother_tongue" class="form-input input-with-icon" placeholder="e.g., Tagalog, Cebuano, English" value="{{ old('mother_tongue', $student->mother_tongue) }}" required>
                                 </div>
                                 @error('mother_tongue')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -771,10 +787,128 @@
                         </div>
                     </div>
 
+                    <!-- Enrollment Information Section -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <div class="section-icon bg-rose-50 text-rose-600">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <span>Enrollment Information</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Grade Level -->
+                            <div>
+                                <label class="form-label required">Grade Level</label>
+                                <select name="grade_level_id" id="gradeLevel" class="form-select" required onchange="updateSections()">
+                                    <option value="">Select Grade Level</option>
+                                    @foreach($gradeLevels as $level)
+                                        <option value="{{ $level->id }}" {{ old('grade_level_id', $student->grade_level_id) == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
+                                    @endforeach
+                                </select>
+                                <p class="input-hint">Select current grade level for enrollment</p>
+                                @error('grade_level_id')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
 
+                            <!-- Section -->
+                            <div>
+                                <label class="form-label required">Section</label>
+                                <select name="section_id" id="sectionId" class="form-select" required>
+                                    <option value="">Select Section</option>
+                                </select>
+                                <p class="input-hint">Select section for enrollment</p>
+                                @error('section_id')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
 
+                            <!-- Student Type -->
+                            <div>
+                                <label class="form-label required">Student Type</label>
+                                <select name="type" id="studentType" class="form-select" required onchange="togglePreviousSchool()">
+                                    <option value="">Select Type</option>
+                                    <option value="new" {{ old('type', $activeEnrollment?->type) == 'new' ? 'selected' : '' }}>New Student</option>
+                                    <option value="continuing" {{ old('type', $activeEnrollment?->type) == 'continuing' ? 'selected' : '' }}>Continuing Student</option>
+                                    <option value="transferee" {{ old('type', $activeEnrollment?->type) == 'transferee' ? 'selected' : '' }}>Transferee</option>
+                                </select>
+                                <p class="input-hint">Select based on student's enrollment status</p>
+                                @error('type')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                    
+                            <!-- Previous School (for Transferees) -->
+                            <div id="previousSchoolContainer" class="hidden">
+                                <label class="form-label required">Previous School</label>
+                                <div class="input-group">
+                                    <i class="fas fa-school input-icon"></i>
+                                    <input 
+                                        type="text" 
+                                        name="previous_school" 
+                                        id="previousSchoolInput"
+                                        class="form-input input-with-icon" 
+                                        placeholder="Name of previous school"
+                                        value="{{ old('previous_school', $activeEnrollment?->previous_school ?? '') }}"
+                                    >
+                                </div>
+                                <p class="input-hint">Required for transferee students</p>
+                                @error('previous_school')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        // Sections data from server
+                        const allSections = @json($sections->map(fn($s) => ['id' => $s->id, 'name' => $s->name, 'grade_level_id' => $s->grade_level_id]));
+                        const oldSectionId = "{{ old('section_id', $activeEnrollment?->section_id ?? $student->section_id ?? '') }}";
+
+                        function updateSections() {
+                            const gradeLevelId = document.getElementById('gradeLevel').value;
+                            const sectionSelect = document.getElementById('sectionId');
+                            
+                            // Clear current options
+                            sectionSelect.innerHTML = '<option value="">Select Section</option>';
+                            
+                            if (!gradeLevelId) return;
+                            
+                            // Filter sections by grade level
+                            const filteredSections = allSections.filter(s => String(s.grade_level_id) === String(gradeLevelId));
+                            
+                            filteredSections.forEach(section => {
+                                const option = document.createElement('option');
+                                option.value = section.id;
+                                option.textContent = section.name;
+                                if (String(section.id) === String(oldSectionId)) {
+                                    option.selected = true;
+                                }
+                                sectionSelect.appendChild(option);
+                            });
+                        }
+
+                        function togglePreviousSchool() {
+                            const typeSelect = document.getElementById('studentType');
+                            const previousSchoolContainer = document.getElementById('previousSchoolContainer');
+                            const previousSchoolInput = document.getElementById('previousSchoolInput');
+                            
+                            if (typeSelect.value === 'transferee') {
+                                previousSchoolContainer.classList.remove('hidden');
+                                previousSchoolInput.required = true;
+                            } else {
+                                previousSchoolContainer.classList.add('hidden');
+                                previousSchoolInput.required = false;
+                                previousSchoolInput.value = '';
+                            }
+                        }
+                        // Initialize on page load
+                        document.addEventListener('DOMContentLoaded', function() {
+                            updateSections();
+                            togglePreviousSchool();
+                        });
+                    </script>
 
                     <!-- Photo Upload Section -->
 <div class="form-section">
@@ -923,11 +1057,10 @@
                                         maxlength="11"
                                         pattern="[0-9]{11}"
                                         inputmode="numeric"
-                                        oninput="validateContact(this)"
                                         value="{{ old('guardian_contact', $student->guardian_contact) }}"
                                     >
                                 </div>
-                                <p class="input-hint">Must be 11 digits (e.g., 09123456789)</p>
+                                <p class="input-hint">Optional. Must be 11 digits (e.g., 09123456789)</p>
                                 @error('guardian_contact')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
@@ -989,6 +1122,50 @@
                                 @error('zip_code')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <div class="section-icon bg-indigo-50 text-indigo-600">
+                                <i class="fas fa-file-upload"></i>
+                            </div>
+                            <span>Documents</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="form-label">Birth Certificate <span class="text-xs text-slate-400">(Optional)</span></label>
+                                <input type="file" name="birth_certificate" accept=".pdf,.jpg,.jpeg,.png" class="form-input">
+                                <p class="input-hint">PDF, JPG, PNG (MAX. 5MB)</p>
+                                @if($student->birth_certificate_path)
+                                    <p class="text-xs text-teal-600 mt-1"><a href="{{ asset('storage/' . $student->birth_certificate_path) }}" target="_blank" class="underline">View existing file</a></p>
+                                @endif
+                            </div>
+                            <div>
+                                <label class="form-label">Report Card / Form 138 <span class="text-xs text-slate-400">(Optional)</span></label>
+                                <input type="file" name="report_card" accept=".pdf,.jpg,.jpeg,.png" class="form-input">
+                                <p class="input-hint">PDF, JPG, PNG (MAX. 5MB)</p>
+                                @if($student->report_card_path)
+                                    <p class="text-xs text-teal-600 mt-1"><a href="{{ asset('storage/' . $student->report_card_path) }}" target="_blank" class="underline">View existing file</a></p>
+                                @endif
+                            </div>
+                            <div>
+                                <label class="form-label">Certificate of Good Moral <span class="text-xs text-slate-400">(Optional)</span></label>
+                                <input type="file" name="good_moral" accept=".pdf,.jpg,.jpeg,.png" class="form-input">
+                                <p class="input-hint">PDF, JPG, PNG (MAX. 5MB)</p>
+                                @if($student->good_moral_path)
+                                    <p class="text-xs text-teal-600 mt-1"><a href="{{ asset('storage/' . $student->good_moral_path) }}" target="_blank" class="underline">View existing file</a></p>
+                                @endif
+                            </div>
+                            <div>
+                                <label class="form-label">Transfer Credentials <span class="text-xs text-slate-400">(Optional)</span></label>
+                                <input type="file" name="transfer_credential" accept=".pdf,.jpg,.jpeg,.png" class="form-input">
+                                <p class="input-hint">PDF, JPG, PNG (MAX. 5MB)</p>
+                                @if($student->transfer_credential_path)
+                                    <p class="text-xs text-teal-600 mt-1"><a href="{{ asset('storage/' . $student->transfer_credential_path) }}" target="_blank" class="underline">View existing file</a></p>
+                                @endif
                             </div>
                         </div>
                     </div>

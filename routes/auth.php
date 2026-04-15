@@ -21,14 +21,16 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])
+        ->middleware('throttle:login');
     
     // Student Login
     Route::get('student/login', [AuthenticatedSessionController::class, 'createStudent'])
         ->name('student.login');
 
     Route::post('student/login', [AuthenticatedSessionController::class, 'storeStudent'])
-        ->name('student.login.post');
+        ->name('student.login.post')
+        ->middleware('throttle:login');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');

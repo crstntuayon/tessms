@@ -190,12 +190,6 @@ class DashboardController extends Controller
             ->get();
 
         // -----------------------------
-        // Notifications
-        // -----------------------------
-        $notifications = $user->notifications()->take(5)->get();
-        $unreadNotifications = $user->unreadNotifications()->count();
-
-        // -----------------------------
         // Misc
         // -----------------------------
         $upcomingDeadlines = collect();
@@ -227,8 +221,6 @@ class DashboardController extends Controller
             'failingGradesCount',
             'chronicAbsentees',
             'recentGrades',
-            'notifications',
-            'unreadNotifications',
             'upcomingDeadlines',
             'schoolDaysTotal',
             'daysCompleted'

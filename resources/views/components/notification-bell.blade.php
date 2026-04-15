@@ -35,12 +35,12 @@
                         class="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
                     Mark all read
                 </button>
-                <a href="{{ route('notifications.settings.page') }}" class="text-slate-400 hover:text-slate-600">
+                <button @click="open = false; settingsModalOpen = true" class="text-slate-400 hover:text-slate-600">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
-                </a>
+                </button>
             </div>
         </div>
 
@@ -105,20 +105,79 @@
             </button>
         </div>
     </div>
+
+    <!-- Settings Modal (teleported to body to escape backdrop-filter stacking) -->
+    <template x-teleport="body">
+        <div x-show="settingsModalOpen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-[9999]"
+             style="display: none;"
+             @keydown.escape.window="settingsModalOpen = false"
+             @close-settings-modal.window="settingsModalOpen = false">
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="settingsModalOpen = false"></div>
+
+            <!-- Centering wrapper -->
+            <div class="relative flex min-h-screen items-center justify-center p-4">
+                <!-- Modal Panel -->
+                <div x-show="settingsModalOpen"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+                     class="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl"
+                     style="display: none;"
+                     @click.away="settingsModalOpen = false">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Notification Settings</h3>
+                            <p class="text-xs text-slate-500">Choose how you want to be notified</p>
+                        </div>
+                        <button @click="settingsModalOpen = false" class="ml-4 inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
+                            <i class="fas fa-times text-base"></i>
+                        </button>
+                    </div>
+                    <!-- Modal Body -->
+                    <div class="max-h-[70vh] overflow-y-auto px-6 py-5">
+                        @include('notifications.settings-content', ['modal' => true])
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>
 
 <script>
 function notifications() {
     return {
         open: false,
+        settingsModalOpen: false,
         loading: false,
         notifications: [],
         unreadCount: 0,
+        audioInitialized: false,
         
         init() {
             this.fetchUnreadCount();
             // Poll for new notifications every 30 seconds
             setInterval(() => this.fetchUnreadCount(), 30000);
+            
+            // Initialize audio context on first user interaction (browser policy)
+            const initAudio = () => {
+                this.audioInitialized = true;
+                document.removeEventListener('click', initAudio);
+                document.removeEventListener('keydown', initAudio);
+            };
+            document.addEventListener('click', initAudio, { once: true });
+            document.addEventListener('keydown', initAudio, { once: true });
         },
         
         toggle() {
@@ -155,7 +214,17 @@ function notifications() {
                     }
                 });
                 const data = await response.json();
+                const previousCount = this.unreadCount;
                 this.unreadCount = data.count;
+                
+                // Play sound if new notifications arrived (not on initial load)
+                if (previousCount > 0 && this.unreadCount > previousCount && this.audioInitialized) {
+                    this.playNotificationSound();
+                }
+                // Also allow sound on first poll if count > 0 and user has interacted
+                if (previousCount === 0 && this.unreadCount > 0 && this.audioInitialized) {
+                    this.playNotificationSound();
+                }
             } catch (error) {
                 console.error('Failed to fetch unread count:', error);
             }
@@ -198,6 +267,51 @@ function notifications() {
             // Navigate to URL if available
             if (notification.data?.url) {
                 window.location.href = notification.data.url;
+            }
+        },
+        
+        playNotificationSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                
+                const ctx = new AudioContext();
+                const now = ctx.currentTime;
+                
+                // Create a pleasant notification bell sound
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                
+                // Bell-like tone (sine wave)
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, now); // C5
+                oscillator.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                
+                // Envelope for bell sound
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(0.3, now + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+                
+                oscillator.start(now);
+                oscillator.stop(now + 1.5);
+                
+                // Second tone for a nicer chord
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(783.99, now + 0.1); // G5
+                gain2.gain.setValueAtTime(0, now + 0.1);
+                gain2.gain.linearRampToValueAtTime(0.2, now + 0.15);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+                osc2.start(now + 0.1);
+                osc2.stop(now + 1.2);
+            } catch (e) {
+                console.error('Failed to play notification sound:', e);
             }
         },
         

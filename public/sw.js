@@ -3,7 +3,7 @@
  * Handles caching, offline support, background sync, and push notifications
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `tessms-${CACHE_VERSION}`;
 const STATIC_CACHE_NAME = `tessms-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `tessms-dynamic-${CACHE_VERSION}`;

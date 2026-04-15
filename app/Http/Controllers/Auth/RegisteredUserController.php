@@ -16,6 +16,7 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use App\Models\Setting;
+use App\Services\SettingsEnforcer;
 
 class RegisteredUserController extends Controller
 {
@@ -24,6 +25,10 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
+        if (!SettingsEnforcer::isRegistrationEnabled()) {
+            abort(403, 'User registration is currently disabled.');
+        }
+
         $gradeLevels = GradeLevel::orderBy('order')->get();
         return view('auth.register', compact('gradeLevels'));
     }
@@ -33,6 +38,9 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request)
     {
+        if (!SettingsEnforcer::isRegistrationEnabled()) {
+            return back()->withErrors(['error' => 'User registration is currently disabled.'])->withInput();
+        }
         // Generate full LRN if provided
         $fullLrn = $request->filled('lrn_suffix') ? '120231' . $request->lrn_suffix : null;
 
@@ -81,7 +89,7 @@ class RegisteredUserController extends Controller
             'username' => 'required|string|max:50|unique:users,username',
             'email' => 'required|email|max:255|unique:users,email',
 
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', SettingsEnforcer::getPasswordRules()],
 
             'photo' => 'nullable|image|max:2048',
 
@@ -117,6 +125,7 @@ class RegisteredUserController extends Controller
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
+                'password_updated_at' => now(),
                 'role_id' => $studentRole->id,
                 'photo' => $photoPath,
                 'is_active' => 0, // cannot login yet

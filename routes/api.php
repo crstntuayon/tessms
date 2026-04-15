@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\BiometricAuthController;
 use App\Http\Controllers\Api\LocationController;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware(\App\Http\Middleware\ApiKeyAuth::class)->group(function () {
+
 // Public student lookup API (for enrollment)
 Route::get('/students/lookup', [StudentController::class, 'lookupByLrn']);
 
@@ -55,3 +57,5 @@ Route::prefix('location')->group(function () {
         Route::delete('/delete/{id}', [LocationController::class, 'deleteLocation'])->name('api.location.delete');
     });
 });
+
+}); // End API key middleware group

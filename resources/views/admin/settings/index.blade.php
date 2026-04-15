@@ -601,39 +601,39 @@
                         <div class="lg:w-72 flex-shrink-0">
                             <div class="glass-card settings-sidebar">
                                 <div class="settings-nav">
-                                    <button class="nav-item active" onclick="switchTab('general')">
+                                    <button class="nav-item active" data-tab="general" onclick="switchTab('general', this)">
                                         <i class="fas fa-cog"></i>
                                         General Settings
                                     </button>
-                                    <button class="nav-item" onclick="switchTab('school')">
+                                    <button class="nav-item" data-tab="school" onclick="switchTab('school', this)">
                                         <i class="fas fa-school"></i>
                                         School Info
                                     </button>
-                                    <button class="nav-item" onclick="switchTab('academic')">
+                                    <button class="nav-item" data-tab="academic" onclick="switchTab('academic', this)">
                                         <i class="fas fa-graduation-cap"></i>
                                         Academic Year
                                     </button>
-                                    <button class="nav-item" onclick="switchTab('notifications')">
+                                    <button class="nav-item" data-tab="notifications" onclick="switchTab('notifications', this)">
                                         <i class="fas fa-bell"></i>
                                         Notifications
                                     </button>
-                                    <button class="nav-item" onclick="switchTab('security')">
+                                    <button class="nav-item" data-tab="security" onclick="switchTab('security', this)">
                                         <i class="fas fa-shield-alt"></i>
                                         Security
                                     </button>
-                                    <button class="nav-item" onclick="switchTab('appearance')">
+                                    <button class="nav-item" data-tab="appearance" onclick="switchTab('appearance', this)">
                                         <i class="fas fa-paint-brush"></i>
                                         Appearance
                                     </button>
-                                    <button class="nav-item" onclick="switchTab('logs')">
+                                    <button class="nav-item" data-tab="logs" onclick="switchTab('logs', this)">
                                         <i class="fas fa-clipboard-list"></i>
                                         Activity Logs
                                     </button>
-                                    <button class="nav-item" onclick="switchTab('backup')">
+                                    <button class="nav-item" data-tab="backup" onclick="switchTab('backup', this)">
                                         <i class="fas fa-database"></i>
                                         Backup & Data
                                     </button>
-                                    <button class="nav-item" onclick="switchTab('advanced')">
+                                    <button class="nav-item" data-tab="advanced" onclick="switchTab('advanced', this)">
                                         <i class="fas fa-sliders-h"></i>
                                         Advanced
                                     </button>
@@ -646,7 +646,7 @@
                             
                             <!-- GENERAL SETTINGS -->
                             <div id="general" class="settings-content active">
-                                <form action="{{ route('admin.settings.update') }}" method="POST">
+                                <form class="settings-ajax-form" action="{{ route('admin.settings.update') }}" method="POST">
                                     @csrf
                                     @method('PUT')
                                     
@@ -742,7 +742,7 @@
 
                             <!-- SCHOOL INFO -->
                             <div id="school" class="settings-content">
-                                <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
+                                <form class="settings-ajax-form" id="schoolInfoForm" action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
                                     @csrf
                                     @method('PUT')
                                     
@@ -786,7 +786,31 @@
                                             <div class="form-group">
                                                 <label class="form-label">Contact Phone</label>
                                                 <input type="tel" name="school_phone" class="form-input" 
-                                                    value="{{ $settings['school_phone'] ?? '' }}">
+                                                    value="{{ $settings['school_phone'] ?? '' }}" maxlength="11" placeholder="09xxxxxxxxx">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">School Division</label>
+                                                <input type="text" name="school_division" class="form-input" 
+                                                    value="{{ $settings['school_division'] ?? '' }}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">School Region</label>
+                                                <input type="text" name="school_region" class="form-input" 
+                                                    value="{{ $settings['school_region'] ?? '' }}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label">School District</label>
+                                                <input type="text" name="school_district" class="form-input" 
+                                                    value="{{ $settings['school_district'] ?? '' }}">
+                                            </div>
+
+                                            <div class="form-group md:col-span-2">
+                                                <label class="form-label">School Head / Principal</label>
+                                                <input type="text" name="school_head" class="form-input" 
+                                                    value="{{ $settings['school_head'] ?? '' }}">
                                             </div>
                                         </div>
                                     </div>
@@ -816,7 +840,7 @@
                                     </div>
 
                                     <div class="flex justify-end gap-3">
-                                        <button type="submit" class="btn-primary">
+                                        <button type="submit" class="btn-primary" id="schoolInfoSaveBtn">
                                             <i class="fas fa-save"></i> Save Changes
                                         </button>
                                     </div>
@@ -825,7 +849,7 @@
 
                             <!-- ACADEMIC YEAR -->
                             <div id="academic" class="settings-content">
-                                <form action="{{ route('admin.settings.update') }}" method="POST">
+                                <form class="settings-ajax-form" action="{{ route('admin.settings.update') }}" method="POST">
                                     @csrf
                                     @method('PUT')
                                     
@@ -833,26 +857,41 @@
                                         <h3 class="section-title">
                                             <i class="fas fa-calendar-alt"></i>
                                             Current Academic Year
+                                            @if($activeSchoolYear)
+                                                <span class="ml-2 text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full">
+                                                    <i class="fas fa-sync-alt"></i> Auto-synced from active school year
+                                                </span>
+                                            @endif
                                         </h3>
 
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div class="form-group">
-                                                <label class="form-label">School Year <span>*</span></label>
-                                                <input type="text" name="current_school_year" class="form-input" 
-                                                    value="{{ $settings['current_school_year'] ?? '2024-2025' }}"
-                                                    placeholder="e.g., 2024-2025">
+                                                <label class="form-label">Active School Year <span>*</span></label>
+                                                <select name="active_school_year_id" id="activeSchoolYearSelect" class="form-select">
+                                                    <option value="">-- Select School Year --</option>
+                                                    @foreach($schoolYears as $year)
+                                                        <option value="{{ $year->id }}"
+                                                            data-name="{{ $year->name }}"
+                                                            data-start="{{ $year->start_date ? $year->start_date->format('Y-m-d') : '' }}"
+                                                            data-end="{{ $year->end_date ? $year->end_date->format('Y-m-d') : '' }}"
+                                                            {{ ($settings['active_school_year_id'] ?? '') == $year->id ? 'selected' : '' }}>
+                                                            {{ $year->name }} {{ $year->is_active ? '✓ Active' : '' }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <input type="hidden" name="current_school_year" id="currentSchoolYearName" value="{{ $settings['current_school_year'] ?? '' }}">
                                             </div>
 
                                             <div class="form-group">
                                                 <label class="form-label">Start Date</label>
-                                                <input type="date" name="school_year_start" class="form-input" 
-                                                    value="{{ $settings['school_year_start'] ?? '' }}">
+                                                <input type="date" name="school_year_start" id="schoolYearStart" class="form-input" 
+                                                    value="{{ $settings['school_year_start'] ?? '' }}" readonly>
                                             </div>
 
                                             <div class="form-group">
                                                 <label class="form-label">End Date</label>
-                                                <input type="date" name="school_year_end" class="form-input" 
-                                                    value="{{ $settings['school_year_end'] ?? '' }}">
+                                                <input type="date" name="school_year_end" id="schoolYearEnd" class="form-input" 
+                                                    value="{{ $settings['school_year_end'] ?? '' }}" readonly>
                                             </div>
                                         </div>
                                     </div>
@@ -931,7 +970,7 @@
 
                             <!-- NOTIFICATIONS -->
                             <div id="notifications" class="settings-content">
-                                <form action="{{ route('admin.settings.update') }}" method="POST">
+                                <form class="settings-ajax-form" action="{{ route('admin.settings.update') }}" method="POST">
                                     @csrf
                                     @method('PUT')
                                     
@@ -1095,7 +1134,7 @@
 
                             <!-- SECURITY -->
                             <div id="security" class="settings-content">
-                                <form action="{{ route('admin.settings.update') }}" method="POST">
+                                <form class="settings-ajax-form" action="{{ route('admin.settings.update') }}" method="POST">
                                     @csrf
                                     @method('PUT')
                                     
@@ -1182,7 +1221,7 @@
 
                             <!-- APPEARANCE -->
                             <div id="appearance" class="settings-content">
-                                <form action="{{ route('admin.settings.update') }}" method="POST">
+                                <form class="settings-ajax-form" action="{{ route('admin.settings.update') }}" method="POST">
                                     @csrf
                                     @method('PUT')
                                     
@@ -1889,15 +1928,20 @@
         }
 
         // Tab switching
-        function switchTab(tabId) {
+        function switchTab(tabId, clickedNavItem = null) {
             document.querySelectorAll('.settings-content').forEach(content => {
                 content.classList.remove('active');
             });
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
+            const contentEl = document.getElementById(tabId);
+            if (contentEl) contentEl.classList.add('active');
+            
+            const navItem = clickedNavItem || document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+            if (navItem) navItem.classList.add('active');
+            
+            localStorage.setItem('settings_active_tab', tabId);
             
             // If switching to logs tab, fetch logs
             if (tabId === 'logs' && typeof Alpine !== 'undefined') {
@@ -1911,6 +1955,13 @@
         // Toggle switch
         function toggleSwitch(element) {
             element.classList.toggle('active');
+            updateToggleInput(element);
+
+            // Real-time appearance updates
+            applyAppearanceRealtime(element.dataset.name, element.classList.contains('active'));
+        }
+
+        function updateToggleInput(element) {
             // Remove existing hidden input if any
             const existing = element.querySelector('input[type="hidden"]');
             if (existing) existing.remove();
@@ -1920,6 +1971,163 @@
             input.name = element.dataset.name;
             input.value = element.classList.contains('active') ? '1' : '0';
             element.appendChild(input);
+        }
+
+        function applyAppearanceRealtime(name, isActive) {
+            const body = document.body;
+            if (name === 'dark_mode') {
+                body.classList.toggle('dark-mode', isActive);
+                localStorage.setItem('app_dark_mode', isActive ? '1' : '0');
+            }
+            if (name === 'compact_mode') {
+                body.classList.toggle('compact-mode', isActive);
+                localStorage.setItem('app_compact_mode', isActive ? '1' : '0');
+            }
+            if (name === 'animations') {
+                body.classList.toggle('animations-disabled', !isActive);
+                localStorage.setItem('app_animations', isActive ? '1' : '0');
+            }
+        }
+
+        // Real-time school year sync
+        function syncSchoolYearDropdown() {
+            const select = document.getElementById('activeSchoolYearSelect');
+            if (!select) return;
+
+            const selected = select.options[select.selectedIndex];
+            const name = selected.getAttribute('data-name') || '';
+            const start = selected.getAttribute('data-start') || '';
+            const end = selected.getAttribute('data-end') || '';
+
+            document.getElementById('currentSchoolYearName').value = name;
+            document.getElementById('schoolYearStart').value = start;
+            document.getElementById('schoolYearEnd').value = end;
+        }
+
+        // Initialize appearance real-time listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Color pickers real-time
+            document.querySelectorAll('input[type="color"]').forEach(picker => {
+                picker.addEventListener('input', function() {
+                    this.parentElement.nextElementSibling.value = this.value;
+                    const name = this.name;
+                    const root = document.documentElement;
+                    if (name === 'primary_color') {
+                        root.style.setProperty('--primary-color', this.value);
+                        localStorage.setItem('app_primary_color', this.value);
+                    }
+                    if (name === 'secondary_color') {
+                        root.style.setProperty('--secondary-color', this.value);
+                        localStorage.setItem('app_secondary_color', this.value);
+                    }
+                    if (name === 'accent_color') {
+                        root.style.setProperty('--accent-color', this.value);
+                        localStorage.setItem('app_accent_color', this.value);
+                    }
+                });
+            });
+
+            // Initialize all toggle switches with hidden inputs so FormData captures them
+            document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                updateToggleInput(toggle);
+            });
+
+            // Initialize appearance toggles on load
+            const darkToggle = document.querySelector('.toggle-switch[data-name="dark_mode"]');
+            const compactToggle = document.querySelector('.toggle-switch[data-name="compact_mode"]');
+            const animToggle = document.querySelector('.toggle-switch[data-name="animations"]');
+            if (darkToggle) applyAppearanceRealtime('dark_mode', darkToggle.classList.contains('active'));
+            if (compactToggle) applyAppearanceRealtime('compact_mode', compactToggle.classList.contains('active'));
+            if (animToggle) applyAppearanceRealtime('animations', animToggle.classList.contains('active'));
+
+            // School year dropdown real-time sync
+            const sySelect = document.getElementById('activeSchoolYearSelect');
+            if (sySelect) {
+                sySelect.addEventListener('change', syncSchoolYearDropdown);
+                syncSchoolYearDropdown(); // initial sync
+            }
+
+            // AJAX save for all settings forms
+            document.querySelectorAll('.settings-ajax-form').forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const btn = form.querySelector('button[type="submit"]');
+                    if (!btn) return;
+                    const originalHtml = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                    try {
+                        const formData = new FormData(form);
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (response.redirected) {
+                            window.location.href = response.url;
+                            return;
+                        }
+
+                        const text = await response.text();
+                        const isSuccess = text.includes('Settings updated successfully') || response.ok;
+                        const tabName = form.closest('.settings-content')?.id || 'settings';
+
+                        if (isSuccess) {
+                            showGlobalToast(ucfirst(tabName) + ' saved successfully!', 'success');
+                        } else {
+                            showGlobalToast('Failed to save ' + tabName + '.', 'error');
+                        }
+                    } catch (err) {
+                        showGlobalToast('Failed to save settings.', 'error');
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    }
+                });
+            });
+
+            // Restore active tab from localStorage
+            const savedTab = localStorage.getItem('settings_active_tab');
+            if (savedTab && savedTab !== 'general') {
+                const navItem = document.querySelector(`.nav-item[data-tab="${savedTab}"]`);
+                if (navItem) {
+                    // Small delay to let Alpine/DOM settle
+                    setTimeout(() => switchTab(savedTab, navItem), 50);
+                }
+            }
+        });
+
+        function ucfirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function showGlobalToast(message, type = 'success') {
+            const el = document.querySelector('[x-data="settingsApp()"]');
+            if (el && el._x_dataStack && el._x_dataStack[0] && typeof el._x_dataStack[0].showToast === 'function') {
+                el._x_dataStack[0].showToast(message, type);
+            } else {
+                // Fallback standalone toast
+                const toast = document.createElement('div');
+                toast.className = `toast ${type === 'error' ? 'error' : ''} show`;
+                toast.innerHTML = `
+                    <div class="w-10 h-10 ${type === 'error' ? 'bg-red-100' : 'bg-emerald-100'} rounded-full flex items-center justify-center">
+                        <i class="fas ${type === 'error' ? 'fa-exclamation text-red-600' : 'fa-check text-emerald-600'}"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-slate-900">${type === 'error' ? 'Error!' : 'Success!'}</p>
+                        <p class="text-sm text-slate-500">${message}</p>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 400);
+                }, 4000);
+            }
         }
 
         // Toast auto-hide

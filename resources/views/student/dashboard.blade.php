@@ -134,14 +134,7 @@
                     </div>
 
                     <!-- Notifications -->
-                    <button class="relative w-11 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-all duration-200 hover:scale-105">
-                        <i class="fas fa-bell text-lg"></i>
-                        @if(isset($unreadNotifications) && $unreadNotifications > 0)
-                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
-                                {{ $unreadNotifications }}
-                            </span>
-                        @endif
-                    </button>
+                    @include('components.notification-bell')
                 </div>
             </div>
         </header>
@@ -239,8 +232,8 @@
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="flex gap-3">
-                                <button class="group relative px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-all duration-200 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30 hover:-translate-y-0.5">
+                            <div class="flex gap-3" x-data="{ idCardOpen: false }">
+                                <button @click="idCardOpen = true" class="group relative px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-all duration-200 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30 hover:-translate-y-0.5">
                                     <span class="flex items-center gap-2">
                                         <i class="fas fa-qrcode"></i>
                                         ID Card
@@ -253,6 +246,40 @@
                                         My Profile
                                     </span>
                                 </a>
+
+                                <!-- ID Card Modal -->
+                                <div x-show="idCardOpen"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0"
+                                     x-transition:enter-end="opacity-100"
+                                     x-transition:leave="transition ease-in duration-150"
+                                     x-transition:leave-start="opacity-100"
+                                     x-transition:leave-end="opacity-0"
+                                     class="fixed inset-0 z-[9999]"
+                                     style="display: none;"
+                                     @keydown.escape.window="idCardOpen = false">
+                                    <div class="relative flex min-h-screen items-center justify-center p-4">
+                                        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="idCardOpen = false"></div>
+                                        <div x-show="idCardOpen"
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                             x-transition:leave="transition ease-in duration-150"
+                                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                             x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+                                             class="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl p-6"
+                                             style="display: none;"
+                                             @click.away="idCardOpen = false">
+                                            <div class="flex items-center justify-between mb-4">
+                                                <h3 class="text-lg font-bold text-slate-800">Student ID Card</h3>
+                                                <button @click="idCardOpen = false" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
+                                                    <i class="fas fa-times text-base"></i>
+                                                </button>
+                                            </div>
+                                            @include('components.student-id-card', ['student' => $student, 'showPrint' => false])
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

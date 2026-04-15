@@ -28,6 +28,10 @@ Route::get('/pending-approval', function () {
     return view('auth.pending');
 })->name('auth.pending');
 
+Route::get('/password-expired', function () {
+    return view('auth.password-expired');
+})->name('password.expired');
+
 // Public Student Lookup API (for enrollment)
 Route::get('/api/students/lookup', [App\Http\Controllers\Api\StudentController::class, 'lookupByLrn']);
 
@@ -483,6 +487,7 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth'])->group(function
 
 Route::prefix('student')->name('student.')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/id-card', [App\Http\Controllers\Student\DashboardController::class, 'idCard'])->name('id-card');
     
     // Student Announcements
     Route::get('/announcements', [App\Http\Controllers\Student\AnnouncementController::class, 'index'])->name('announcements');
@@ -549,6 +554,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/students/{student}/edit', [StudentController::class, 'edit'])->name('students.edit');
     Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
     Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
+    Route::get('/students/{student}/id-card', [StudentController::class, 'idCard'])->name('students.id-card');
 
     // Teachers Management
     Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
@@ -565,6 +571,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/sections/{section}/edit', [SectionController::class, 'edit'])->name('sections.edit');
     Route::put('/sections/{section}', [SectionController::class, 'update'])->name('sections.update');
     Route::delete('/sections/{section}', [SectionController::class, 'destroy'])->name('sections.destroy');
+    Route::get('/sections/{section}/id-cards', [SectionController::class, 'idCards'])->name('sections.id-cards');
 
 
       Route::resource('attendance', \App\Http\Controllers\Admin\AttendanceController::class);
