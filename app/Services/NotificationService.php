@@ -25,7 +25,7 @@ class NotificationService
     ): ?Notification {
         // Check global admin settings for this notification type
         $globalSettingKey = match ($type) {
-            'announcement', 'message' => 'notify_announcements',
+            'announcement', 'message', 'event' => 'notify_announcements',
             'grade' => 'notify_grades',
             'attendance' => 'notify_attendance',
             'student', 'enrollment' => 'notify_new_student',

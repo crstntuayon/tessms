@@ -47,6 +47,11 @@ class DashboardController extends Controller
         $subjectCount = $section ? $section->subjects()->count() : 0;
         $achievementCount = $student->achievements()->count();
 
+        $upcomingEvents = \App\Models\Event::where('date', '>=', today())
+            ->orderBy('date')
+            ->limit(3)
+            ->get();
+
         return view('student.dashboard', array_merge(
             compact(
                 'student',
@@ -56,7 +61,8 @@ class DashboardController extends Controller
                 'todaySchedule',
                 'recentActivities',
                 'subjectCount',
-                'achievementCount'
+                'achievementCount',
+                'upcomingEvents'
             ),
             $attendanceData,
             $gradesData,

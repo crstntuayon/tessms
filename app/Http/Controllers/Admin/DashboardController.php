@@ -117,12 +117,8 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Upcoming events (optional: filter by school year if events table has school_year_id)
-        $upcomingEvents = \App\Models\Event::where('date', '>=', now())
-            ->where(function($q) use ($activeSchoolYear) {
-                $q->whereNull('school_year_id')
-                  ->orWhere('school_year_id', $activeSchoolYear->id);
-            })
+        // Upcoming events - show all future events regardless of school year
+        $upcomingEvents = \App\Models\Event::where('date', '>=', today())
             ->orderBy('date')
             ->limit(3)
             ->get();

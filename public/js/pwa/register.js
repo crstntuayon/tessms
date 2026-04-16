@@ -29,20 +29,42 @@
       return;
     }
     
-    registerServiceWorker();
+    // Unregister old service workers to prevent stale caches from interfering
+    unregisterOldServiceWorkers().then(() => {
+      registerServiceWorker();
+    });
+    
     setupInstallPrompt();
     setupOnlineStatus();
+  }
+  
+  // Unregister all existing service workers
+  async function unregisterOldServiceWorkers() {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+        console.log('[PWA] Unregistered old service worker:', registration.scope);
+      }
+    } catch (error) {
+      console.error('[PWA] Failed to unregister old service workers:', error);
+    }
   }
   
   // Register Service Worker
   async function registerServiceWorker() {
     try {
-      const registration = await navigator.serviceWorker.register(PWA_CONFIG.swPath, {
+      // Bust cache to ensure browser fetches the latest sw.js
+      const swUrl = PWA_CONFIG.swPath + '?v=4&_=' + Date.now();
+      const registration = await navigator.serviceWorker.register(swUrl, {
         scope: '/',
         updateViaCache: 'imports'
       });
       
       console.log('[PWA] Service Worker registered:', registration.scope);
+      
+      // Force immediate update check
+      await registration.update();
       
       // Handle updates
       registration.addEventListener('updatefound', () => {
@@ -51,8 +73,9 @@
         
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New version available
-            showUpdateNotification(newWorker);
+            // New version available - activate immediately
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
+            window.location.reload();
           }
         });
       });

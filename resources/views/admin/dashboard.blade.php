@@ -635,13 +635,13 @@
                             </div>
                             <div class="space-y-3">
                                 @php
-                                    $upcomingEvents = \App\Models\Event::where('date', '>=', now())
-                                        ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
-                                            return $q->where('school_year_id', $activeSchoolYearId);
-                                        })
-                                        ->orderBy('date')
-                                        ->limit(3)
-                                        ->get();
+                                    // Use controller-passed upcomingEvents if available, otherwise fall back to inline query
+                                    if (!isset($upcomingEvents)) {
+                                        $upcomingEvents = \App\Models\Event::where('date', '>=', today())
+                                            ->orderBy('date')
+                                            ->limit(3)
+                                            ->get();
+                                    }
                                 @endphp
                                 @forelse($upcomingEvents as $event)
                                     <div class="flex items-start gap-3 p-2 sm:p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
@@ -651,7 +651,7 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="font-semibold text-slate-800 text-sm truncate group-hover:text-blue-600 transition-colors">{{ $event->title }}</p>
-                                            <p class="text-slate-500 text-xs mt-0.5">{{ $event->date->format('l') }} • {{ $event->type }}</p>
+                                            <p class="text-slate-500 text-xs mt-0.5">{{ $event->date->format('l, F j, Y') }}</p>
                                         </div>
                                         <div class="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
                                     </div>

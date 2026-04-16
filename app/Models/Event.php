@@ -18,6 +18,7 @@ class Event extends Model
         'description',
         'date',
         'school_year_id',
+        'created_by',
     ];
 
     // Cast 'date' to a Carbon instance

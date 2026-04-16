@@ -387,6 +387,12 @@ class TeacherController extends Controller
         DB::beginTransaction();
         try {
             if ($teacher->user) {
+                // Remove user references from section finalizations to avoid FK constraint errors
+                \App\Models\SectionFinalization::where('unlocked_by', $teacher->user->id)
+                    ->update(['unlocked_by' => null]);
+                \App\Models\SectionFinalization::where('finalized_by', $teacher->user->id)
+                    ->update(['finalized_by' => null]);
+
                 $teacher->user->delete();
             }
             $teacher->delete();

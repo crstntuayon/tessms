@@ -190,6 +190,14 @@ class DashboardController extends Controller
             ->get();
 
         // -----------------------------
+        // Upcoming Events
+        // -----------------------------
+        $upcomingEvents = \App\Models\Event::where('date', '>=', today())
+            ->orderBy('date')
+            ->limit(3)
+            ->get();
+
+        // -----------------------------
         // Misc
         // -----------------------------
         $upcomingDeadlines = collect();
@@ -221,6 +229,7 @@ class DashboardController extends Controller
             'failingGradesCount',
             'chronicAbsentees',
             'recentGrades',
+            'upcomingEvents',
             'upcomingDeadlines',
             'schoolDaysTotal',
             'daysCompleted'

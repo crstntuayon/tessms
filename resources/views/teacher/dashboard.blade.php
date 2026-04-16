@@ -648,6 +648,34 @@
 
 </div>
 
+                            <!-- Upcoming Events -->
+                            <div class="glass-card rounded-2xl p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                                        <i class="fas fa-calendar-star text-purple-500"></i>
+                                        Upcoming Events
+                                    </h3>
+                                    <a href="{{ route('teacher.events.index') }}" class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold">View All</a>
+                                </div>
+                                <div class="space-y-3">
+                                    @forelse($upcomingEvents ?? [] as $event)
+                                        <div class="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
+                                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 text-purple-600 flex flex-col items-center justify-center font-bold text-xs border border-purple-200 group-hover:shadow-md transition-all flex-shrink-0">
+                                                <span class="text-[10px] uppercase">{{ $event->date->format('M') }}</span>
+                                                <span class="text-base">{{ $event->date->format('d') }}</span>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="font-semibold text-slate-800 text-sm truncate group-hover:text-purple-600 transition-colors">{{ $event->title }}</p>
+                                                <p class="text-slate-500 text-xs mt-0.5">{{ $event->date->format('l, F j, Y') }}</p>
+                                            </div>
+                                            <div class="w-2 h-2 rounded-full bg-purple-500 mt-2 flex-shrink-0"></div>
+                                        </div>
+                                    @empty
+                                        <p class="text-slate-400 text-sm text-center py-4">No upcoming events</p>
+                                    @endforelse
+                                </div>
+                            </div>
+
                             <!-- Quick Stats -->
                             <div class="glass-card rounded-2xl p-6 bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
                                 <h3 class="text-sm font-bold uppercase tracking-wider mb-4 opacity-90">Quick Stats</h3>

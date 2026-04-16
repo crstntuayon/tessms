@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Apr 12, 2026 at 10:45 PM
+-- Generation Time: Apr 16, 2026 at 04:25 PM
 -- Server version: 8.0.45
 -- PHP Version: 8.2.30
 
@@ -77,7 +77,22 @@ CREATE TABLE `activity_logs` (
 --
 
 INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `entity_type`, `entity_id`, `description`, `old_values`, `new_values`, `ip_address`, `user_agent`, `created_at`) VALUES
-(1, 1, 'disabled', 'Setting', NULL, 'Enrollment submissions disabled', NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-11 10:25:59');
+(1, 1, 'disabled', 'Setting', NULL, 'Enrollment submissions disabled', NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-11 10:25:59'),
+(2, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-14 23:59:40'),
+(3, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:02:39'),
+(4, 1, 'disabled', 'Setting', NULL, 'Enrollment submissions disabled', NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:04:28'),
+(5, 1, 'disabled', 'Setting', NULL, 'Enrollment submissions disabled', NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:04:35'),
+(6, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"school_name\", \"school_code\", \"deped_school_id\", \"school_address\", \"school_email\", \"school_phone\", \"school_division\", \"school_region\", \"school_district\", \"school_head\", \"school_logo\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:41:12'),
+(7, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"school_name\", \"school_code\", \"deped_school_id\", \"school_address\", \"school_email\", \"school_phone\", \"school_division\", \"school_region\", \"school_district\", \"school_head\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:48:59'),
+(8, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:52:39'),
+(9, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:52:51'),
+(10, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:53:45'),
+(11, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"school_name\", \"school_code\", \"deped_school_id\", \"school_address\", \"school_email\", \"school_phone\", \"school_division\", \"school_region\", \"school_district\", \"school_head\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:02:30'),
+(12, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:02:40'),
+(13, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:03:26'),
+(14, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:07:33'),
+(15, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:08:21'),
+(16, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:08:36');
 
 -- --------------------------------------------------------
 
@@ -314,7 +329,9 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('tugawees-sms-cache-app_settings', 'a:10:{s:11:\"system_name\";s:15:\"Tugawe ES - SMS\";s:11:\"school_name\";s:24:\"Tugawe Elementary School\";s:15:\"deped_school_id\";s:6:\"120231\";s:15:\"school_division\";s:27:\"Division of Negros Oriental\";s:13:\"school_region\";s:26:\"NIR - Negros Island Region\";s:11:\"school_head\";s:25:\"MAE HARRIET M. DELA PEÑA\";s:21:\"active_school_year_id\";i:1;s:13:\"passing_grade\";i:75;s:15:\"school_district\";s:14:\"Dauin District\";s:18:\"enrollment_enabled\";b:0;}', 1776011549);
+('tugawees-sms-cache-94d92f976fd06fd3e8cf53ec4e03d646', 'i:2;', 1776356643),
+('tugawees-sms-cache-94d92f976fd06fd3e8cf53ec4e03d646:timer', 'i:1776356643;', 1776356643),
+('tugawees-sms-cache-app_settings', 'a:59:{s:11:\"system_name\";s:24:\"Tugawe Elementary School\";s:11:\"school_name\";s:24:\"Tugawe Elementary School\";s:15:\"deped_school_id\";s:6:\"120231\";s:15:\"school_division\";s:27:\"Division of Negros Oriental\";s:13:\"school_region\";s:26:\"Negros Island Region (NIR)\";s:11:\"school_head\";s:26:\"MAE HARRIET M. DELA  PEÑA\";s:21:\"active_school_year_id\";s:0:\"\";s:13:\"passing_grade\";i:75;s:15:\"school_district\";s:14:\"Dauin District\";s:18:\"enrollment_enabled\";b:0;s:8:\"timezone\";s:11:\"Asia/Manila\";s:11:\"date_format\";s:6:\"F d, Y\";s:16:\"default_language\";s:2:\"en\";s:16:\"maintenance_mode\";b:0;s:17:\"user_registration\";b:1;s:18:\"email_verification\";b:1;s:11:\"school_code\";s:8:\"TES-2026\";s:14:\"school_address\";s:48:\"Tugawe, Dauin, Negros Oriental, Philippines 6217\";s:12:\"school_email\";s:19:\"teswecare@gmail.com\";s:12:\"school_phone\";s:11:\"09934469637\";s:11:\"school_logo\";s:53:\"settings/xuZVe6b9Z2NmzqycdwcjoNnOv8dbLX9JXdgKUpWS.png\";s:19:\"current_school_year\";s:9:\"2024-2025\";s:17:\"school_year_start\";s:0:\"\";s:15:\"school_year_end\";s:0:\"\";s:14:\"grading_system\";s:9:\"quarterly\";s:21:\"enrollment_start_date\";s:0:\"\";s:19:\"enrollment_end_date\";s:0:\"\";s:21:\"allow_late_enrollment\";b:0;s:18:\"notify_new_student\";b:1;s:17:\"notify_attendance\";b:1;s:13:\"notify_grades\";b:1;s:20:\"notify_announcements\";b:1;s:11:\"sms_enabled\";b:0;s:12:\"sms_provider\";s:0:\"\";s:11:\"mail_driver\";s:4:\"smtp\";s:9:\"mail_host\";s:0:\"\";s:9:\"mail_port\";i:587;s:13:\"mail_username\";s:0:\"\";s:13:\"mail_password\";s:0:\"\";s:15:\"mail_encryption\";s:3:\"tls\";s:17:\"mail_from_address\";s:0:\"\";s:14:\"mail_from_name\";s:24:\"Tugawe Elementary School\";s:19:\"min_password_length\";i:8;s:15:\"password_expiry\";i:90;s:16:\"strong_passwords\";b:1;s:11:\"require_2fa\";b:0;s:15:\"session_timeout\";i:30;s:18:\"max_login_attempts\";i:5;s:19:\"login_notifications\";b:1;s:13:\"primary_color\";s:7:\"#6366f1\";s:15:\"secondary_color\";s:7:\"#10b981\";s:12:\"accent_color\";s:7:\"#f59e0b\";s:12:\"compact_mode\";b:1;s:9:\"dark_mode\";b:0;s:10:\"animations\";b:1;s:11:\"auto_backup\";b:0;s:11:\"last_backup\";s:5:\"Never\";s:11:\"api_enabled\";b:0;s:7:\"api_key\";s:0:\"\";}', 1776359618);
 
 -- --------------------------------------------------------
 
@@ -422,7 +439,8 @@ CREATE TABLE `enrollments` (
 
 INSERT INTO `enrollments` (`id`, `school_year_id`, `grade_level_id`, `student_id`, `section_id`, `type`, `status`, `previous_school`, `school_name`, `school_id`, `school_district`, `school_division`, `school_region`, `enrollment_date`, `created_at`, `updated_at`, `remarks`) VALUES
 (60, 1, 2, 70, 1, 'continuing', 'enrolled', NULL, 'Tugawe Elementary School', '120231', 'Dauin District', 'Division of Negros Oriental', 'NIR - Negros Island Region', '2026-04-11', '2026-04-10 15:29:16', '2026-04-10 16:17:13', NULL),
-(61, 1, 1, 71, 7, 'new', 'enrolled', NULL, 'Tugawe Elementary School', '120231', 'Dauin District', 'Division of Negros Oriental', 'NIR - Negros Island Region', '2026-04-12', '2026-04-12 03:47:55', '2026-04-12 03:48:46', NULL);
+(61, 1, 1, 71, 7, 'new', 'enrolled', NULL, 'Tugawe Elementary School', '120231', 'Dauin District', 'Division of Negros Oriental', 'NIR - Negros Island Region', '2026-04-12', '2026-04-12 03:47:55', '2026-04-12 03:48:46', NULL),
+(63, 1, 3, 73, 3, 'continuing', 'enrolled', NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-14', '2026-04-14 05:40:50', '2026-04-14 05:40:50', NULL);
 
 -- --------------------------------------------------------
 
@@ -527,15 +545,16 @@ CREATE TABLE `events` (
   `date` date NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `school_year_id` bigint UNSIGNED DEFAULT NULL
+  `school_year_id` bigint UNSIGNED DEFAULT NULL,
+  `created_by` bigint UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `events`
 --
 
-INSERT INTO `events` (`id`, `title`, `description`, `date`, `created_at`, `updated_at`, `school_year_id`) VALUES
-(1, 'NUTRITION MONTH CELEBRATION', 'Nutrition month parade, program for the nutrition month.', '2026-07-07', '2026-04-10 15:58:10', '2026-04-10 15:58:10', 1);
+INSERT INTO `events` (`id`, `title`, `description`, `date`, `created_at`, `updated_at`, `school_year_id`, `created_by`) VALUES
+(10, 'foundation day', NULL, '2026-07-07', '2026-04-16 07:45:54', '2026-04-16 07:45:54', 2, 1);
 
 -- --------------------------------------------------------
 
@@ -1277,7 +1296,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (118, '2026_04_11_132427_create_report_schedules_table', 114),
 (119, '2026_04_12_052304_create_grade_weights_table', 115),
 (120, '2026_04_12_071705_add_component_unlock_tracking_to_section_finalizations', 116),
-(121, '2026_04_12_000001_create_kindergarten_domains_table', 117);
+(121, '2026_04_12_000001_create_kindergarten_domains_table', 117),
+(122, '2026_04_14_234731_add_password_updated_at_to_users_table', 118),
+(123, '2026_04_16_150000_add_created_by_to_events_table', 119);
 
 -- --------------------------------------------------------
 
@@ -1411,7 +1432,16 @@ INSERT INTO `report_templates` (`id`, `name`, `slug`, `description`, `category`,
 (8, 'At-Risk Students Report', 'dropout-risk', 'Identify students at risk of dropping out based on attendance and grade patterns.', 'analytics', 'table', '[{\"key\": \"student_name\", \"type\": \"text\", \"label\": \"Student Name\"}, {\"key\": \"section\", \"type\": \"text\", \"label\": \"Section\"}, {\"key\": \"attendance_rate\", \"type\": \"percentage\", \"label\": \"Attendance\"}, {\"key\": \"average_grade\", \"type\": \"number\", \"label\": \"Avg Grade\"}, {\"key\": \"risk_factors\", \"type\": \"text\", \"label\": \"Risk Factors\"}, {\"key\": \"risk_level\", \"type\": \"badge\", \"label\": \"Risk Level\"}]', '[\"school_year_id\", \"attendance_threshold\", \"grade_threshold\"]', NULL, '{\"grade_threshold\": 75, \"attendance_threshold\": 75}', '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z\"/>', 'red', 1, 1, NULL, '2026-04-11 06:02:51', '2026-04-11 06:02:51'),
 (9, 'Teacher Workload Report', 'teacher-workload', 'Overview of teaching assignments and student load per teacher.', 'analytics', 'table', '[{\"key\": \"teacher_name\", \"type\": \"text\", \"label\": \"Teacher Name\"}, {\"key\": \"specialization\", \"type\": \"text\", \"label\": \"Specialization\"}, {\"key\": \"sections_handled\", \"type\": \"number\", \"label\": \"Sections\"}, {\"key\": \"subjects\", \"type\": \"text\", \"label\": \"Subjects\"}, {\"key\": \"total_students\", \"type\": \"number\", \"label\": \"Total Students\"}]', '[]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z\"/>', 'orange', 1, 1, NULL, '2026-04-11 06:02:51', '2026-04-11 06:02:51'),
 (10, 'SF1 - School Register', 'sf1-school-register', 'DepEd School Register form with complete student information.', 'compliance', 'table', '[{\"key\": \"no\", \"type\": \"number\", \"label\": \"No.\"}, {\"key\": \"lrn\", \"type\": \"text\", \"label\": \"LRN\"}, {\"key\": \"name\", \"type\": \"text\", \"label\": \"Learner Name\"}, {\"key\": \"gender\", \"type\": \"text\", \"label\": \"Sex\"}, {\"key\": \"birthdate\", \"type\": \"date\", \"label\": \"Birth Date\"}, {\"key\": \"age\", \"type\": \"number\", \"label\": \"Age\"}, {\"key\": \"mother_tongue\", \"type\": \"text\", \"label\": \"Mother Tongue\"}, {\"key\": \"religion\", \"type\": \"text\", \"label\": \"Religion\"}, {\"key\": \"address\", \"type\": \"text\", \"label\": \"Address\"}, {\"key\": \"father_name\", \"type\": \"text\", \"label\": \"Father\'s Name\"}, {\"key\": \"mother_name\", \"type\": \"text\", \"label\": \"Mother\'s Name\"}, {\"key\": \"guardian_name\", \"type\": \"text\", \"label\": \"Guardian\'s Name\"}, {\"key\": \"guardian_contact\", \"type\": \"text\", \"label\": \"Contact\"}]', '[\"school_year_id\", \"section_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z\"/>', 'gray', 1, 1, NULL, '2026-04-11 06:02:51', '2026-04-11 06:02:51'),
-(11, 'SF2 - Daily Attendance', 'sf2-daily-attendance', 'DepEd Daily Attendance Report of Learners.', 'compliance', 'table', '[{\"key\": \"no\", \"type\": \"number\", \"label\": \"No.\"}, {\"key\": \"name\", \"type\": \"text\", \"label\": \"Name\"}, {\"key\": \"days_present\", \"type\": \"number\", \"label\": \"Days Present\"}, {\"key\": \"days_absent\", \"type\": \"number\", \"label\": \"Days Absent\"}, {\"key\": \"days_late\", \"type\": \"number\", \"label\": \"Days Late\"}, {\"key\": \"total_days\", \"type\": \"number\", \"label\": \"Total Days\"}]', '[\"section_id\", \"month\", \"school_year_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z\"/>', 'gray', 1, 1, NULL, '2026-04-11 06:02:51', '2026-04-11 06:02:51');
+(11, 'SF2 - Daily Attendance', 'sf2-daily-attendance', 'DepEd Daily Attendance Report of Learners.', 'compliance', 'table', '[{\"key\": \"no\", \"type\": \"number\", \"label\": \"No.\"}, {\"key\": \"name\", \"type\": \"text\", \"label\": \"Name\"}, {\"key\": \"days_present\", \"type\": \"number\", \"label\": \"Days Present\"}, {\"key\": \"days_absent\", \"type\": \"number\", \"label\": \"Days Absent\"}, {\"key\": \"days_late\", \"type\": \"number\", \"label\": \"Days Late\"}, {\"key\": \"total_days\", \"type\": \"number\", \"label\": \"Total Days\"}]', '[\"section_id\", \"month\", \"school_year_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z\"/>', 'gray', 1, 1, NULL, '2026-04-11 06:02:51', '2026-04-11 06:02:51'),
+(12, 'SF3 - Books Issued and Returned', 'sf3-books', 'DepEd record of books issued and returned by students.', 'compliance', 'table', '[]', '[\"section_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253\"/>', 'gray', 1, 1, NULL, '2026-04-13 15:15:08', '2026-04-13 15:15:08'),
+(13, 'SF4 - Monthly Learner Movement and Attendance', 'sf4-monthly-movement', 'DepEd monthly movement and attendance summary.', 'compliance', 'table', '[]', '[\"section_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z\"/>', 'gray', 1, 1, NULL, '2026-04-13 15:15:08', '2026-04-13 15:15:08'),
+(14, 'SF5 - Report on Promotion and Level of Proficiency', 'sf5-promotion', 'DepEd report on promotion and proficiency levels by grade.', 'compliance', 'table', '[]', '[\"grade_level_id\", \"school_year_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z\"/>', 'gray', 1, 1, NULL, '2026-04-13 15:15:08', '2026-04-13 15:15:08'),
+(15, 'SF6 - Summary Report on Promotion', 'sf6-summary-promotion', 'DepEd summary report on promotion and retention.', 'compliance', 'table', '[]', '[\"grade_level_id\", \"school_year_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z\"/>', 'gray', 1, 1, NULL, '2026-04-13 15:15:08', '2026-04-13 15:15:08'),
+(16, 'SF7 - School Personnel Assignment List', 'sf7-personnel', 'DepEd list of teaching and non-teaching personnel assignments.', 'compliance', 'table', '[]', '[\"school_year_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z\"/>', 'gray', 1, 1, NULL, '2026-04-13 15:15:08', '2026-04-13 15:15:08'),
+(17, 'SF8 - Learner Health and Nutrition', 'sf8-health-nutrition', 'DepEd report on learner health and nutrition profile.', 'compliance', 'table', '[]', '[\"section_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z\"/>', 'gray', 1, 1, NULL, '2026-04-13 15:15:08', '2026-04-13 15:15:08'),
+(18, 'SF9 - Report Card', 'sf9-report-card', 'DepEd Learner Progress Report Card.', 'compliance', 'table', '[]', '[\"section_id\", \"student_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z\"/>', 'gray', 1, 1, NULL, '2026-04-13 15:15:08', '2026-04-13 15:15:08'),
+(19, 'SF10 - Learner Permanent Record', 'sf10-permanent-record', 'DepEd Learner Permanent Academic Record.', 'compliance', 'table', '[]', '[\"student_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10\"/>', 'gray', 1, 1, NULL, '2026-04-13 15:15:08', '2026-04-13 15:15:08'),
+(20, 'Kindergarten Assessment', 'kindergarten-assessment', 'DepEd Kindergarten Developmental Domains Assessment.', 'compliance', 'table', '[]', '[\"section_id\", \"student_id\"]', NULL, NULL, '<path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\"/>', 'gray', 1, 1, NULL, '2026-04-13 15:15:08', '2026-04-13 15:15:08');
 
 -- --------------------------------------------------------
 
@@ -1529,8 +1559,8 @@ CREATE TABLE `school_years` (
 --
 
 INSERT INTO `school_years` (`id`, `name`, `start_date`, `end_date`, `is_active`, `description`, `created_at`, `updated_at`) VALUES
-(1, '2025-2026', '2025-06-01', '2026-03-31', 1, 'School year 2026-2027 (current)', '2026-03-22 01:56:23', '2026-04-10 15:43:06'),
-(2, '2026-2027', '2026-06-01', '2027-03-31', 0, 'School year 2027-2028', '2026-03-22 01:56:23', '2026-04-10 15:43:06'),
+(1, '2025-2026', '2025-06-01', '2026-03-31', 1, 'School year 2026-2027 (current)', '2026-03-22 01:56:23', '2026-04-15 04:33:59'),
+(2, '2026-2027', '2026-06-01', '2027-03-31', 0, 'School year 2027-2028', '2026-03-22 01:56:23', '2026-04-15 04:33:59'),
 (3, '2027-2028', '2027-06-01', '2028-03-31', 0, 'School year 2028-2029', '2026-03-22 01:56:23', '2026-04-10 05:18:31'),
 (4, '2028-2029', '2028-06-01', '2029-03-31', 0, 'School year 2029-2030', '2026-03-22 01:56:23', '2026-04-10 05:18:31'),
 (5, '2039-2030', '2029-06-01', '2030-03-31', 0, 'School year 2030-2031', '2026-03-22 01:56:23', '2026-04-10 05:18:31');
@@ -1627,7 +1657,7 @@ INSERT INTO `sections` (`id`, `name`, `grade_level_id`, `school_year_id`, `room_
 (3, 'MENDES', 3, 2, 'ROOM103', 9, 40, '2026-03-27 03:14:07', '2026-04-02 16:20:52', 1),
 (4, 'ALAMA', 7, 2, 'ROOM103', 13, 40, '2026-04-02 16:05:18', '2026-04-10 15:42:27', 1),
 (5, 'JUPITER', 6, 2, 'ROOM105', 12, 40, '2026-04-02 16:06:35', '2026-04-10 15:42:09', 1),
-(6, 'SATURN', 5, 2, 'ROOM104', 14, 40, '2026-04-02 16:34:28', '2026-04-10 15:41:52', 1),
+(6, 'SATURN', 5, 2, 'ROOM104', 17, 40, '2026-04-02 16:34:28', '2026-04-14 05:55:48', 1),
 (7, 'MACIAS', 1, 2, 'ROOM100', 15, 40, '2026-04-02 16:35:30', '2026-04-10 15:41:35', 1);
 
 -- --------------------------------------------------------
@@ -1741,16 +1771,65 @@ CREATE TABLE `settings` (
 --
 
 INSERT INTO `settings` (`id`, `key`, `value`, `type`, `group`, `description`, `is_public`, `is_editable`, `sort_order`, `created_at`, `updated_at`) VALUES
-(1, 'system_name', 'Tugawe ES - SMS', 'string', 'general', 'System name', 0, 1, 0, NULL, NULL),
-(2, 'school_name', 'Tugawe Elementary School', 'string', 'school', 'Official school name', 0, 1, 0, NULL, NULL),
-(3, 'deped_school_id', '120231', 'string', 'school', 'DepEd school ID', 0, 1, 0, NULL, NULL),
-(4, 'school_division', 'Division of Negros Oriental', 'string', 'school', 'Division', 0, 1, 0, NULL, NULL),
-(5, 'school_region', 'NIR - Negros Island Region', 'string', 'school', 'Region', 0, 1, 0, NULL, NULL),
-(6, 'school_head', 'MAE HARRIET M. DELA PEÑA', 'string', 'school', 'Principal', 0, 1, 0, NULL, NULL),
-(7, 'active_school_year_id', '1', 'integer', 'academic', 'Active school year ID', 0, 1, 0, NULL, NULL),
-(8, 'passing_grade', '75', 'integer', 'academic', 'Passing grade', 0, 1, 0, NULL, NULL),
-(9, 'school_district', 'Dauin District', 'string', 'school', 'School District', 0, 1, 0, NULL, NULL),
-(10, 'enrollment_enabled', '0', 'boolean', 'enrollment', NULL, 0, 1, 0, '2026-04-06 03:26:35', '2026-04-11 02:25:59');
+(1, 'system_name', 'Tugawe Elementary School', 'string', 'general', 'The name of the system displayed throughout the application', 0, 1, 0, NULL, '2026-04-14 15:51:42'),
+(2, 'school_name', 'Tugawe Elementary School', 'string', 'school', 'Official name of the school', 0, 1, 0, NULL, '2026-04-14 15:51:42'),
+(3, 'deped_school_id', '120231', 'string', 'school', 'DepEd assigned school ID', 0, 1, 0, NULL, '2026-04-14 16:41:12'),
+(4, 'school_division', 'Division of Negros Oriental', 'string', 'school', 'School division', 0, 1, 0, NULL, '2026-04-14 16:48:59'),
+(5, 'school_region', 'Negros Island Region (NIR)', 'string', 'school', 'School region', 0, 1, 0, NULL, '2026-04-14 16:48:59'),
+(6, 'school_head', 'MAE HARRIET M. DELA  PEÑA', 'string', 'school', 'School head/principal', 0, 1, 0, NULL, '2026-04-14 16:48:59'),
+(7, 'active_school_year_id', '', 'string', 'school', 'Active school year ID', 0, 1, 0, NULL, '2026-04-14 15:51:42'),
+(8, 'passing_grade', '75', 'integer', 'academic', 'Minimum passing grade percentage', 0, 1, 0, NULL, '2026-04-14 15:51:42'),
+(9, 'school_district', 'Dauin District', 'string', 'school', 'School district', 0, 1, 0, NULL, '2026-04-14 16:48:59'),
+(10, 'enrollment_enabled', '0', 'boolean', 'enrollment', 'Allow students to submit enrollment requests', 0, 1, 0, '2026-04-06 03:26:35', '2026-04-14 16:04:28'),
+(11, 'timezone', 'Asia/Manila', 'string', 'general', 'Default timezone for the application', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(12, 'date_format', 'F d, Y', 'string', 'general', 'Format for displaying dates', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(13, 'default_language', 'en', 'string', 'general', 'Default language for the application', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(14, 'maintenance_mode', '0', 'boolean', 'general', 'Enable maintenance mode', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(15, 'user_registration', '1', 'boolean', 'general', 'Allow new user registration', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(16, 'email_verification', '1', 'boolean', 'general', 'Require email verification for new accounts', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(17, 'school_code', 'TES-2026', 'string', 'school', 'School code identifier', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 16:41:12'),
+(18, 'school_address', 'Tugawe, Dauin, Negros Oriental, Philippines 6217', 'string', 'school', 'Complete school address', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 16:41:12'),
+(19, 'school_email', 'teswecare@gmail.com', 'string', 'school', 'School contact email', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 16:48:59'),
+(20, 'school_phone', '09934469637', 'string', 'school', 'School contact phone number', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 16:48:59'),
+(21, 'school_logo', 'settings/xuZVe6b9Z2NmzqycdwcjoNnOv8dbLX9JXdgKUpWS.png', 'string', 'school', 'Path to school logo image', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 16:41:12'),
+(22, 'current_school_year', '2024-2025', 'string', 'academic', 'Current active school year', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(23, 'school_year_start', '', 'string', 'academic', 'Start date of the current school year', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(24, 'school_year_end', '', 'string', 'academic', 'End date of the current school year', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(25, 'grading_system', 'quarterly', 'string', 'academic', 'Grading period system', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(26, 'enrollment_start_date', '', 'string', 'academic', 'Enrollment period start date', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(27, 'enrollment_end_date', '', 'string', 'academic', 'Enrollment period end date', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(28, 'allow_late_enrollment', '0', 'boolean', 'academic', 'Allow enrollment after the deadline', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(29, 'notify_new_student', '1', 'boolean', 'notifications', 'Send email on new student enrollment', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(30, 'notify_attendance', '1', 'boolean', 'notifications', 'Notify parents of student absences', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(31, 'notify_grades', '1', 'boolean', 'notifications', 'Send notification when grades are published', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(32, 'notify_announcements', '1', 'boolean', 'notifications', 'Send notification for new announcements', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(33, 'sms_enabled', '0', 'boolean', 'notifications', 'Enable SMS notifications', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(34, 'sms_provider', '', 'string', 'notifications', 'SMS gateway provider', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(35, 'mail_driver', 'smtp', 'string', 'email', 'Mail driver', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(36, 'mail_host', '', 'string', 'email', 'SMTP host', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(37, 'mail_port', '587', 'integer', 'email', 'SMTP port', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(38, 'mail_username', '', 'string', 'email', 'SMTP username', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(39, 'mail_password', '', 'string', 'email', 'SMTP password', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(40, 'mail_encryption', 'tls', 'string', 'email', 'SMTP encryption', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(41, 'mail_from_address', '', 'string', 'email', 'From email address', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(42, 'mail_from_name', 'Tugawe Elementary School', 'string', 'email', 'From name', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(43, 'min_password_length', '8', 'integer', 'security', 'Minimum required password length', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(44, 'password_expiry', '90', 'integer', 'security', 'Days until password expires (0 = never)', 0, 1, 0, '2026-04-14 15:51:42', '2026-04-14 15:51:42'),
+(45, 'strong_passwords', '1', 'boolean', 'security', 'Require complex passwords', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(46, 'require_2fa', '0', 'boolean', 'security', 'Require two-factor authentication', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(47, 'session_timeout', '30', 'integer', 'security', 'Session timeout in minutes', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(48, 'max_login_attempts', '5', 'integer', 'security', 'Maximum failed login attempts per minute', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(49, 'login_notifications', '1', 'boolean', 'security', 'Send email on new login', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(50, 'primary_color', '#6366f1', 'string', 'appearance', 'Primary brand color', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(51, 'secondary_color', '#10b981', 'string', 'appearance', 'Secondary accent color', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(52, 'accent_color', '#f59e0b', 'string', 'appearance', 'Accent color', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(53, 'compact_mode', '1', 'boolean', 'appearance', 'Use compact spacing', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 17:08:21'),
+(54, 'dark_mode', '0', 'boolean', 'appearance', 'Enable dark theme', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 17:08:21'),
+(55, 'animations', '1', 'boolean', 'appearance', 'Enable UI animations', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(56, 'auto_backup', '0', 'boolean', 'backup', 'Enable automatic daily backups', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(57, 'last_backup', 'Never', 'string', 'backup', 'Last backup timestamp', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(58, 'api_enabled', '0', 'boolean', 'advanced', 'Enable API access', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43'),
+(59, 'api_key', '', 'string', 'advanced', 'API authentication key', 0, 1, 0, '2026-04-14 15:51:43', '2026-04-14 15:51:43');
 
 -- --------------------------------------------------------
 
@@ -1803,8 +1882,9 @@ CREATE TABLE `students` (
 --
 
 INSERT INTO `students` (`id`, `user_id`, `lrn`, `birthdate`, `birth_place`, `gender`, `status`, `birth_certificate_path`, `report_card_path`, `good_moral_path`, `transfer_credential_path`, `registration_status`, `documents_verified_at`, `mother_tongue`, `ethnicity`, `nationality`, `religion`, `father_name`, `father_occupation`, `mother_name`, `mother_occupation`, `guardian_name`, `guardian_relationship`, `guardian_contact`, `street_address`, `barangay`, `city`, `province`, `zip_code`, `grade_level_id`, `section_id`, `photo`, `created_at`, `updated_at`, `school_year_id`, `remarks`, `documents_verified_by`) VALUES
-(70, 102, NULL, '2004-01-07', 'Dauin', 'Male', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'Negrense', 'Filipino', 'Roman Catholic', 'Nelson A. Tuayon', 'Farmer', 'Agripina B. Tuayon', 'Farmer', 'Nelson A. Tuayon', 'Parent', '09368726547', 'Purok 5', 'Tugawe', 'Dauin', 'Negros Oriental', '6217', 2, 1, NULL, '2026-04-10 15:29:16', '2026-04-10 16:17:13', NULL, NULL, NULL),
-(71, 108, NULL, '2003-11-06', 'Cantil-e', 'Female', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'Negrense', 'Filipino', 'Catholic', 'Jose Baldomar', 'Farmer', 'Maria Baldomar', 'Farmer', 'Jose Baldomar', 'Parent', '09934639876', 'Purok Twin Hearts', 'Cantil-e', 'Dumaguete City', 'Negros Oriental', '6200', 1, 7, NULL, '2026-04-12 03:47:55', '2026-04-12 03:48:46', NULL, NULL, NULL);
+(70, 102, '120231260001', '2004-01-07', 'Dauin', 'Male', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'Negrense', 'Filipino', 'Roman Catholic', 'Nelson A. Tuayon', 'Farmer', 'Agripina B. Tuayon', 'Farmer', 'Nelson A. Tuayon', 'Parent', '09368726547', 'Purok 5', 'Tugawe', 'Dauin', 'Negros Oriental', '6217', NULL, NULL, NULL, '2026-04-10 15:29:16', '2026-04-13 23:57:08', NULL, NULL, NULL),
+(71, 108, '120231260000', '2003-11-06', 'Cantil-e', 'Female', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'Negrense', 'Filipino', 'Catholic', 'Jose Baldomar', 'Farmer', 'Maria Baldomar', 'Farmer', 'Jose Baldomar', 'Parent', '09934639876', 'Purok Twin Hearts', 'Cantil-e', 'Dumaguete City', 'Negros Oriental', '6200', NULL, NULL, NULL, '2026-04-12 03:47:55', '2026-04-13 23:56:24', NULL, NULL, NULL),
+(73, 112, '120231260002', '2003-10-31', 'Dauin', 'Female', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'Negrense', 'Filipino', 'Roman Catholic', 'Jose Tradio', 'CEO', 'Maria Tradio', 'Executive Director', 'Maria Tradio', 'Parent/Mother', '09934639878', 'Luca', 'Lipayo', 'Dauin', 'Negros Oriental', '6217', 3, 3, NULL, '2026-04-14 05:40:50', '2026-04-14 05:40:50', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2023,9 +2103,11 @@ INSERT INTO `teachers` (`id`, `teacher_id`, `deped_id`, `first_name`, `middle_na
 (11, NULL, NULL, 'Samantha', NULL, 'Kim', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'kimisamanttha@gmail.com', '0936 872 6547', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 103, NULL, NULL, NULL, 'active', NULL, '2026-04-10 15:35:18', '2026-04-11 05:31:34', NULL),
 (12, NULL, NULL, 'Monique', NULL, 'Filipinas', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'msfilipinas@gmail.com', '0936 872 6547', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 104, NULL, NULL, NULL, 'active', NULL, '2026-04-10 15:37:46', '2026-04-10 15:37:46', NULL),
 (13, NULL, NULL, 'Anthony', NULL, 'Rapsing', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'mranthon@gmail.com', '0936 872 6547', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 105, NULL, NULL, NULL, 'active', NULL, '2026-04-10 15:38:45', '2026-04-10 15:38:45', NULL),
-(14, NULL, NULL, 'Alvin', NULL, 'Namoco', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'mrvinvin@gmail.com', '0936 872 6547', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 106, NULL, NULL, NULL, 'active', NULL, '2026-04-10 15:40:21', '2026-04-10 15:40:21', NULL),
 (15, NULL, NULL, 'Nancy', NULL, 'Lewis', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'mslewis@gmail.com', '0936 872 6547', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 107, NULL, NULL, NULL, 'active', NULL, '2026-04-10 15:41:08', '2026-04-10 15:41:08', NULL),
-(16, NULL, NULL, '', NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, 'active', NULL, '2026-04-11 23:20:23', '2026-04-11 23:20:23', NULL);
+(17, NULL, NULL, 'Melvin', NULL, 'Benitez', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'benitezmelv@gmail.com', '0996 266 7110', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 113, NULL, NULL, NULL, 'active', NULL, '2026-04-14 05:55:20', '2026-04-14 05:55:20', NULL),
+(20, NULL, NULL, 'Rein', NULL, 'Guererro', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'guerrerorein@gmail.com', '0996 226 9656', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 115, NULL, NULL, NULL, 'active', NULL, '2026-04-15 18:26:10', '2026-04-15 18:26:10', NULL),
+(21, NULL, NULL, '', NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, 'active', NULL, '2026-04-16 06:43:17', '2026-04-16 06:43:17', NULL),
+(22, NULL, NULL, '', NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 102, NULL, NULL, NULL, 'active', NULL, '2026-04-16 07:48:40', '2026-04-16 07:48:40', NULL);
 
 -- --------------------------------------------------------
 
@@ -2103,6 +2185,7 @@ CREATE TABLE `users` (
   `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password_updated_at` timestamp NULL DEFAULT NULL,
   `photo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `remember_token` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -2125,18 +2208,20 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `role_id`, `status`, `email`, `email_verified_at`, `password`, `photo`, `is_active`, `remember_token`, `settings`, `two_factor_enabled`, `two_factor_secret`, `two_factor_recovery_codes`, `created_at`, `updated_at`, `lrn`, `first_name`, `middle_name`, `last_name`, `suffix`, `birthday`, `username`) VALUES
-(1, 1, 'active', 'admin@tugaweES.edu.ph', NULL, '$2y$12$zXtYoxdECMpT8DvDKSKFee0E.B7PXe4yQgoRJim6sPz/1zutl3Gsu', 'profile-photos/xShxXmOJXSLKKBMsq9tkC7DcEhC13IRswVBGWi8y.png', 1, 'n1a3PpCMyDMX5vv4Hb9aGi46bFATGSirlXKkYQAB8kFrajovX5cjbH5cE4CV', NULL, 0, NULL, NULL, '2026-01-27 05:37:20', '2026-04-09 15:55:09', NULL, 'TES', NULL, 'ADMIN', NULL, NULL, 'sysadmin'),
-(66, 2, 'active', 'mariasan@gmail.com', NULL, '$2y$12$3kEcB2mHyjA0b0SFLTlhfeVAFFhMXgKZSzPPX0zvJ7QQStLjJVvbS', 'profile-photos/LT2JUidn7dXUeJu7o6VDcoC1chsvGhUe9g7AJZoT.jpg', 1, NULL, NULL, 0, NULL, NULL, '2026-03-25 02:22:47', '2026-04-09 15:19:35', NULL, 'Maria', NULL, 'Santos', NULL, NULL, 'msmaria'),
-(68, 1, 'active', 'admin123@gmail.com', NULL, '$2y$12$TUqAbwYAVzJkHjkxiwa3peAV2mq7ctJhndKfwpBWb7lZBlocE5TPa', NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-03-25 05:21:01', '2026-03-27 21:57:33', NULL, 'System', NULL, 'Admin', NULL, NULL, 'mysysad12'),
-(70, 2, 'active', 'msmendes@gmail.com', NULL, '$2y$12$ws3zhjWNpiifRIzw9fbZgeVbItUrVD3anY5QCm1anpXuOT7q5xNZm', NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-03-27 03:13:09', '2026-03-27 03:13:09', NULL, 'Shane', NULL, 'Mendes', NULL, NULL, 'msmendes'),
-(102, 4, 'active', 'cresttuayon@gmail.com', NULL, '$2y$12$pXNN0Rj9ENcs.p9dQIPIU.xQD5P/addkK9dHVe73YdAYVSUeOpBqa', 'photos/LNcaX9lqNk025P2IWskkeXeKiPkjx4ivyv6yKqfY.jpg', 0, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:29:16', '2026-04-10 15:29:16', NULL, 'Crestian', 'Bajado', 'Tuayon', NULL, NULL, 'crstn'),
-(103, 2, 'active', 'kimisamanttha@gmail.com', NULL, '$2y$12$T//na0UVyeybUqMdSJmqguEmgucAfOT8UA6KqHMdIuCNNQs7s.U3O', 'profile-photos/vNw2o6ShhM78RIaIkIwKwNg2WrnjIwsrEDy6wj4k.jpg', 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:35:18', '2026-04-11 05:31:34', NULL, 'Samantha', NULL, 'Kim', NULL, NULL, 'mssamantha12'),
-(104, 2, 'active', 'msfilipinas@gmail.com', NULL, '$2y$12$3jAMKTeIflGKoVfyG/ZXTu1wTxn1N7fDdYiBS9NNiLcp3CEuLDsRO', NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:37:46', '2026-04-10 15:37:46', NULL, 'Monique', NULL, 'Filipinas', NULL, NULL, 'msmonique11'),
-(105, 2, 'active', 'mranthon@gmail.com', NULL, '$2y$12$7Bpbm9PGKrr6jK0mRYDHp.XAv8gEt0FCBxB3ACcyo3yRld7FlhlxC', NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:38:45', '2026-04-10 15:38:45', NULL, 'Anthony', NULL, 'Rapsing', NULL, NULL, 'mranthon113'),
-(106, 2, 'active', 'mrvinvin@gmail.com', NULL, '$2y$12$8GJm5L1d9M/vRX3QcNiJZuj1IHmqBujy0/mcecDK6Sn5OKddphxC6', NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:40:21', '2026-04-10 15:40:21', NULL, 'Alvin', NULL, 'Namoco', NULL, NULL, 'mrvinvin27'),
-(107, 2, 'active', 'mslewis@gmail.com', NULL, '$2y$12$NNZ.iJZJ48H5pdUlBF4ugea2Hv3ZXqMHBSymBE9q44NFeVBKUyBHi', NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:41:08', '2026-04-10 15:41:08', NULL, 'Nancy', NULL, 'Lewis', NULL, NULL, 'mslewis90'),
-(108, 4, 'active', 'baldomarnoime@gmail.com', NULL, '$2y$12$gocmQYI..qLmqx7w0gnXo.Ur7HtvFQknxA6/6b1g7ygwxbei5xoIO', 'photos/0EsnnH9CIokS28vtz1QjeoRgLpPO6xK6xdaspfjG.jpg', 0, NULL, NULL, 0, NULL, NULL, '2026-04-12 03:47:55', '2026-04-12 03:47:55', NULL, 'Noime', 'Talorete', 'Baldomar', NULL, NULL, 'evarocksredhell');
+INSERT INTO `users` (`id`, `role_id`, `status`, `email`, `email_verified_at`, `password`, `password_updated_at`, `photo`, `is_active`, `remember_token`, `settings`, `two_factor_enabled`, `two_factor_secret`, `two_factor_recovery_codes`, `created_at`, `updated_at`, `lrn`, `first_name`, `middle_name`, `last_name`, `suffix`, `birthday`, `username`) VALUES
+(1, 1, 'active', 'admin@tugaweES.edu.ph', NULL, '$2y$12$zXtYoxdECMpT8DvDKSKFee0E.B7PXe4yQgoRJim6sPz/1zutl3Gsu', NULL, 'profile-photos/xShxXmOJXSLKKBMsq9tkC7DcEhC13IRswVBGWi8y.png', 1, 'ZZeTz1z0WRNF6MSiCg5gNG44UG2uXBa73SePQqfCCYKBMRB21yANjADPR7IA', NULL, 0, NULL, NULL, '2026-01-27 05:37:20', '2026-04-09 15:55:09', NULL, 'TES', NULL, 'ADMIN', NULL, NULL, 'sysadmin'),
+(66, 2, 'active', 'mariasan@gmail.com', NULL, '$2y$12$3kEcB2mHyjA0b0SFLTlhfeVAFFhMXgKZSzPPX0zvJ7QQStLjJVvbS', NULL, 'profile-photos/LT2JUidn7dXUeJu7o6VDcoC1chsvGhUe9g7AJZoT.jpg', 1, NULL, NULL, 0, NULL, NULL, '2026-03-25 02:22:47', '2026-04-09 15:19:35', NULL, 'Maria', NULL, 'Santos', NULL, NULL, 'msmaria'),
+(68, 1, 'active', 'admin123@gmail.com', NULL, '$2y$12$TUqAbwYAVzJkHjkxiwa3peAV2mq7ctJhndKfwpBWb7lZBlocE5TPa', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-03-25 05:21:01', '2026-03-27 21:57:33', NULL, 'System', NULL, 'Admin', NULL, NULL, 'mysysad12'),
+(70, 2, 'active', 'msmendes@gmail.com', NULL, '$2y$12$ws3zhjWNpiifRIzw9fbZgeVbItUrVD3anY5QCm1anpXuOT7q5xNZm', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-03-27 03:13:09', '2026-03-27 03:13:09', NULL, 'Shane', NULL, 'Mendes', NULL, NULL, 'msmendes'),
+(102, 4, 'active', 'cresttuayon@gmail.com', NULL, '$2y$12$pXNN0Rj9ENcs.p9dQIPIU.xQD5P/addkK9dHVe73YdAYVSUeOpBqa', NULL, 'photos/LNcaX9lqNk025P2IWskkeXeKiPkjx4ivyv6yKqfY.jpg', 0, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:29:16', '2026-04-10 15:29:16', NULL, 'Crestian', 'Bajado', 'Tuayon', NULL, NULL, 'crstn'),
+(103, 2, 'active', 'kimisamanttha@gmail.com', NULL, '$2y$12$T//na0UVyeybUqMdSJmqguEmgucAfOT8UA6KqHMdIuCNNQs7s.U3O', NULL, 'profile-photos/vNw2o6ShhM78RIaIkIwKwNg2WrnjIwsrEDy6wj4k.jpg', 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:35:18', '2026-04-11 05:31:34', NULL, 'Samantha', NULL, 'Kim', NULL, NULL, 'mssamantha12'),
+(104, 2, 'active', 'msfilipinas@gmail.com', NULL, '$2y$12$3jAMKTeIflGKoVfyG/ZXTu1wTxn1N7fDdYiBS9NNiLcp3CEuLDsRO', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:37:46', '2026-04-10 15:37:46', NULL, 'Monique', NULL, 'Filipinas', NULL, NULL, 'msmonique11'),
+(105, 2, 'active', 'mranthon@gmail.com', NULL, '$2y$12$7Bpbm9PGKrr6jK0mRYDHp.XAv8gEt0FCBxB3ACcyo3yRld7FlhlxC', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:38:45', '2026-04-10 15:38:45', NULL, 'Anthony', NULL, 'Rapsing', NULL, NULL, 'mranthon113'),
+(107, 2, 'active', 'mslewis@gmail.com', NULL, '$2y$12$NNZ.iJZJ48H5pdUlBF4ugea2Hv3ZXqMHBSymBE9q44NFeVBKUyBHi', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:41:08', '2026-04-10 15:41:08', NULL, 'Nancy', NULL, 'Lewis', NULL, NULL, 'mslewis90'),
+(108, 4, 'active', 'baldomarnoime@gmail.com', NULL, '$2y$12$gocmQYI..qLmqx7w0gnXo.Ur7HtvFQknxA6/6b1g7ygwxbei5xoIO', NULL, 'photos/0EsnnH9CIokS28vtz1QjeoRgLpPO6xK6xdaspfjG.jpg', 0, NULL, NULL, 0, NULL, NULL, '2026-04-12 03:47:55', '2026-04-12 03:47:55', NULL, 'Noime', 'Talorete', 'Baldomar', NULL, NULL, 'evarocksredhell'),
+(112, 4, 'active', 'ejiemasestradio@gmail.com', NULL, '$2y$12$AgDcgZ2GCJHw4HmIrjZ8LOrTKfBI47Nn6PuOUtJVJQYDMBnMCcqY2', NULL, 'photos/JwLNZ4OkoaGPRTLp80D3oyRryXfjWq7QPTzxxlDW.jpg', 1, NULL, NULL, 0, NULL, NULL, '2026-04-14 05:40:49', '2026-04-14 05:40:49', NULL, 'Ejie Mae', 'Santos', 'Tradio', NULL, NULL, 'ezimei'),
+(113, 2, 'active', 'benitezmelv@gmail.com', NULL, '$2y$12$pFHUea8onil6UTfsSwPL6ehL81Q29bcji6NqJjXACflgq19AWOTRi', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-14 05:55:20', '2026-04-14 05:55:20', NULL, 'Melvin', NULL, 'Benitez', NULL, NULL, 'mrmelv88'),
+(115, 2, 'active', 'guerrerorein@gmail.com', NULL, '$2y$12$ho8yKZQSfeaTMDlAPOo.mup5JYcAhJ4hFAQwdPQj/ODHaDF/kvbry', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-15 18:26:10', '2026-04-15 18:26:10', NULL, 'Rein', NULL, 'Guererro', NULL, NULL, 'ReinGuererro');
 
 -- --------------------------------------------------------
 
@@ -2168,7 +2253,17 @@ CREATE TABLE `user_notification_settings` (
 --
 
 INSERT INTO `user_notification_settings` (`id`, `user_id`, `email_new_message`, `email_announcement`, `email_grade_posted`, `email_attendance_alert`, `email_assignment_due`, `sms_new_message`, `sms_announcement`, `sms_grade_posted`, `sms_attendance_alert`, `sms_assignment_due`, `phone_number`, `phone_verified`, `created_at`, `updated_at`) VALUES
-(2, 66, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-08 19:38:36', '2026-04-08 19:38:36');
+(2, 66, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-08 19:38:36', '2026-04-08 19:38:36'),
+(4, 107, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, NULL, 0, '2026-04-13 19:30:01', '2026-04-13 20:33:18'),
+(5, 102, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, NULL, 0, '2026-04-13 20:40:09', '2026-04-13 20:43:48'),
+(6, 70, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
+(7, 103, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
+(8, 104, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
+(9, 105, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
+(10, 113, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
+(11, 115, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
+(12, 108, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
+(13, 112, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03');
 
 --
 -- Indexes for dumped tables
@@ -2335,7 +2430,8 @@ ALTER TABLE `enrollment_documents`
 --
 ALTER TABLE `events`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `events_school_year_id_foreign` (`school_year_id`);
+  ADD KEY `events_school_year_id_foreign` (`school_year_id`),
+  ADD KEY `events_created_by_foreign` (`created_by`);
 
 --
 -- Indexes for table `failed_jobs`
@@ -2682,7 +2778,7 @@ ALTER TABLE `activities`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `announcements`
@@ -2748,7 +2844,7 @@ ALTER TABLE `core_values`
 -- AUTO_INCREMENT for table `enrollments`
 --
 ALTER TABLE `enrollments`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT for table `enrollment_applications`
@@ -2766,7 +2862,7 @@ ALTER TABLE `enrollment_documents`
 -- AUTO_INCREMENT for table `events`
 --
 ALTER TABLE `events`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -2826,7 +2922,7 @@ ALTER TABLE `message_attachments`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=124;
 
 --
 -- AUTO_INCREMENT for table `promotion_histories`
@@ -2850,7 +2946,7 @@ ALTER TABLE `report_schedules`
 -- AUTO_INCREMENT for table `report_templates`
 --
 ALTER TABLE `report_templates`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -2898,7 +2994,7 @@ ALTER TABLE `school_year_qr_codes`
 -- AUTO_INCREMENT for table `sections`
 --
 ALTER TABLE `sections`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `section_finalizations`
@@ -2916,13 +3012,13 @@ ALTER TABLE `section_subject`
 -- AUTO_INCREMENT for table `settings`
 --
 ALTER TABLE `settings`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
 
 --
 -- AUTO_INCREMENT for table `student_health_records`
@@ -2946,7 +3042,7 @@ ALTER TABLE `submissions`
 -- AUTO_INCREMENT for table `teachers`
 --
 ALTER TABLE `teachers`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `teacher_sections`
@@ -2970,13 +3066,13 @@ ALTER TABLE `teaching_programs`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=116;
 
 --
 -- AUTO_INCREMENT for table `user_notification_settings`
 --
 ALTER TABLE `user_notification_settings`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Constraints for dumped tables
@@ -3102,6 +3198,7 @@ ALTER TABLE `enrollment_documents`
 -- Constraints for table `events`
 --
 ALTER TABLE `events`
+  ADD CONSTRAINT `events_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `events_school_year_id_foreign` FOREIGN KEY (`school_year_id`) REFERENCES `school_years` (`id`) ON DELETE SET NULL;
 
 --

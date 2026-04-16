@@ -478,6 +478,36 @@
 
                 <!-- Right Column: Calendar & Schedule -->
                 <div class="space-y-6">
+
+                    <!-- Upcoming Events -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                                    <i class="fas fa-calendar-star"></i>
+                                </div>
+                                Upcoming Events
+                            </h3>
+                            <a href="{{ route('student.events.index') }}" class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold">View All</a>
+                        </div>
+                        <div class="space-y-3">
+                            @forelse($upcomingEvents ?? [] as $event)
+                                <div class="flex items-start gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
+                                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 text-purple-600 flex flex-col items-center justify-center font-bold text-xs border border-purple-200 group-hover:shadow-md transition-all flex-shrink-0">
+                                        <span class="text-[10px] uppercase">{{ $event->date->format('M') }}</span>
+                                        <span class="text-base">{{ $event->date->format('d') }}</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-semibold text-slate-800 text-sm truncate group-hover:text-purple-600 transition-colors">{{ $event->title }}</p>
+                                        <p class="text-slate-500 text-xs mt-0.5">{{ $event->date->format('l, F j, Y') }}</p>
+                                    </div>
+                                    <div class="w-2 h-2 rounded-full bg-purple-500 mt-2 flex-shrink-0"></div>
+                                </div>
+                            @empty
+                                <p class="text-slate-400 text-sm text-center py-4">No upcoming events</p>
+                            @endforelse
+                        </div>
+                    </div>
                     
                     <!-- Enhanced Mini Calendar -->
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">

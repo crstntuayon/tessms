@@ -3,12 +3,13 @@
  * Handles caching, offline support, background sync, and push notifications
  */
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v5';
 const CACHE_NAME = `tessms-${CACHE_VERSION}`;
 const STATIC_CACHE_NAME = `tessms-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `tessms-dynamic-${CACHE_VERSION}`;
 
 // Static assets to cache immediately on install
+// NOTE: Update these paths after running `npm run build` if asset hashes change
 const STATIC_ASSETS = [
   '/',
   '/login',
@@ -16,9 +17,11 @@ const STATIC_ASSETS = [
   '/student/dashboard',
   '/teacher/dashboard',
   '/admin/dashboard',
-  '/css/app.css',
-  '/js/app.js',
+  '/build/assets/app-BRD6bzX9.css',
+  '/build/assets/app-D4gY5OWJ.js',
+  '/build/manifest.json',
   '/js/pwa/offline-support.js',
+  '/js/pwa/register.js',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
   '/manifest.json'
@@ -28,7 +31,8 @@ const STATIC_ASSETS = [
 const API_ROUTES = [
   '/api/',
   '/broadcasting/',
-  '/sanctum/'
+  '/sanctum/',
+  '/notifications/'
 ];
 
 // Install Event - Cache static assets
@@ -82,6 +86,22 @@ function isApiRequest(url) {
   return API_ROUTES.some(route => url.includes(route));
 }
 
+// Helper to check if request is a navigation request (HTML page)
+function isNavigationRequest(request) {
+  return request.mode === 'navigate' || 
+         (request.headers.get('accept') && request.headers.get('accept').includes('text/html'));
+}
+
+// Helper to check if request is for a static build asset
+function isStaticAsset(url) {
+  return url.includes('/build/assets/') ||
+         url.includes('/icons/') ||
+         url.includes('/images/') ||
+         url.includes('/js/pwa/') ||
+         url.includes('/fonts/') ||
+         url.includes('/screenshots/');
+}
+
 // Fetch Event - Serve from cache or network
 self.addEventListener('fetch', (event) => {
   const { request } = event;
@@ -89,11 +109,9 @@ self.addEventListener('fetch', (event) => {
   
   // Skip non-GET requests (POST, PUT, DELETE, etc.)
   if (request.method !== 'GET') {
-    // For non-GET requests, try network first
     event.respondWith(
       fetch(request).catch((error) => {
         console.log('[SW] Network request failed:', error);
-        // Return a custom offline response
         return new Response(
           JSON.stringify({ 
             error: 'You are offline',
@@ -115,7 +133,6 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Clone and cache successful GET API responses
           if (response.status === 200) {
             const responseClone = response.clone();
             caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
@@ -125,12 +142,10 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // Try to return cached API response
           return caches.match(request).then((cached) => {
             if (cached) {
               return cached;
             }
-            // Return offline error
             return new Response(
               JSON.stringify({ 
                 error: 'You are offline',
@@ -146,22 +161,47 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+
+  // Navigation requests (HTML pages) - Network first, cache fallback
+  if (isNavigationRequest(request)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request).then((cached) => {
+            if (cached) {
+              return cached;
+            }
+            return caches.match('/offline.html');
+          });
+        })
+    );
+    return;
+  }
   
-  // Handle static assets - Cache first, network fallback
+  // Static assets - Cache first, network fallback
   event.respondWith(
     caches.match(request)
       .then((cached) => {
         if (cached) {
-          // Return cached version but also fetch updated version
+          // Return cached version but also fetch updated version in background
           fetch(request)
             .then((response) => {
               if (response.status === 200) {
-                caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+                caches.open(STATIC_CACHE_NAME).then((cache) => {
                   cache.put(request, response);
                 });
               }
             })
-            .catch(() => {}); // Silent fail for background update
+            .catch(() => {});
           
           return cached;
         }
@@ -169,10 +209,10 @@ self.addEventListener('fetch', (event) => {
         // Not in cache, fetch from network
         return fetch(request)
           .then((response) => {
-            // Cache successful responses
             if (response.status === 200) {
               const responseClone = response.clone();
-              caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+              const cacheName = isStaticAsset(url.href) ? STATIC_CACHE_NAME : DYNAMIC_CACHE_NAME;
+              caches.open(cacheName).then((cache) => {
                 cache.put(request, responseClone);
               });
             }
@@ -180,10 +220,6 @@ self.addEventListener('fetch', (event) => {
           })
           .catch((error) => {
             console.log('[SW] Fetch failed:', error);
-            // Return offline page for navigation requests
-            if (request.mode === 'navigate') {
-              return caches.match('/offline.html');
-            }
             throw error;
           });
       })
@@ -232,7 +268,6 @@ async function syncAttendanceData() {
           await db.delete('attendance-queue', record.id);
           console.log('[SW] Attendance synced:', record.id);
           
-          // Notify the client
           await notifyClients({
             type: 'SYNC_SUCCESS',
             message: 'Attendance synced successfully',
@@ -243,7 +278,6 @@ async function syncAttendanceData() {
         }
       } catch (error) {
         console.error('[SW] Failed to sync attendance:', error);
-        // Will retry on next sync
       }
     }
   } catch (error) {
@@ -344,20 +378,17 @@ self.addEventListener('notificationclick', (event) => {
     return;
   }
   
-  // Open or focus the app
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
         const url = notificationData?.url || '/dashboard';
         
-        // Check if there's already a window open
         for (const client of clientList) {
           if (client.url.includes(self.location.origin) && 'focus' in client) {
             return client.navigate(url).then(() => client.focus());
           }
         }
         
-        // Open new window
         if (self.clients.openWindow) {
           return self.clients.openWindow(url);
         }
@@ -427,6 +458,5 @@ async function syncAllData() {
 }
 
 async function syncMessagesData() {
-  // Similar implementation for messages
   console.log('[SW] Syncing messages data...');
 }

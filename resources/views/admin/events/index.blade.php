@@ -44,11 +44,11 @@
                 <div class="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-check-circle text-emerald-600 text-4xl"></i>
                 </div>
-                <h3 class="text-xl font-bold text-emerald-900">Deleted!</h3>
-                <p class="text-sm text-emerald-600 mt-1">Event removed successfully</p>
+                <h3 class="text-xl font-bold text-emerald-900" id="actionSuccessTitle">Success!</h3>
+                <p class="text-sm text-emerald-600 mt-1" id="actionSuccessSubtitle">Operation completed successfully</p>
             </div>
             <div class="p-6 text-center">
-                <p class="text-slate-600 mb-4" id="actionSuccessMessage">The event has been permanently deleted.</p>
+                <p class="text-slate-600 mb-4" id="actionSuccessMessage">The operation was completed successfully.</p>
                 <button onclick="closeActionModal()" class="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors">
                     Continue
                 </button>
@@ -330,6 +330,23 @@
             successDiv.classList.remove('hidden');
             if (message) {
                 document.getElementById('actionSuccessMessage').textContent = message;
+                // Dynamic title/subtitle based on message content
+                const msgLower = message.toLowerCase();
+                const titleEl = document.getElementById('actionSuccessTitle');
+                const subtitleEl = document.getElementById('actionSuccessSubtitle');
+                if (msgLower.includes('delet')) {
+                    titleEl.textContent = 'Deleted!';
+                    subtitleEl.textContent = 'Event removed successfully';
+                } else if (msgLower.includes('creat')) {
+                    titleEl.textContent = 'Created!';
+                    subtitleEl.textContent = 'Event added successfully';
+                } else if (msgLower.includes('updat')) {
+                    titleEl.textContent = 'Updated!';
+                    subtitleEl.textContent = 'Changes saved successfully';
+                } else {
+                    titleEl.textContent = 'Success!';
+                    subtitleEl.textContent = 'Operation completed successfully';
+                }
             }
             playSuccessSound();
             // Auto-close after 1.5 seconds

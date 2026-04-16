@@ -504,7 +504,7 @@ Route::middleware(['auth'])->prefix('notifications')->name('notifications.')->gr
     Route::get('/', [App\Http\Controllers\NotificationController::class, 'index'])->name('index');
     Route::get('/recent', [App\Http\Controllers\NotificationController::class, 'recent'])->name('recent');
     Route::get('/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('unread-count');
-    Route::post('/{notification}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
+    Route::post('/{notificationId}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
     Route::post('/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
     Route::delete('/{notification}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('destroy');
     Route::get('/settings', [App\Http\Controllers\NotificationController::class, 'getSettings'])->name('settings');

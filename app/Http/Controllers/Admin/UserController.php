@@ -122,7 +122,21 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        DB::beginTransaction();
+        try {
+            // Remove user references from section finalizations to avoid FK constraint errors
+            \App\Models\SectionFinalization::where('unlocked_by', $user->id)
+                ->update(['unlocked_by' => null]);
+            \App\Models\SectionFinalization::where('finalized_by', $user->id)
+                ->update(['finalized_by' => null]);
+
+            $user->delete();
+            DB::commit();
+
+            return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->route('admin.users.index')->with('error', 'Failed to delete user: ' . $e->getMessage());
+        }
     }
 }

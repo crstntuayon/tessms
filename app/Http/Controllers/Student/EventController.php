@@ -14,13 +14,8 @@ class EventController extends Controller
      */
     public function index()
     {
-        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
-        
-        $events = Event::when($activeSchoolYear, function($q) use ($activeSchoolYear) {
-                return $q->where('school_year_id', $activeSchoolYear->id);
-            })
-            ->orderBy('date', 'asc')
-            ->get();
+        // Show all school events regardless of school year
+        $events = Event::orderBy('date', 'asc')->get();
             
         return view('student.events.index', compact('events'));
     }

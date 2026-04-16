@@ -102,6 +102,43 @@ class AnnouncementController extends Controller
         // Broadcast to all users
         broadcast(new AnnouncementPosted($announcement))->toOthers();
 
+        // Send database notifications to targeted users
+        try {
+            $userIds = [];
+
+            if (in_array($announcement->scope, ['all', 'school'])) {
+                $userIds = \App\Models\User::whereHas('role', function($q) {
+                    $q->whereRaw('LOWER(name) IN (?, ?)', ['student', 'teacher']);
+                })->pluck('id')->toArray();
+            } elseif ($announcement->scope === 'grade' && $announcement->grade_level_id) {
+                $userIds = \App\Models\User::whereHas('student', function($q) use ($announcement) {
+                    $q->where('grade_level_id', $announcement->grade_level_id);
+                })->pluck('id')->toArray();
+            } elseif ($announcement->scope === 'section' && $announcement->target_id) {
+                $userIds = \App\Models\User::whereHas('student', function($q) use ($announcement) {
+                    $q->where('section_id', $announcement->target_id);
+                })->pluck('id')->toArray();
+            }
+
+            // Exclude the creator from receiving their own notification
+            $userIds = array_diff($userIds, [Auth::id()]);
+
+            if (!empty($userIds)) {
+                \App\Services\NotificationService::notifyMany(
+                    $userIds,
+                    'announcement',
+                    "New Announcement: {$announcement->title}",
+                    strip_tags($announcement->message),
+                    [
+                        'url' => route('student.announcements.show', $announcement),
+                        'announcement_id' => $announcement->id,
+                    ]
+                );
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send announcement notifications: ' . $e->getMessage());
+        }
+
         return redirect()->route('admin.announcements.index')
             ->with('success', 'Announcement posted successfully!');
     }

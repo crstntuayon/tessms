@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\SchoolYear;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
@@ -44,8 +45,40 @@ class EventController extends Controller
             ->first();
 
         $validated['school_year_id'] = $schoolYear?->id;
+        $validated['created_by'] = Auth::id();
 
-        Event::create($validated);
+        $event = Event::create($validated);
+
+        // Notify all teachers and students about the new event
+        try {
+            $teacherUserIds = \App\Models\User::whereHas('role', function($q) {
+                $q->whereRaw('LOWER(name) = ?', ['teacher']);
+            })->pluck('id')->toArray();
+
+            $studentUserIds = \App\Models\User::whereHas('role', function($q) {
+                $q->whereRaw('LOWER(name) = ?', ['student']);
+            })->pluck('id')->toArray();
+
+            $allUserIds = array_merge($teacherUserIds, $studentUserIds);
+            // Exclude the creator from receiving their own notification
+            $allUserIds = array_diff($allUserIds, [Auth::id()]);
+
+            if (!empty($allUserIds)) {
+                \App\Services\NotificationService::notifyMany(
+                    $allUserIds,
+                    'event',
+                    "New School Event: {$event->title}",
+                    "A new school event has been scheduled on {$event->date->format('F j, Y')}. " . ($event->description ? strip_tags($event->description) : ''),
+                    [
+                        'url' => route('student.events.show', $event),
+                        'event_id' => $event->id,
+                        'event_date' => $event->date->toDateString(),
+                    ]
+                );
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send event notifications: ' . $e->getMessage());
+        }
 
         return redirect()->route('admin.events.index')
             ->with('success', 'Event created successfully.');
