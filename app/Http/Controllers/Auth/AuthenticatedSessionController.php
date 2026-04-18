@@ -15,7 +15,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view (for Admin and Teachers).
      */
-    public function create(Request $request): View
+    public function create(Request $request): \Illuminate\Http\Response
     {
         // Ensure session is started with a valid CSRF token
         if (!$request->session()->isStarted()) {
@@ -32,20 +32,28 @@ class AuthenticatedSessionController extends Controller
         })->get();
         $gradeLevels = GradeLevel::all();
 
-        return view('auth.login', compact('announcements', 'teachers', 'students', 'sections', 'gradeLevels'));
+        $response = response()->view('auth.login', compact('announcements', 'teachers', 'students', 'sections', 'gradeLevels'));
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+        return $response;
     }
     
     /**
      * Display the student login view.
      */
-    public function createStudent(Request $request): View
+    public function createStudent(Request $request): \Illuminate\Http\Response
     {
         // Ensure session is started with a valid CSRF token
         if (!$request->session()->isStarted()) {
             $request->session()->start();
         }
         
-        return view('auth.student-login');
+        $response = response()->view('auth.student-login');
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+        return $response;
     }
 
     /**

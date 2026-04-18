@@ -53,7 +53,7 @@
                         <p class="text-sm font-semibold text-amber-800">For New Pupils & Transferees</p>
                         <p class="text-xs text-amber-700 mt-1">
                             If you are a new pupil (Kindergarten) or transferee, please 
-                            <a href="{{ route('login') }}?mode=register" class="underline font-semibold hover:text-amber-900">register here</a> instead.
+                            <a href="{{ route('register') }}" class="underline font-semibold hover:text-amber-900">register here</a> instead.
                         </p>
                     </div>
                 </div>

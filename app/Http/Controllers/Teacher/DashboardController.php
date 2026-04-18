@@ -33,8 +33,9 @@ class DashboardController extends Controller
         $teacher = Teacher::firstOrCreate(
             ['user_id' => $user->id],
             [
-                'first_name' => explode(' ', $user->name)[0] ?? 'Teacher',
-                'last_name'  => explode(' ', $user->name)[1] ?? '',
+                'first_name' => $user->first_name ?? 'Teacher',
+                'last_name'  => $user->last_name ?? '',
+                'email'      => $user->email,
             ]
         );
 

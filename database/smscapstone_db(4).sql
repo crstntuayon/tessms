@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Apr 16, 2026 at 04:25 PM
+-- Generation Time: Apr 18, 2026 at 05:48 PM
 -- Server version: 8.0.45
 -- PHP Version: 8.2.30
 
@@ -77,22 +77,22 @@ CREATE TABLE `activity_logs` (
 --
 
 INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `entity_type`, `entity_id`, `description`, `old_values`, `new_values`, `ip_address`, `user_agent`, `created_at`) VALUES
-(1, 1, 'disabled', 'Setting', NULL, 'Enrollment submissions disabled', NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-11 10:25:59'),
-(2, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-14 23:59:40'),
-(3, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:02:39'),
-(4, 1, 'disabled', 'Setting', NULL, 'Enrollment submissions disabled', NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:04:28'),
-(5, 1, 'disabled', 'Setting', NULL, 'Enrollment submissions disabled', NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:04:35'),
-(6, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"school_name\", \"school_code\", \"deped_school_id\", \"school_address\", \"school_email\", \"school_phone\", \"school_division\", \"school_region\", \"school_district\", \"school_head\", \"school_logo\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:41:12'),
-(7, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"school_name\", \"school_code\", \"deped_school_id\", \"school_address\", \"school_email\", \"school_phone\", \"school_division\", \"school_region\", \"school_district\", \"school_head\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:48:59'),
-(8, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:52:39'),
-(9, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:52:51'),
-(10, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:53:45'),
-(11, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"school_name\", \"school_code\", \"deped_school_id\", \"school_address\", \"school_email\", \"school_phone\", \"school_division\", \"school_region\", \"school_district\", \"school_head\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:02:30'),
-(12, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:02:40'),
-(13, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:03:26'),
-(14, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:07:33'),
-(15, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:08:21'),
-(16, 1, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:08:36');
+(1, NULL, 'disabled', 'Setting', NULL, 'Enrollment submissions disabled', NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-11 10:25:59'),
+(2, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-14 23:59:40'),
+(3, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:02:39'),
+(4, NULL, 'disabled', 'Setting', NULL, 'Enrollment submissions disabled', NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:04:28'),
+(5, NULL, 'disabled', 'Setting', NULL, 'Enrollment submissions disabled', NULL, NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:04:35'),
+(6, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"school_name\", \"school_code\", \"deped_school_id\", \"school_address\", \"school_email\", \"school_phone\", \"school_division\", \"school_region\", \"school_district\", \"school_head\", \"school_logo\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:41:12'),
+(7, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"school_name\", \"school_code\", \"deped_school_id\", \"school_address\", \"school_email\", \"school_phone\", \"school_division\", \"school_region\", \"school_district\", \"school_head\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:48:59'),
+(8, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:52:39'),
+(9, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:52:51'),
+(10, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"dark_mode\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 00:53:45'),
+(11, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"school_name\", \"school_code\", \"deped_school_id\", \"school_address\", \"school_email\", \"school_phone\", \"school_division\", \"school_region\", \"school_district\", \"school_head\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:02:30'),
+(12, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:02:40'),
+(13, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:03:26'),
+(14, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:07:33'),
+(15, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:08:21'),
+(16, NULL, 'updated', 'Setting', NULL, 'Settings updated by admin', NULL, '{\"changed_keys\": [\"primary_color\", \"secondary_color\", \"accent_color\", \"compact_mode\", \"dark_mode\", \"animations\"]}', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', '2026-04-15 01:08:36');
 
 -- --------------------------------------------------------
 
@@ -193,13 +193,6 @@ CREATE TABLE `attendances` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `attendances`
---
-
-INSERT INTO `attendances` (`id`, `section_id`, `student_id`, `school_year_id`, `date`, `status`, `teacher_id`, `remarks`, `latitude`, `longitude`, `accuracy`, `location_verified`, `distance_from_school`, `location_status`, `created_at`, `updated_at`) VALUES
-(143, 7, 71, 1, '2025-06-12', 'present', 15, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-04-12 07:14:31', '2026-04-12 07:14:31');
 
 -- --------------------------------------------------------
 
@@ -329,9 +322,11 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('tugawees-sms-cache-94d92f976fd06fd3e8cf53ec4e03d646', 'i:2;', 1776356643),
-('tugawees-sms-cache-94d92f976fd06fd3e8cf53ec4e03d646:timer', 'i:1776356643;', 1776356643),
-('tugawees-sms-cache-app_settings', 'a:59:{s:11:\"system_name\";s:24:\"Tugawe Elementary School\";s:11:\"school_name\";s:24:\"Tugawe Elementary School\";s:15:\"deped_school_id\";s:6:\"120231\";s:15:\"school_division\";s:27:\"Division of Negros Oriental\";s:13:\"school_region\";s:26:\"Negros Island Region (NIR)\";s:11:\"school_head\";s:26:\"MAE HARRIET M. DELA  PEÑA\";s:21:\"active_school_year_id\";s:0:\"\";s:13:\"passing_grade\";i:75;s:15:\"school_district\";s:14:\"Dauin District\";s:18:\"enrollment_enabled\";b:0;s:8:\"timezone\";s:11:\"Asia/Manila\";s:11:\"date_format\";s:6:\"F d, Y\";s:16:\"default_language\";s:2:\"en\";s:16:\"maintenance_mode\";b:0;s:17:\"user_registration\";b:1;s:18:\"email_verification\";b:1;s:11:\"school_code\";s:8:\"TES-2026\";s:14:\"school_address\";s:48:\"Tugawe, Dauin, Negros Oriental, Philippines 6217\";s:12:\"school_email\";s:19:\"teswecare@gmail.com\";s:12:\"school_phone\";s:11:\"09934469637\";s:11:\"school_logo\";s:53:\"settings/xuZVe6b9Z2NmzqycdwcjoNnOv8dbLX9JXdgKUpWS.png\";s:19:\"current_school_year\";s:9:\"2024-2025\";s:17:\"school_year_start\";s:0:\"\";s:15:\"school_year_end\";s:0:\"\";s:14:\"grading_system\";s:9:\"quarterly\";s:21:\"enrollment_start_date\";s:0:\"\";s:19:\"enrollment_end_date\";s:0:\"\";s:21:\"allow_late_enrollment\";b:0;s:18:\"notify_new_student\";b:1;s:17:\"notify_attendance\";b:1;s:13:\"notify_grades\";b:1;s:20:\"notify_announcements\";b:1;s:11:\"sms_enabled\";b:0;s:12:\"sms_provider\";s:0:\"\";s:11:\"mail_driver\";s:4:\"smtp\";s:9:\"mail_host\";s:0:\"\";s:9:\"mail_port\";i:587;s:13:\"mail_username\";s:0:\"\";s:13:\"mail_password\";s:0:\"\";s:15:\"mail_encryption\";s:3:\"tls\";s:17:\"mail_from_address\";s:0:\"\";s:14:\"mail_from_name\";s:24:\"Tugawe Elementary School\";s:19:\"min_password_length\";i:8;s:15:\"password_expiry\";i:90;s:16:\"strong_passwords\";b:1;s:11:\"require_2fa\";b:0;s:15:\"session_timeout\";i:30;s:18:\"max_login_attempts\";i:5;s:19:\"login_notifications\";b:1;s:13:\"primary_color\";s:7:\"#6366f1\";s:15:\"secondary_color\";s:7:\"#10b981\";s:12:\"accent_color\";s:7:\"#f59e0b\";s:12:\"compact_mode\";b:1;s:9:\"dark_mode\";b:0;s:10:\"animations\";b:1;s:11:\"auto_backup\";b:0;s:11:\"last_backup\";s:5:\"Never\";s:11:\"api_enabled\";b:0;s:7:\"api_key\";s:0:\"\";}', 1776359618);
+('tugawees-sms-cache-94d92f976fd06fd3e8cf53ec4e03d646', 'i:2;', 1776534367),
+('tugawees-sms-cache-94d92f976fd06fd3e8cf53ec4e03d646:timer', 'i:1776534367;', 1776534367),
+('tugawees-sms-cache-app_settings', 'a:59:{s:11:\"system_name\";s:24:\"Tugawe Elementary School\";s:11:\"school_name\";s:24:\"Tugawe Elementary School\";s:15:\"deped_school_id\";s:6:\"120231\";s:15:\"school_division\";s:27:\"Division of Negros Oriental\";s:13:\"school_region\";s:26:\"Negros Island Region (NIR)\";s:11:\"school_head\";s:26:\"MAE HARRIET M. DELA  PEÑA\";s:21:\"active_school_year_id\";s:0:\"\";s:13:\"passing_grade\";i:75;s:15:\"school_district\";s:14:\"Dauin District\";s:18:\"enrollment_enabled\";b:0;s:8:\"timezone\";s:11:\"Asia/Manila\";s:11:\"date_format\";s:6:\"F d, Y\";s:16:\"default_language\";s:2:\"en\";s:16:\"maintenance_mode\";b:0;s:17:\"user_registration\";b:1;s:18:\"email_verification\";b:1;s:11:\"school_code\";s:8:\"TES-2026\";s:14:\"school_address\";s:48:\"Tugawe, Dauin, Negros Oriental, Philippines 6217\";s:12:\"school_email\";s:19:\"teswecare@gmail.com\";s:12:\"school_phone\";s:11:\"09934469637\";s:11:\"school_logo\";s:53:\"settings/xuZVe6b9Z2NmzqycdwcjoNnOv8dbLX9JXdgKUpWS.png\";s:19:\"current_school_year\";s:9:\"2024-2025\";s:17:\"school_year_start\";s:0:\"\";s:15:\"school_year_end\";s:0:\"\";s:14:\"grading_system\";s:9:\"quarterly\";s:21:\"enrollment_start_date\";s:0:\"\";s:19:\"enrollment_end_date\";s:0:\"\";s:21:\"allow_late_enrollment\";b:0;s:18:\"notify_new_student\";b:1;s:17:\"notify_attendance\";b:1;s:13:\"notify_grades\";b:1;s:20:\"notify_announcements\";b:1;s:11:\"sms_enabled\";b:0;s:12:\"sms_provider\";s:0:\"\";s:11:\"mail_driver\";s:4:\"smtp\";s:9:\"mail_host\";s:0:\"\";s:9:\"mail_port\";i:587;s:13:\"mail_username\";s:0:\"\";s:13:\"mail_password\";s:0:\"\";s:15:\"mail_encryption\";s:3:\"tls\";s:17:\"mail_from_address\";s:0:\"\";s:14:\"mail_from_name\";s:24:\"Tugawe Elementary School\";s:19:\"min_password_length\";i:8;s:15:\"password_expiry\";i:90;s:16:\"strong_passwords\";b:1;s:11:\"require_2fa\";b:0;s:15:\"session_timeout\";i:30;s:18:\"max_login_attempts\";i:5;s:19:\"login_notifications\";b:1;s:13:\"primary_color\";s:7:\"#6366f1\";s:15:\"secondary_color\";s:7:\"#10b981\";s:12:\"accent_color\";s:7:\"#f59e0b\";s:12:\"compact_mode\";b:1;s:9:\"dark_mode\";b:0;s:10:\"animations\";b:1;s:11:\"auto_backup\";b:0;s:11:\"last_backup\";s:5:\"Never\";s:11:\"api_enabled\";b:0;s:7:\"api_key\";s:0:\"\";}', 1776535366),
+('tugawees-sms-cache-user-online-103', 'b:1;', 1776534633),
+('tugawees-sms-cache-user-online-116', 'b:1;', 1776534463);
 
 -- --------------------------------------------------------
 
@@ -366,47 +361,6 @@ CREATE TABLE `core_values` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `core_values`
---
-
-INSERT INTO `core_values` (`id`, `student_id`, `core_value`, `statement_key`, `behavior_statement`, `rating`, `remarks`, `quarter`, `school_year_id`, `recorded_by`, `created_at`, `updated_at`) VALUES
-(36, 70, 'Maka-Diyos', 'statement1', '1.1 Expresses one\'s spiritual beliefs while respecting the spiritual beliefs of others', 'SO', NULL, 4, 1, 103, '2026-04-11 22:47:20', '2026-04-11 22:47:20'),
-(37, 70, 'Maka-Diyos', 'statement2', '1.2 Shows adherence to ethical principles by upholding truth', 'AO', NULL, 4, 1, 103, '2026-04-11 22:47:20', '2026-04-11 22:47:20'),
-(38, 70, 'Makatao', 'statement1', '2.1 Is sensitive to individual, social, and cultural differences', 'SO', NULL, 4, 1, 103, '2026-04-11 22:47:20', '2026-04-11 22:47:20'),
-(39, 70, 'Makatao', 'statement2', '2.2 Demonstrates contributions toward solidarity', 'SO', NULL, 4, 1, 103, '2026-04-11 22:47:20', '2026-04-11 22:47:20'),
-(40, 70, 'Maka-Kalikasan', 'statement1', '3.1 Cares for the environment and utilizes resources wisely, judiciously, and economically', 'AO', NULL, 4, 1, 103, '2026-04-11 22:47:20', '2026-04-11 22:47:20'),
-(41, 70, 'Maka-bansa', 'statement1', '4.1 Demonstrates pride in being a Filipino; exercises the rights and responsibilities of a Filipino citizen', 'SO', NULL, 4, 1, 103, '2026-04-11 22:47:20', '2026-04-11 22:47:20'),
-(42, 70, 'Maka-bansa', 'statement2', '4.2 Demonstrates appropriate behavior in carrying out activities in the school, community, and country', 'AO', NULL, 4, 1, 103, '2026-04-11 22:47:20', '2026-04-11 22:47:20'),
-(43, 70, 'Maka-Diyos', 'statement1', '1.1 Expresses one\'s spiritual beliefs while respecting the spiritual beliefs of others', 'AO', NULL, 3, 1, 103, '2026-04-11 22:47:43', '2026-04-11 22:47:43'),
-(44, 70, 'Maka-Diyos', 'statement2', '1.2 Shows adherence to ethical principles by upholding truth', 'SO', NULL, 3, 1, 103, '2026-04-11 22:47:43', '2026-04-11 22:47:43'),
-(45, 70, 'Makatao', 'statement1', '2.1 Is sensitive to individual, social, and cultural differences', 'SO', NULL, 3, 1, 103, '2026-04-11 22:47:43', '2026-04-11 22:47:43'),
-(46, 70, 'Makatao', 'statement2', '2.2 Demonstrates contributions toward solidarity', 'AO', NULL, 3, 1, 103, '2026-04-11 22:47:43', '2026-04-11 22:47:43'),
-(47, 70, 'Maka-Kalikasan', 'statement1', '3.1 Cares for the environment and utilizes resources wisely, judiciously, and economically', 'AO', NULL, 3, 1, 103, '2026-04-11 22:47:43', '2026-04-11 22:47:43'),
-(48, 70, 'Maka-bansa', 'statement1', '4.1 Demonstrates pride in being a Filipino; exercises the rights and responsibilities of a Filipino citizen', 'AO', NULL, 3, 1, 103, '2026-04-11 22:47:43', '2026-04-11 22:47:43'),
-(49, 70, 'Maka-bansa', 'statement2', '4.2 Demonstrates appropriate behavior in carrying out activities in the school, community, and country', 'AO', NULL, 3, 1, 103, '2026-04-11 22:47:43', '2026-04-11 22:47:43'),
-(50, 70, 'Maka-Diyos', 'statement1', '1.1 Expresses one\'s spiritual beliefs while respecting the spiritual beliefs of others', 'SO', NULL, 2, 1, 103, '2026-04-11 22:48:02', '2026-04-11 22:48:02'),
-(51, 70, 'Maka-Diyos', 'statement2', '1.2 Shows adherence to ethical principles by upholding truth', 'AO', NULL, 2, 1, 103, '2026-04-11 22:48:02', '2026-04-11 22:48:02'),
-(52, 70, 'Makatao', 'statement1', '2.1 Is sensitive to individual, social, and cultural differences', 'SO', NULL, 2, 1, 103, '2026-04-11 22:48:02', '2026-04-11 22:48:02'),
-(53, 70, 'Makatao', 'statement2', '2.2 Demonstrates contributions toward solidarity', 'SO', NULL, 2, 1, 103, '2026-04-11 22:48:02', '2026-04-11 22:48:02'),
-(54, 70, 'Maka-Kalikasan', 'statement1', '3.1 Cares for the environment and utilizes resources wisely, judiciously, and economically', 'SO', NULL, 2, 1, 103, '2026-04-11 22:48:02', '2026-04-11 22:48:02'),
-(55, 70, 'Maka-bansa', 'statement1', '4.1 Demonstrates pride in being a Filipino; exercises the rights and responsibilities of a Filipino citizen', 'AO', NULL, 2, 1, 103, '2026-04-11 22:48:02', '2026-04-11 22:48:02'),
-(56, 70, 'Maka-bansa', 'statement2', '4.2 Demonstrates appropriate behavior in carrying out activities in the school, community, and country', 'AO', NULL, 2, 1, 103, '2026-04-11 22:48:02', '2026-04-11 22:48:02'),
-(57, 70, 'Maka-Diyos', 'statement1', '1.1 Expresses one\'s spiritual beliefs while respecting the spiritual beliefs of others', 'AO', NULL, 1, 1, 103, '2026-04-11 22:48:22', '2026-04-11 22:48:22'),
-(58, 70, 'Maka-Diyos', 'statement2', '1.2 Shows adherence to ethical principles by upholding truth', 'AO', NULL, 1, 1, 103, '2026-04-11 22:48:22', '2026-04-11 22:48:22'),
-(59, 70, 'Makatao', 'statement1', '2.1 Is sensitive to individual, social, and cultural differences', 'SO', NULL, 1, 1, 103, '2026-04-11 22:48:22', '2026-04-11 22:48:22'),
-(60, 70, 'Makatao', 'statement2', '2.2 Demonstrates contributions toward solidarity', 'AO', NULL, 1, 1, 103, '2026-04-11 22:48:22', '2026-04-11 22:48:22'),
-(61, 70, 'Maka-Kalikasan', 'statement1', '3.1 Cares for the environment and utilizes resources wisely, judiciously, and economically', 'SO', NULL, 1, 1, 103, '2026-04-11 22:48:22', '2026-04-11 22:48:22'),
-(62, 70, 'Maka-bansa', 'statement1', '4.1 Demonstrates pride in being a Filipino; exercises the rights and responsibilities of a Filipino citizen', 'SO', NULL, 1, 1, 103, '2026-04-11 22:48:22', '2026-04-11 22:48:22'),
-(63, 70, 'Maka-bansa', 'statement2', '4.2 Demonstrates appropriate behavior in carrying out activities in the school, community, and country', 'AO', NULL, 1, 1, 103, '2026-04-11 22:48:22', '2026-04-11 22:48:22'),
-(64, 71, 'Maka-Diyos', 'statement1', '1.1 Expresses one\'s spiritual beliefs while respecting the spiritual beliefs of others', 'SO', NULL, 4, 1, 107, '2026-04-12 06:25:17', '2026-04-12 06:25:17'),
-(65, 71, 'Maka-Diyos', 'statement2', '1.2 Shows adherence to ethical principles by upholding truth', 'AO', NULL, 4, 1, 107, '2026-04-12 06:25:17', '2026-04-12 06:25:17'),
-(66, 71, 'Makatao', 'statement1', '2.1 Is sensitive to individual, social, and cultural differences', 'AO', NULL, 4, 1, 107, '2026-04-12 06:25:17', '2026-04-12 06:25:17'),
-(67, 71, 'Makatao', 'statement2', '2.2 Demonstrates contributions toward solidarity', 'SO', NULL, 4, 1, 107, '2026-04-12 06:25:17', '2026-04-12 06:25:17'),
-(68, 71, 'Maka-Kalikasan', 'statement1', '3.1 Cares for the environment and utilizes resources wisely, judiciously, and economically', 'AO', NULL, 4, 1, 107, '2026-04-12 06:25:17', '2026-04-12 06:25:17'),
-(69, 71, 'Maka-bansa', 'statement1', '4.1 Demonstrates pride in being a Filipino; exercises the rights and responsibilities of a Filipino citizen', 'AO', NULL, 4, 1, 107, '2026-04-12 06:25:17', '2026-04-12 06:25:17'),
-(70, 71, 'Maka-bansa', 'statement2', '4.2 Demonstrates appropriate behavior in carrying out activities in the school, community, and country', 'AO', NULL, 4, 1, 107, '2026-04-12 06:25:17', '2026-04-12 06:25:17');
-
 -- --------------------------------------------------------
 
 --
@@ -438,9 +392,9 @@ CREATE TABLE `enrollments` (
 --
 
 INSERT INTO `enrollments` (`id`, `school_year_id`, `grade_level_id`, `student_id`, `section_id`, `type`, `status`, `previous_school`, `school_name`, `school_id`, `school_district`, `school_division`, `school_region`, `enrollment_date`, `created_at`, `updated_at`, `remarks`) VALUES
-(60, 1, 2, 70, 1, 'continuing', 'enrolled', NULL, 'Tugawe Elementary School', '120231', 'Dauin District', 'Division of Negros Oriental', 'NIR - Negros Island Region', '2026-04-11', '2026-04-10 15:29:16', '2026-04-10 16:17:13', NULL),
-(61, 1, 1, 71, 7, 'new', 'enrolled', NULL, 'Tugawe Elementary School', '120231', 'Dauin District', 'Division of Negros Oriental', 'NIR - Negros Island Region', '2026-04-12', '2026-04-12 03:47:55', '2026-04-12 03:48:46', NULL),
-(63, 1, 3, 73, 3, 'continuing', 'enrolled', NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-14', '2026-04-14 05:40:50', '2026-04-14 05:40:50', NULL);
+(64, 1, 2, 74, 1, 'continuing', 'enrolled', NULL, 'Tugawe Elementary School', '120231', 'Dauin District', 'Division of Negros Oriental', 'Negros Island Region (NIR)', '2026-04-18', '2026-04-18 05:40:02', '2026-04-18 07:53:13', NULL),
+(65, 1, 2, 75, 1, 'continuing', 'enrolled', NULL, 'Tugawe Elementary School', '120231', 'Dauin District', 'Division of Negros Oriental', 'Negros Island Region (NIR)', '2026-04-18', '2026-04-18 07:00:07', '2026-04-18 07:53:00', NULL),
+(66, 1, 2, 76, 1, 'transferee', 'enrolled', 'Cantil-e Elementary School', 'Tugawe Elementary School', '120231', 'Dauin District', 'Division of Negros Oriental', 'Negros Island Region (NIR)', '2026-04-18', '2026-04-18 07:51:14', '2026-04-18 07:52:10', 'TI');
 
 -- --------------------------------------------------------
 
@@ -554,7 +508,7 @@ CREATE TABLE `events` (
 --
 
 INSERT INTO `events` (`id`, `title`, `description`, `date`, `created_at`, `updated_at`, `school_year_id`, `created_by`) VALUES
-(10, 'foundation day', NULL, '2026-07-07', '2026-04-16 07:45:54', '2026-04-16 07:45:54', 2, 1);
+(10, 'foundation day', NULL, '2026-07-07', '2026-04-16 07:45:54', '2026-04-16 07:45:54', 2, NULL);
 
 -- --------------------------------------------------------
 
@@ -600,91 +554,6 @@ CREATE TABLE `grades` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `grades`
---
-
-INSERT INTO `grades` (`id`, `section_id`, `student_id`, `school_year_id`, `subject_id`, `quarter`, `component_type`, `scores`, `titles`, `total_items`, `total_score`, `percentage_score`, `ww_weighted`, `pt_weighted`, `qe_weighted`, `initial_grade`, `final_grade`, `remarks`, `created_at`, `updated_at`) VALUES
-(105, 1, 70, 1, 1, 1, 'written_work', '[\"9\", \"15\", \"28\"]', '[\"Exercise 1\", \"Assignment 1\", \"Long Quiz 1\"]', '[\"10\", \"20\", \"40\"]', 52, 74.29, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:35:32', '2026-04-11 22:57:15'),
-(106, 1, 70, 1, 1, 1, 'performance_task', '[\"38\", \"87\"]', '[\"Reporting Chapter 1\", \"Portfolio\"]', '[\"50\", \"100\"]', 125, 83.33, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:35:32', '2026-04-11 22:57:15'),
-(107, 1, 70, 1, 1, 1, 'quarterly_exam', NULL, NULL, '40', 38, 95.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:35:32', '2026-04-11 22:57:15'),
-(108, 1, 70, 1, 1, 1, 'final_grade', NULL, NULL, NULL, NULL, NULL, 7.43, 50.00, 28.50, 85.93, 91, 'Passed', '2026-04-11 21:35:32', '2026-04-11 22:57:15'),
-(109, 1, 70, 1, 1, 2, 'written_work', '[\"18\", \"15\", \"35\"]', '[\"Exercise 1\", \"Exercise 2\", \"Long Exam\"]', '[\"20\", \"20\", \"40\"]', 68, 85.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:42:34', '2026-04-11 21:42:34'),
-(110, 1, 70, 1, 1, 2, 'performance_task', '[\"90\"]', '[\"Portfolio\"]', '[\"100\"]', 90, 90.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:42:34', '2026-04-11 21:42:34'),
-(111, 1, 70, 1, 1, 2, 'quarterly_exam', NULL, NULL, '40', 28, 70.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:42:34', '2026-04-11 21:42:34'),
-(112, 1, 70, 1, 1, 2, 'final_grade', NULL, NULL, NULL, NULL, NULL, 8.50, 54.00, 21.00, 83.50, 89, 'Passed', '2026-04-11 21:42:34', '2026-04-11 21:42:34'),
-(113, 1, 70, 1, 1, 3, 'written_work', '[\"16\", \"19\", \"42\"]', '[\"Assignment 1\", \"Assignment 2\", \"Long Exam\"]', '[\"20\", \"25\", \"50\"]', 77, 81.05, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:55:43', '2026-04-11 21:55:43'),
-(114, 1, 70, 1, 1, 3, 'performance_task', '[\"75\", \"97\"]', '[\"Project 1\", \"Portfolio\"]', '[\"80\", \"100\"]', 172, 95.56, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:55:43', '2026-04-11 21:55:43'),
-(115, 1, 70, 1, 1, 3, 'quarterly_exam', NULL, NULL, '40', 30, 75.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:55:43', '2026-04-11 21:55:43'),
-(116, 1, 70, 1, 1, 3, 'final_grade', NULL, NULL, NULL, NULL, NULL, 8.11, 57.34, 22.50, 87.94, 92, 'Passed', '2026-04-11 21:55:43', '2026-04-11 21:55:43'),
-(117, 1, 70, 1, 1, 4, 'final_grade', NULL, NULL, NULL, NULL, NULL, 8.25, 52.80, 15.00, 76.05, 85, 'Passed', '2026-04-11 21:57:39', '2026-04-11 22:05:03'),
-(118, 1, 70, 1, 1, 4, 'written_work', '[\"22\", \"44\"]', '[\"Exercise 1\", \"Long uiz\", null]', '[\"30\", \"50\", \"100\"]', 66, 82.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:59:13', '2026-04-11 22:05:03'),
-(119, 1, 70, 1, 1, 4, 'performance_task', '[\"88\"]', '[\"Portfolio\", null]', '[\"100\", \"100\"]', 88, 88.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:59:13', '2026-04-11 22:05:03'),
-(120, 1, 70, 1, 1, 4, 'quarterly_exam', NULL, NULL, '40', 20, 50.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 21:59:13', '2026-04-11 22:05:03'),
-(121, 1, 70, 1, 2, 1, 'written_work', '[\"18\"]', '[\"Exercise 1\", \"Long Quiz\", null]', '[\"10\", \"30\", \"100\"]', 18, 60.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:08:58', '2026-04-11 22:56:19'),
-(122, 1, 70, 1, 2, 1, 'performance_task', '[\"87\"]', '[\"Final Project\", null]', '[\"100\", \"100\"]', 87, 87.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:08:58', '2026-04-11 22:56:19'),
-(123, 1, 70, 1, 2, 1, 'quarterly_exam', NULL, NULL, '40', 30, 75.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:08:58', '2026-04-11 22:56:19'),
-(124, 1, 70, 1, 2, 1, 'final_grade', NULL, NULL, NULL, NULL, NULL, 6.00, 52.20, 22.50, 80.70, 87, 'Passed', '2026-04-11 22:08:58', '2026-04-11 22:56:19'),
-(125, 1, 70, 1, 2, 2, 'written_work', '[\"20\"]', '[\"Long Quiz\"]', '[\"30\"]', 20, 66.67, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:10:15', '2026-04-11 22:10:15'),
-(126, 1, 70, 1, 2, 2, 'performance_task', '[\"25\", \"68\"]', '[\"Reporting Chapter 1\", \"Final Project\"]', '[\"30\", \"70\"]', 93, 93.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:10:15', '2026-04-11 22:10:15'),
-(127, 1, 70, 1, 2, 2, 'quarterly_exam', NULL, NULL, '40', 28, 70.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:10:15', '2026-04-11 22:10:15'),
-(128, 1, 70, 1, 2, 2, 'final_grade', NULL, NULL, NULL, NULL, NULL, 6.67, 55.80, 21.00, 83.47, 89, 'Passed', '2026-04-11 22:10:15', '2026-04-11 22:10:15'),
-(129, 1, 70, 1, 2, 3, 'written_work', '[\"39\"]', '[\"Long Quiz\"]', '[\"40\"]', 39, 97.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:11:42', '2026-04-11 22:11:42'),
-(130, 1, 70, 1, 2, 3, 'performance_task', '[\"20\", \"43\"]', '[\"Project 1\", \"Final Project\"]', '[\"30\", \"50\"]', 63, 78.75, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:11:42', '2026-04-11 22:11:42'),
-(131, 1, 70, 1, 2, 3, 'quarterly_exam', NULL, NULL, '40', 38, 95.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:11:42', '2026-04-11 22:11:42'),
-(132, 1, 70, 1, 2, 3, 'final_grade', NULL, NULL, NULL, NULL, NULL, 9.75, 47.25, 28.50, 85.50, 90, 'Passed', '2026-04-11 22:11:42', '2026-04-11 22:11:42'),
-(133, 1, 70, 1, 2, 4, 'performance_task', '[\"17\", \"88\"]', '[\"Reporting Chapter 1\", \"Final Project\"]', '[\"20\", \"100\"]', 105, 87.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:13:59', '2026-04-11 22:13:59'),
-(134, 1, 70, 1, 2, 4, 'quarterly_exam', NULL, NULL, '40', 36, 90.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:13:59', '2026-04-11 22:13:59'),
-(135, 1, 70, 1, 2, 4, 'final_grade', NULL, NULL, NULL, NULL, NULL, 0.00, 52.50, 27.00, 79.50, 87, 'Passed', '2026-04-11 22:13:59', '2026-04-11 22:13:59'),
-(136, 1, 70, 1, 3, 1, 'written_work', '[\"5\", \"28\"]', '[\"Exercise 1\", \"Long Quiz\"]', '[\"10\", \"30\"]', 33, 82.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:17:28', '2026-04-11 22:17:28'),
-(137, 1, 70, 1, 3, 1, 'performance_task', '[\"87\"]', '[\"Final Project\"]', '[\"100\"]', 87, 87.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:17:28', '2026-04-11 22:17:28'),
-(138, 1, 70, 1, 3, 1, 'quarterly_exam', NULL, NULL, '40', 19, 47.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:17:28', '2026-04-11 22:17:28'),
-(139, 1, 70, 1, 3, 1, 'final_grade', NULL, NULL, NULL, NULL, NULL, 33.00, 34.80, 9.50, 77.30, 85, 'Passed', '2026-04-11 22:17:28', '2026-04-11 22:17:28'),
-(140, 1, 70, 1, 3, 2, 'written_work', '[\"22\"]', '[\"Long Quiz\"]', '[\"30\"]', 22, 73.33, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:18:46', '2026-04-11 22:18:46'),
-(141, 1, 70, 1, 3, 2, 'performance_task', '[\"25\", \"28\"]', '[\"Reporting Chapter 1\", \"Portfolio\"]', '[\"30\", \"30\"]', 53, 88.33, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:18:46', '2026-04-11 22:18:46'),
-(142, 1, 70, 1, 3, 2, 'quarterly_exam', NULL, NULL, '40', 27, 67.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:18:46', '2026-04-11 22:18:46'),
-(143, 1, 70, 1, 3, 2, 'final_grade', NULL, NULL, NULL, NULL, NULL, 29.33, 35.33, 13.50, 78.16, 86, 'Passed', '2026-04-11 22:18:46', '2026-04-11 22:18:46'),
-(144, 1, 70, 1, 3, 3, 'written_work', '[\"15\", \"34\"]', '[\"Exercise 1\", \"Long Quiz\"]', '[\"20\", \"40\"]', 49, 81.67, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:21:52', '2026-04-11 22:21:52'),
-(145, 1, 70, 1, 3, 3, 'performance_task', '[\"88\"]', '[\"Portfolio\"]', '[\"100\"]', 88, 88.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:21:52', '2026-04-11 22:21:52'),
-(146, 1, 70, 1, 3, 3, 'quarterly_exam', NULL, NULL, '40', 34, 85.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:21:52', '2026-04-11 22:21:52'),
-(147, 1, 70, 1, 3, 3, 'final_grade', NULL, NULL, NULL, NULL, NULL, 32.67, 35.20, 17.00, 84.87, 90, 'Passed', '2026-04-11 22:21:52', '2026-04-11 22:21:52'),
-(148, 1, 70, 1, 3, 4, 'written_work', '[\"10\", \"36\"]', '[\"Exercise 1\", \"Long Quiz\"]', '[\"10\", \"40\"]', 46, 92.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:23:18', '2026-04-11 22:23:18'),
-(149, 1, 70, 1, 3, 4, 'performance_task', '[\"90\"]', '[\"Final Project\"]', '[\"100\"]', 90, 90.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:23:18', '2026-04-11 22:23:18'),
-(150, 1, 70, 1, 3, 4, 'quarterly_exam', NULL, NULL, '40', 37, 92.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:23:18', '2026-04-11 22:23:18'),
-(151, 1, 70, 1, 3, 4, 'final_grade', NULL, NULL, NULL, NULL, NULL, 36.80, 36.00, 18.50, 91.30, 94, 'Passed', '2026-04-11 22:23:18', '2026-04-11 22:23:18'),
-(152, 1, 70, 1, 4, 4, 'written_work', '[\"33\"]', '[\"Long Quiz\"]', '[\"40\"]', 33, 82.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:24:18', '2026-04-11 22:24:18'),
-(153, 1, 70, 1, 4, 4, 'performance_task', '[\"90\"]', '[\"Final Project\"]', '[\"100\"]', 90, 90.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:24:18', '2026-04-11 22:24:18'),
-(154, 1, 70, 1, 4, 4, 'quarterly_exam', NULL, NULL, '40', 38, 95.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:24:18', '2026-04-11 22:24:18'),
-(155, 1, 70, 1, 4, 4, 'final_grade', NULL, NULL, NULL, NULL, NULL, 33.00, 36.00, 19.00, 88.00, 92, 'Passed', '2026-04-11 22:24:18', '2026-04-11 22:24:18'),
-(156, 1, 70, 1, 4, 1, 'written_work', '[\"23\"]', '[\"Long Quiz\"]', '[\"40\"]', 23, 57.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:26:41', '2026-04-11 22:26:41'),
-(157, 1, 70, 1, 4, 1, 'performance_task', '[\"98\"]', '[\"Final Project\"]', '[\"100\"]', 98, 98.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:26:41', '2026-04-11 22:26:41'),
-(158, 1, 70, 1, 4, 1, 'quarterly_exam', NULL, NULL, '40', 30, 75.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:26:41', '2026-04-11 22:26:41'),
-(159, 1, 70, 1, 4, 1, 'final_grade', NULL, NULL, NULL, NULL, NULL, 23.00, 39.20, 15.00, 77.20, 85, 'Passed', '2026-04-11 22:26:41', '2026-04-11 22:26:41'),
-(160, 1, 70, 1, 4, 2, 'written_work', '[\"30\"]', '[\"Long Quiz\"]', '[\"30\"]', 30, 100.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:27:28', '2026-04-11 22:27:28'),
-(161, 1, 70, 1, 4, 2, 'performance_task', '[\"30\"]', '[\"Final Project\"]', '[\"50\"]', 30, 60.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:27:28', '2026-04-11 22:27:28'),
-(162, 1, 70, 1, 4, 2, 'quarterly_exam', NULL, NULL, '40', 18, 45.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:27:28', '2026-04-11 22:27:28'),
-(163, 1, 70, 1, 4, 2, 'final_grade', NULL, NULL, NULL, NULL, NULL, 40.00, 24.00, 9.00, 73.00, 83, 'Passed', '2026-04-11 22:27:28', '2026-04-11 22:27:28'),
-(164, 1, 70, 1, 4, 3, 'written_work', '[\"23\"]', '[\"Long Quiz\"]', '[\"40\"]', 23, 57.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:29:10', '2026-04-11 22:29:10'),
-(165, 1, 70, 1, 4, 3, 'performance_task', '[\"26\"]', '[\"Final Project\"]', '[\"30\"]', 26, 86.67, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:29:10', '2026-04-11 22:29:10'),
-(166, 1, 70, 1, 4, 3, 'quarterly_exam', NULL, NULL, '40', 25, 62.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:29:10', '2026-04-11 22:29:10'),
-(167, 1, 70, 1, 4, 3, 'final_grade', NULL, NULL, NULL, NULL, NULL, 23.00, 34.67, 12.50, 70.17, 81, 'Passed', '2026-04-11 22:29:10', '2026-04-11 22:29:10'),
-(168, 1, 70, 1, 5, 1, 'written_work', '[\"38\"]', '[\"Long Quiz\"]', '[\"40\"]', 38, 95.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:30:44', '2026-04-11 22:30:44'),
-(169, 1, 70, 1, 5, 1, 'performance_task', '[\"88\"]', '[\"Final Project\"]', '[\"100\"]', 88, 88.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:30:44', '2026-04-11 22:30:44'),
-(170, 1, 70, 1, 5, 1, 'quarterly_exam', NULL, NULL, '40', 40, 100.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:30:44', '2026-04-11 22:30:44'),
-(171, 1, 70, 1, 5, 1, 'final_grade', NULL, NULL, NULL, NULL, NULL, 38.00, 35.20, 20.00, 93.20, 95, 'Passed', '2026-04-11 22:30:44', '2026-04-11 22:30:44'),
-(172, 1, 70, 1, 5, 2, 'written_work', '[\"40\"]', '[\"Long Quiz\"]', '[\"50\"]', 40, 80.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:31:31', '2026-04-11 22:31:31'),
-(173, 1, 70, 1, 5, 2, 'performance_task', '[\"43\"]', '[\"Final Project\"]', '[\"50\"]', 43, 86.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:31:31', '2026-04-11 22:31:31'),
-(174, 1, 70, 1, 5, 2, 'quarterly_exam', NULL, NULL, '40', 36, 90.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:31:31', '2026-04-11 22:31:31'),
-(175, 1, 70, 1, 5, 2, 'final_grade', NULL, NULL, NULL, NULL, NULL, 32.00, 34.40, 18.00, 84.40, 90, 'Passed', '2026-04-11 22:31:31', '2026-04-11 22:31:31'),
-(176, 1, 70, 1, 5, 3, 'written_work', '[\"35\"]', '[\"Long Quiz\"]', '[\"40\"]', 35, 87.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:32:38', '2026-04-11 22:32:38'),
-(177, 1, 70, 1, 5, 3, 'performance_task', '[\"77\"]', '[\"Final Project\"]', '[\"80\"]', 77, 96.25, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:32:38', '2026-04-11 22:32:38'),
-(178, 1, 70, 1, 5, 3, 'quarterly_exam', NULL, NULL, '40', 37, 92.50, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:32:38', '2026-04-11 22:32:38'),
-(179, 1, 70, 1, 5, 3, 'final_grade', NULL, NULL, NULL, NULL, NULL, 35.00, 38.50, 18.50, 92.00, 95, 'Passed', '2026-04-11 22:32:38', '2026-04-11 22:32:38'),
-(180, 1, 70, 1, 5, 4, 'written_work', '[\"10\"]', '[\"Exercise 1\"]', '[\"20\"]', 10, 50.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:34:14', '2026-04-11 22:34:14'),
-(181, 1, 70, 1, 5, 4, 'performance_task', '[\"28\"]', '[\"Reporting Chapter 1\"]', '[\"30\"]', 28, 93.33, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:34:14', '2026-04-11 22:34:14'),
-(182, 1, 70, 1, 5, 4, 'quarterly_exam', NULL, NULL, '40', 34, 85.00, NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-11 22:34:14', '2026-04-11 22:34:14'),
-(183, 1, 70, 1, 5, 4, 'final_grade', NULL, NULL, NULL, NULL, NULL, 20.00, 37.33, 17.00, 74.33, 83, 'Passed', '2026-04-11 22:34:14', '2026-04-11 22:34:14');
 
 -- --------------------------------------------------------
 
@@ -840,284 +709,6 @@ CREATE TABLE `kindergarten_domains` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `kindergarten_domains`
---
-
-INSERT INTO `kindergarten_domains` (`id`, `student_id`, `domain`, `indicator_key`, `indicator`, `rating`, `remarks`, `quarter`, `school_year_id`, `recorded_by`, `created_at`, `updated_at`) VALUES
-(16, 71, 'kahimsog', 'K1', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(17, 71, 'kahimsog', 'K2', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(18, 71, 'kahimsog', 'K3', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(19, 71, 'kahimsog', 'K4', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(20, 71, 'kahimsog', 'K5', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(21, 71, 'kahimsog', 'K6', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(22, 71, 'mathematics', 'M1', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(23, 71, 'mathematics', 'M2', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(24, 71, 'mathematics', 'M3', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(25, 71, 'mathematics', 'M4', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(26, 71, 'mathematics', 'M5', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:06', '2026-04-12 07:13:06'),
-(27, 71, 'mathematics', 'M6', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(28, 71, 'mathematics', 'M7', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(29, 71, 'mathematics', 'M8', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(30, 71, 'mathematics', 'M9', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(31, 71, 'mathematics', 'M10', '', 'C', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(32, 71, 'mathematics', 'M11', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(33, 71, 'mathematics', 'M12', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(34, 71, 'mathematics', 'M13', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(35, 71, 'mathematics', 'M14', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(36, 71, 'mathematics', 'M15', '', 'C', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(37, 71, 'mathematics', 'M16', '', 'C', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(38, 71, 'mathematics', 'M17', '', 'C', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(39, 71, 'mathematics', 'M18', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(40, 71, 'mathematics', 'M19', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(41, 71, 'mathematics', 'M20', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(42, 71, 'kalikasan', 'PE1', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(43, 71, 'kalikasan', 'PE2', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(44, 71, 'kalikasan', 'PE3', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(45, 71, 'kalikasan', 'PE4', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(46, 71, 'kalikasan', 'PE5', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(47, 71, 'kalikasan', 'PE6', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(48, 71, 'receptive_lang', 'RL1', '', 'C', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(49, 71, 'receptive_lang', 'RL2', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(50, 71, 'receptive_lang', 'RL3', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(51, 71, 'receptive_lang', 'RL4', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(52, 71, 'receptive_lang', 'RL5', '', 'C', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(53, 71, 'receptive_lang', 'RL6', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(54, 71, 'receptive_lang', 'RL7', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(55, 71, 'receptive_lang', 'RL8', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(56, 71, 'receptive_lang', 'RL9', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(57, 71, 'expressive_lang', 'EL1', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(58, 71, 'expressive_lang', 'EL2', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(59, 71, 'expressive_lang', 'EL3', '', 'C', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(60, 71, 'expressive_lang', 'EL4', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(61, 71, 'expressive_lang', 'EL5', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(62, 71, 'expressive_lang', 'EL6', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(63, 71, 'reading', 'PB1', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(64, 71, 'reading', 'PB2', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(65, 71, 'reading', 'PB3', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(66, 71, 'reading', 'PB4', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(67, 71, 'reading', 'PB5', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(68, 71, 'reading', 'PB6', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(69, 71, 'reading', 'PB7', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(70, 71, 'reading', 'PB8', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(71, 71, 'reading', 'PB9', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(72, 71, 'writing', 'PS1', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(73, 71, 'writing', 'PS2', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(74, 71, 'writing', 'PS3', '', 'B', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(75, 71, 'sosyal', 'SE1', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(76, 71, 'sosyal', 'SE2', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(77, 71, 'sosyal', 'SE3', '', 'C', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(78, 71, 'sosyal', 'SE4', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(79, 71, 'sosyal', 'SE5', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(80, 71, 'sosyal', 'SE6', '', 'C', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(81, 71, 'sosyal', 'SE7', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(82, 71, 'sosyal', 'SE8', '', 'C', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(83, 71, 'sosyal', 'SE9', '', 'D', NULL, 1, 1, 107, '2026-04-12 07:13:07', '2026-04-12 07:13:07'),
-(84, 71, 'kahimsog', 'K1', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(85, 71, 'kahimsog', 'K2', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(86, 71, 'kahimsog', 'K3', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(87, 71, 'kahimsog', 'K4', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(88, 71, 'kahimsog', 'K5', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(89, 71, 'kahimsog', 'K6', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(90, 71, 'mathematics', 'M1', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(91, 71, 'mathematics', 'M2', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(92, 71, 'mathematics', 'M3', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(93, 71, 'mathematics', 'M4', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(94, 71, 'mathematics', 'M5', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(95, 71, 'mathematics', 'M6', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(96, 71, 'mathematics', 'M7', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(97, 71, 'mathematics', 'M8', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(98, 71, 'mathematics', 'M9', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(99, 71, 'mathematics', 'M10', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(100, 71, 'mathematics', 'M11', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(101, 71, 'mathematics', 'M12', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(102, 71, 'mathematics', 'M13', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(103, 71, 'mathematics', 'M14', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(104, 71, 'mathematics', 'M15', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(105, 71, 'mathematics', 'M16', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(106, 71, 'mathematics', 'M17', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(107, 71, 'mathematics', 'M18', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(108, 71, 'mathematics', 'M19', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(109, 71, 'mathematics', 'M20', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(110, 71, 'kalikasan', 'PE1', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(111, 71, 'kalikasan', 'PE2', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(112, 71, 'kalikasan', 'PE3', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(113, 71, 'kalikasan', 'PE4', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(114, 71, 'kalikasan', 'PE5', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(115, 71, 'kalikasan', 'PE6', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(116, 71, 'receptive_lang', 'RL1', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(117, 71, 'receptive_lang', 'RL2', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(118, 71, 'receptive_lang', 'RL3', '', 'B', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(119, 71, 'receptive_lang', 'RL4', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(120, 71, 'receptive_lang', 'RL5', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(121, 71, 'receptive_lang', 'RL6', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(122, 71, 'receptive_lang', 'RL7', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(123, 71, 'receptive_lang', 'RL8', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(124, 71, 'receptive_lang', 'RL9', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(125, 71, 'expressive_lang', 'EL1', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(126, 71, 'expressive_lang', 'EL2', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(127, 71, 'expressive_lang', 'EL3', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(128, 71, 'expressive_lang', 'EL4', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(129, 71, 'expressive_lang', 'EL5', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(130, 71, 'expressive_lang', 'EL6', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(131, 71, 'reading', 'PB1', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(132, 71, 'reading', 'PB2', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(133, 71, 'reading', 'PB3', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(134, 71, 'reading', 'PB4', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(135, 71, 'reading', 'PB5', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(136, 71, 'reading', 'PB6', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(137, 71, 'reading', 'PB7', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(138, 71, 'reading', 'PB8', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(139, 71, 'reading', 'PB9', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(140, 71, 'writing', 'PS1', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(141, 71, 'writing', 'PS2', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(142, 71, 'writing', 'PS3', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(143, 71, 'sosyal', 'SE1', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(144, 71, 'sosyal', 'SE2', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(145, 71, 'sosyal', 'SE3', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(146, 71, 'sosyal', 'SE4', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(147, 71, 'sosyal', 'SE5', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(148, 71, 'sosyal', 'SE6', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(149, 71, 'sosyal', 'SE7', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(150, 71, 'sosyal', 'SE8', '', 'D', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(151, 71, 'sosyal', 'SE9', '', 'C', NULL, 2, 1, 107, '2026-04-12 07:23:08', '2026-04-12 07:23:08'),
-(152, 71, 'kahimsog', 'K1', '', 'B', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(153, 71, 'kahimsog', 'K2', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(154, 71, 'kahimsog', 'K3', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(155, 71, 'kahimsog', 'K4', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(156, 71, 'kahimsog', 'K5', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(157, 71, 'kahimsog', 'K6', '', 'C', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(158, 71, 'mathematics', 'M1', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(159, 71, 'mathematics', 'M2', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(160, 71, 'mathematics', 'M3', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(161, 71, 'mathematics', 'M4', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(162, 71, 'mathematics', 'M5', '', 'B', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(163, 71, 'mathematics', 'M6', '', 'C', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(164, 71, 'mathematics', 'M7', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(165, 71, 'mathematics', 'M8', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(166, 71, 'mathematics', 'M9', '', 'B', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(167, 71, 'mathematics', 'M10', '', 'C', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(168, 71, 'mathematics', 'M11', '', 'C', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(169, 71, 'mathematics', 'M12', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(170, 71, 'mathematics', 'M13', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(171, 71, 'mathematics', 'M14', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(172, 71, 'mathematics', 'M15', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(173, 71, 'mathematics', 'M16', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(174, 71, 'mathematics', 'M17', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(175, 71, 'mathematics', 'M18', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(176, 71, 'mathematics', 'M19', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(177, 71, 'mathematics', 'M20', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(178, 71, 'kalikasan', 'PE1', '', 'C', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(179, 71, 'kalikasan', 'PE2', '', 'C', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(180, 71, 'kalikasan', 'PE3', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(181, 71, 'kalikasan', 'PE4', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(182, 71, 'kalikasan', 'PE5', '', 'C', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(183, 71, 'kalikasan', 'PE6', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(184, 71, 'receptive_lang', 'RL1', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(185, 71, 'receptive_lang', 'RL2', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(186, 71, 'receptive_lang', 'RL3', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(187, 71, 'receptive_lang', 'RL4', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(188, 71, 'receptive_lang', 'RL5', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(189, 71, 'receptive_lang', 'RL6', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(190, 71, 'receptive_lang', 'RL7', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(191, 71, 'receptive_lang', 'RL8', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(192, 71, 'receptive_lang', 'RL9', '', 'C', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(193, 71, 'expressive_lang', 'EL1', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(194, 71, 'expressive_lang', 'EL2', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:13', '2026-04-12 07:28:13'),
-(195, 71, 'expressive_lang', 'EL3', '', 'B', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(196, 71, 'expressive_lang', 'EL4', '', 'B', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(197, 71, 'expressive_lang', 'EL5', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(198, 71, 'reading', 'PB1', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(199, 71, 'reading', 'PB2', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(200, 71, 'reading', 'PB3', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(201, 71, 'reading', 'PB4', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(202, 71, 'reading', 'PB5', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(203, 71, 'reading', 'PB6', '', 'B', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(204, 71, 'reading', 'PB7', '', 'B', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(205, 71, 'reading', 'PB8', '', 'B', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(206, 71, 'reading', 'PB9', '', 'B', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(207, 71, 'writing', 'PS1', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(208, 71, 'writing', 'PS2', '', 'B', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(209, 71, 'writing', 'PS3', '', 'C', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(210, 71, 'sosyal', 'SE1', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(211, 71, 'sosyal', 'SE2', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(212, 71, 'sosyal', 'SE3', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(213, 71, 'sosyal', 'SE4', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(214, 71, 'sosyal', 'SE5', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(215, 71, 'sosyal', 'SE6', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(216, 71, 'sosyal', 'SE7', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(217, 71, 'sosyal', 'SE8', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(218, 71, 'sosyal', 'SE9', '', 'D', NULL, 3, 1, 107, '2026-04-12 07:28:14', '2026-04-12 07:28:14'),
-(219, 71, 'kahimsog', 'K1', '', 'B', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(220, 71, 'kahimsog', 'K2', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(221, 71, 'kahimsog', 'K3', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(222, 71, 'kahimsog', 'K4', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(223, 71, 'kahimsog', 'K5', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(224, 71, 'kahimsog', 'K6', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(225, 71, 'mathematics', 'M1', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(226, 71, 'mathematics', 'M2', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(227, 71, 'mathematics', 'M3', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(228, 71, 'mathematics', 'M4', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(229, 71, 'mathematics', 'M5', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(230, 71, 'mathematics', 'M6', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(231, 71, 'mathematics', 'M7', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(232, 71, 'mathematics', 'M8', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(233, 71, 'mathematics', 'M9', '', 'B', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(234, 71, 'mathematics', 'M10', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(235, 71, 'mathematics', 'M11', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(236, 71, 'mathematics', 'M12', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(237, 71, 'mathematics', 'M13', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(238, 71, 'mathematics', 'M14', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(239, 71, 'mathematics', 'M15', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(240, 71, 'mathematics', 'M16', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(241, 71, 'mathematics', 'M17', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(242, 71, 'mathematics', 'M18', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(243, 71, 'mathematics', 'M19', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(244, 71, 'mathematics', 'M20', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(245, 71, 'kalikasan', 'PE1', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(246, 71, 'kalikasan', 'PE2', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(247, 71, 'kalikasan', 'PE3', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(248, 71, 'kalikasan', 'PE4', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(249, 71, 'kalikasan', 'PE5', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(250, 71, 'kalikasan', 'PE6', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(251, 71, 'receptive_lang', 'RL1', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(252, 71, 'receptive_lang', 'RL2', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(253, 71, 'receptive_lang', 'RL3', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(254, 71, 'receptive_lang', 'RL4', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(255, 71, 'receptive_lang', 'RL5', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(256, 71, 'receptive_lang', 'RL6', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(257, 71, 'receptive_lang', 'RL7', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(258, 71, 'receptive_lang', 'RL8', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(259, 71, 'receptive_lang', 'RL9', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(260, 71, 'expressive_lang', 'EL1', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(261, 71, 'expressive_lang', 'EL2', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(262, 71, 'expressive_lang', 'EL3', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(263, 71, 'expressive_lang', 'EL4', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(264, 71, 'expressive_lang', 'EL5', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(265, 71, 'expressive_lang', 'EL6', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(266, 71, 'reading', 'PB1', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(267, 71, 'reading', 'PB2', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(268, 71, 'reading', 'PB3', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(269, 71, 'reading', 'PB4', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(270, 71, 'reading', 'PB5', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(271, 71, 'reading', 'PB6', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(272, 71, 'reading', 'PB7', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(273, 71, 'reading', 'PB8', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(274, 71, 'reading', 'PB9', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(275, 71, 'writing', 'PS1', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(276, 71, 'writing', 'PS2', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(277, 71, 'writing', 'PS3', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(278, 71, 'sosyal', 'SE1', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(279, 71, 'sosyal', 'SE2', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(280, 71, 'sosyal', 'SE3', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(281, 71, 'sosyal', 'SE4', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(282, 71, 'sosyal', 'SE5', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(283, 71, 'sosyal', 'SE6', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(284, 71, 'sosyal', 'SE7', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(285, 71, 'sosyal', 'SE8', '', 'C', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(286, 71, 'sosyal', 'SE9', '', 'D', NULL, 4, 1, 107, '2026-04-12 07:29:54', '2026-04-12 07:29:54'),
-(287, 71, 'expressive_lang', 'EL6', '', 'C', NULL, 3, 1, 107, '2026-04-12 07:31:25', '2026-04-12 07:31:25');
-
 -- --------------------------------------------------------
 
 --
@@ -1142,6 +733,16 @@ CREATE TABLE `messages` (
   `deleted_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `messages`
+--
+
+INSERT INTO `messages` (`id`, `sender_id`, `recipient_id`, `subject`, `body`, `read`, `created_at`, `updated_at`, `is_read`, `is_edited`, `read_at`, `is_bulk`, `parent_id`, `section_id`, `deleted_at`) VALUES
+(28, 116, 103, 'Message from Crestian Bajado Tuayon', 'good evening ma\'am', 0, '2026-04-18 08:24:23', '2026-04-18 09:44:27', 1, 0, '2026-04-18 09:44:27', 0, NULL, NULL, NULL),
+(29, 103, 116, 'Message from Samantha  Kim', 'hello good day ging', 0, '2026-04-18 09:44:43', '2026-04-18 09:45:15', 1, 0, '2026-04-18 09:45:15', 0, 28, NULL, NULL),
+(30, 116, 103, 'Message from Crestian Bajado Tuayon', '', 0, '2026-04-18 09:45:33', '2026-04-18 09:46:04', 1, 0, '2026-04-18 09:46:04', 0, 29, NULL, NULL),
+(31, 103, 116, 'Message from Samantha  Kim', '', 0, '2026-04-18 09:46:24', '2026-04-18 09:46:24', 0, 0, NULL, 0, 28, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1158,6 +759,14 @@ CREATE TABLE `message_attachments` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `message_attachments`
+--
+
+INSERT INTO `message_attachments` (`id`, `message_id`, `file_name`, `file_path`, `file_type`, `file_size`, `created_at`, `updated_at`) VALUES
+(10, 30, '6ccd9e90b2d51356b19451f03a2698d1.jpg', 'message-attachments/30/ADJ33Ao5xXrpokWB3PaMgVgKLKPFGk489zcQ6My8.jpg', 'image/jpeg', 36658, '2026-04-18 09:45:33', '2026-04-18 09:45:33'),
+(11, 31, 'logo.png', 'message-attachments/31/xAeuNgOXvnakEiAfzzXPbTW4iTGdByvpqQsE95Z6.png', 'image/png', 342804, '2026-04-18 09:46:24', '2026-04-18 09:46:24');
 
 -- --------------------------------------------------------
 
@@ -1559,8 +1168,8 @@ CREATE TABLE `school_years` (
 --
 
 INSERT INTO `school_years` (`id`, `name`, `start_date`, `end_date`, `is_active`, `description`, `created_at`, `updated_at`) VALUES
-(1, '2025-2026', '2025-06-01', '2026-03-31', 1, 'School year 2026-2027 (current)', '2026-03-22 01:56:23', '2026-04-15 04:33:59'),
-(2, '2026-2027', '2026-06-01', '2027-03-31', 0, 'School year 2027-2028', '2026-03-22 01:56:23', '2026-04-15 04:33:59'),
+(1, '2025-2026', '2025-06-01', '2026-03-31', 1, 'School year 2026-2027 (current)', '2026-03-22 01:56:23', '2026-04-18 09:25:12'),
+(2, '2026-2027', '2026-06-01', '2027-03-31', 0, 'School year 2027-2028', '2026-03-22 01:56:23', '2026-04-18 09:25:12'),
 (3, '2027-2028', '2027-06-01', '2028-03-31', 0, 'School year 2028-2029', '2026-03-22 01:56:23', '2026-04-10 05:18:31'),
 (4, '2028-2029', '2028-06-01', '2029-03-31', 0, 'School year 2029-2030', '2026-03-22 01:56:23', '2026-04-10 05:18:31'),
 (5, '2039-2030', '2029-06-01', '2030-03-31', 0, 'School year 2030-2031', '2026-03-22 01:56:23', '2026-04-10 05:18:31');
@@ -1652,13 +1261,13 @@ CREATE TABLE `sections` (
 --
 
 INSERT INTO `sections` (`id`, `name`, `grade_level_id`, `school_year_id`, `room_number`, `teacher_id`, `capacity`, `created_at`, `updated_at`, `is_active`) VALUES
-(1, 'SALAS', 2, 2, 'ROOM101', 11, 40, '2026-03-22 02:05:23', '2026-04-10 15:35:47', 1),
+(1, 'SALAS', 2, 1, 'ROOM101', 11, 40, '2026-03-22 02:05:23', '2026-04-18 09:08:06', 1),
 (2, 'ROSE', 4, 2, 'ROOM102', 8, 40, '2026-03-22 23:10:06', '2026-04-02 16:12:44', 1),
 (3, 'MENDES', 3, 2, 'ROOM103', 9, 40, '2026-03-27 03:14:07', '2026-04-02 16:20:52', 1),
 (4, 'ALAMA', 7, 2, 'ROOM103', 13, 40, '2026-04-02 16:05:18', '2026-04-10 15:42:27', 1),
 (5, 'JUPITER', 6, 2, 'ROOM105', 12, 40, '2026-04-02 16:06:35', '2026-04-10 15:42:09', 1),
 (6, 'SATURN', 5, 2, 'ROOM104', 17, 40, '2026-04-02 16:34:28', '2026-04-14 05:55:48', 1),
-(7, 'MACIAS', 1, 2, 'ROOM100', 15, 40, '2026-04-02 16:35:30', '2026-04-10 15:41:35', 1);
+(7, 'MACIAS', 1, 1, 'ROOM100', 15, 40, '2026-04-02 16:35:30', '2026-04-18 09:17:38', 1);
 
 -- --------------------------------------------------------
 
@@ -1707,8 +1316,8 @@ CREATE TABLE `section_finalizations` (
 INSERT INTO `section_finalizations` (`id`, `section_id`, `school_year_id`, `teacher_id`, `grades_finalized`, `grades_finalized_at`, `attendance_finalized`, `attendance_finalized_at`, `core_values_finalized`, `core_values_finalized_at`, `is_fully_finalized`, `finalized_at`, `finalized_by`, `is_locked`, `locked_at`, `unlocked_at`, `unlocked_by`, `grades_unlocked_at`, `unlock_reason`, `deadline_at`, `auto_finalized`, `created_at`, `updated_at`, `grades_unlocked_by`, `grades_unlock_reason`, `attendance_unlocked_at`, `attendance_unlocked_by`, `attendance_unlock_reason`, `core_values_unlocked_at`, `core_values_unlocked_by`, `core_values_unlock_reason`) VALUES
 (1, 2, 2, 8, 0, NULL, 0, NULL, 0, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2026-04-10 04:10:40', '2026-04-10 04:10:40', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (2, 2, 1, 8, 0, NULL, 0, NULL, 0, NULL, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, 0, '2026-04-10 14:57:19', '2026-04-10 14:57:19', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3, 1, 1, 11, 1, '2026-04-12 01:53:35', 1, '2026-04-12 01:53:46', 1, '2026-04-12 01:53:56', 1, '2026-04-12 01:53:56', 103, 1, '2026-04-12 01:53:56', '2026-04-12 01:52:04', 1, '2026-04-12 01:52:04', 'needed to be updated', NULL, 0, '2026-04-11 20:51:02', '2026-04-12 01:53:56', 1, 'needed to be updated', '2026-04-12 01:52:04', 1, 'needed to be updated', '2026-04-12 01:52:04', 1, 'needed to be updated'),
-(4, 7, 1, 15, 1, '2026-04-12 07:42:40', 0, NULL, 0, NULL, 0, NULL, NULL, 0, NULL, '2026-04-12 07:41:26', 1, '2026-04-12 07:41:26', 'wnated to edit something', NULL, 0, '2026-04-12 06:24:55', '2026-04-12 07:42:40', 1, 'wnated to edit something', NULL, NULL, NULL, NULL, NULL, NULL);
+(3, 1, 1, 11, 1, '2026-04-12 01:53:35', 1, '2026-04-12 01:53:46', 1, '2026-04-12 01:53:56', 1, '2026-04-12 01:53:56', 103, 1, '2026-04-12 01:53:56', '2026-04-12 01:52:04', NULL, '2026-04-12 01:52:04', 'needed to be updated', NULL, 0, '2026-04-11 20:51:02', '2026-04-18 08:07:48', NULL, 'needed to be updated', '2026-04-12 01:52:04', NULL, 'needed to be updated', '2026-04-12 01:52:04', NULL, 'needed to be updated'),
+(4, 7, 1, 15, 1, '2026-04-12 07:42:40', 0, NULL, 0, NULL, 0, NULL, NULL, 0, NULL, '2026-04-12 07:41:26', NULL, '2026-04-12 07:41:26', 'wnated to edit something', NULL, 0, '2026-04-12 06:24:55', '2026-04-18 08:07:48', NULL, 'wnated to edit something', NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1882,9 +1491,9 @@ CREATE TABLE `students` (
 --
 
 INSERT INTO `students` (`id`, `user_id`, `lrn`, `birthdate`, `birth_place`, `gender`, `status`, `birth_certificate_path`, `report_card_path`, `good_moral_path`, `transfer_credential_path`, `registration_status`, `documents_verified_at`, `mother_tongue`, `ethnicity`, `nationality`, `religion`, `father_name`, `father_occupation`, `mother_name`, `mother_occupation`, `guardian_name`, `guardian_relationship`, `guardian_contact`, `street_address`, `barangay`, `city`, `province`, `zip_code`, `grade_level_id`, `section_id`, `photo`, `created_at`, `updated_at`, `school_year_id`, `remarks`, `documents_verified_by`) VALUES
-(70, 102, '120231260001', '2004-01-07', 'Dauin', 'Male', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'Negrense', 'Filipino', 'Roman Catholic', 'Nelson A. Tuayon', 'Farmer', 'Agripina B. Tuayon', 'Farmer', 'Nelson A. Tuayon', 'Parent', '09368726547', 'Purok 5', 'Tugawe', 'Dauin', 'Negros Oriental', '6217', NULL, NULL, NULL, '2026-04-10 15:29:16', '2026-04-13 23:57:08', NULL, NULL, NULL),
-(71, 108, '120231260000', '2003-11-06', 'Cantil-e', 'Female', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'Negrense', 'Filipino', 'Catholic', 'Jose Baldomar', 'Farmer', 'Maria Baldomar', 'Farmer', 'Jose Baldomar', 'Parent', '09934639876', 'Purok Twin Hearts', 'Cantil-e', 'Dumaguete City', 'Negros Oriental', '6200', NULL, NULL, NULL, '2026-04-12 03:47:55', '2026-04-13 23:56:24', NULL, NULL, NULL),
-(73, 112, '120231260002', '2003-10-31', 'Dauin', 'Female', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'Negrense', 'Filipino', 'Roman Catholic', 'Jose Tradio', 'CEO', 'Maria Tradio', 'Executive Director', 'Maria Tradio', 'Parent/Mother', '09934639878', 'Luca', 'Lipayo', 'Dauin', 'Negros Oriental', '6217', 3, 3, NULL, '2026-04-14 05:40:50', '2026-04-14 05:40:50', NULL, NULL, NULL);
+(74, 116, '120231260000', '2004-01-07', 'Dauin', 'Male', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'NegOrense', 'Filipino', 'Roman Catholic', 'Nelson A. Tuayon', 'Farmer', 'Agripina B. Tuyaon', 'Farmer', 'Lourdes T. Alcoriza', 'Grandparent', '09368726547', 'PUROK 5', 'TUGAWE', 'DAUIN', 'NEGROS ORIENTAL', '6217', 2, 1, NULL, '2026-04-18 05:40:02', '2026-04-18 07:53:13', NULL, NULL, NULL),
+(75, 117, '120231260001', '2003-10-31', 'Dauin', 'Female', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'NegOrense', 'Filipino', 'Catholic', 'Mario Tradio', 'Engineer', 'Maria Tradio', 'Business Owner', 'Maria Tradio', 'Parent', '09934638844', 'LUCA', 'LIPAYO', 'DAUIN', 'NEGROS ORIENTAL', '6217', 2, 1, NULL, '2026-04-18 07:00:07', '2026-04-18 07:53:00', NULL, NULL, NULL),
+(76, 118, '120231260002', '2003-11-06', 'Bayawan City', 'Female', 'active', NULL, NULL, NULL, NULL, 'pending', NULL, 'Bisaya', 'NegOrense', 'Filipino', 'Christianity', 'Mario Baldomar', 'Farmer', 'Maria Baldomar', 'Farmer', 'Maria Baldomar', 'Parent', '09934638844', 'PUROK TWIN HEARTS', 'CANTIL-E', 'DUMAGUETE CITY', 'NEGROS ORIENTAL', '6200', 2, 1, NULL, '2026-04-18 07:51:14', '2026-04-18 07:52:10', NULL, 'TI', NULL);
 
 -- --------------------------------------------------------
 
@@ -2104,10 +1713,7 @@ INSERT INTO `teachers` (`id`, `teacher_id`, `deped_id`, `first_name`, `middle_na
 (12, NULL, NULL, 'Monique', NULL, 'Filipinas', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'msfilipinas@gmail.com', '0936 872 6547', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 104, NULL, NULL, NULL, 'active', NULL, '2026-04-10 15:37:46', '2026-04-10 15:37:46', NULL),
 (13, NULL, NULL, 'Anthony', NULL, 'Rapsing', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'mranthon@gmail.com', '0936 872 6547', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 105, NULL, NULL, NULL, 'active', NULL, '2026-04-10 15:38:45', '2026-04-10 15:38:45', NULL),
 (15, NULL, NULL, 'Nancy', NULL, 'Lewis', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'mslewis@gmail.com', '0936 872 6547', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 107, NULL, NULL, NULL, 'active', NULL, '2026-04-10 15:41:08', '2026-04-10 15:41:08', NULL),
-(17, NULL, NULL, 'Melvin', NULL, 'Benitez', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'benitezmelv@gmail.com', '0996 266 7110', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 113, NULL, NULL, NULL, 'active', NULL, '2026-04-14 05:55:20', '2026-04-14 05:55:20', NULL),
-(20, NULL, NULL, 'Rein', NULL, 'Guererro', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'guerrerorein@gmail.com', '0996 226 9656', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 115, NULL, NULL, NULL, 'active', NULL, '2026-04-15 18:26:10', '2026-04-15 18:26:10', NULL),
-(21, NULL, NULL, '', NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, 'active', NULL, '2026-04-16 06:43:17', '2026-04-16 06:43:17', NULL),
-(22, NULL, NULL, '', NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 102, NULL, NULL, NULL, 'active', NULL, '2026-04-16 07:48:40', '2026-04-16 07:48:40', NULL);
+(17, NULL, NULL, 'Melvin', NULL, 'Benitez', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'benitezmelv@gmail.com', '0996 266 7110', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 113, NULL, NULL, NULL, 'active', NULL, '2026-04-14 05:55:20', '2026-04-14 05:55:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -2209,19 +1815,18 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `role_id`, `status`, `email`, `email_verified_at`, `password`, `password_updated_at`, `photo`, `is_active`, `remember_token`, `settings`, `two_factor_enabled`, `two_factor_secret`, `two_factor_recovery_codes`, `created_at`, `updated_at`, `lrn`, `first_name`, `middle_name`, `last_name`, `suffix`, `birthday`, `username`) VALUES
-(1, 1, 'active', 'admin@tugaweES.edu.ph', NULL, '$2y$12$zXtYoxdECMpT8DvDKSKFee0E.B7PXe4yQgoRJim6sPz/1zutl3Gsu', NULL, 'profile-photos/xShxXmOJXSLKKBMsq9tkC7DcEhC13IRswVBGWi8y.png', 1, 'ZZeTz1z0WRNF6MSiCg5gNG44UG2uXBa73SePQqfCCYKBMRB21yANjADPR7IA', NULL, 0, NULL, NULL, '2026-01-27 05:37:20', '2026-04-09 15:55:09', NULL, 'TES', NULL, 'ADMIN', NULL, NULL, 'sysadmin'),
 (66, 2, 'active', 'mariasan@gmail.com', NULL, '$2y$12$3kEcB2mHyjA0b0SFLTlhfeVAFFhMXgKZSzPPX0zvJ7QQStLjJVvbS', NULL, 'profile-photos/LT2JUidn7dXUeJu7o6VDcoC1chsvGhUe9g7AJZoT.jpg', 1, NULL, NULL, 0, NULL, NULL, '2026-03-25 02:22:47', '2026-04-09 15:19:35', NULL, 'Maria', NULL, 'Santos', NULL, NULL, 'msmaria'),
 (68, 1, 'active', 'admin123@gmail.com', NULL, '$2y$12$TUqAbwYAVzJkHjkxiwa3peAV2mq7ctJhndKfwpBWb7lZBlocE5TPa', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-03-25 05:21:01', '2026-03-27 21:57:33', NULL, 'System', NULL, 'Admin', NULL, NULL, 'mysysad12'),
 (70, 2, 'active', 'msmendes@gmail.com', NULL, '$2y$12$ws3zhjWNpiifRIzw9fbZgeVbItUrVD3anY5QCm1anpXuOT7q5xNZm', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-03-27 03:13:09', '2026-03-27 03:13:09', NULL, 'Shane', NULL, 'Mendes', NULL, NULL, 'msmendes'),
-(102, 4, 'active', 'cresttuayon@gmail.com', NULL, '$2y$12$pXNN0Rj9ENcs.p9dQIPIU.xQD5P/addkK9dHVe73YdAYVSUeOpBqa', NULL, 'photos/LNcaX9lqNk025P2IWskkeXeKiPkjx4ivyv6yKqfY.jpg', 0, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:29:16', '2026-04-10 15:29:16', NULL, 'Crestian', 'Bajado', 'Tuayon', NULL, NULL, 'crstn'),
-(103, 2, 'active', 'kimisamanttha@gmail.com', NULL, '$2y$12$T//na0UVyeybUqMdSJmqguEmgucAfOT8UA6KqHMdIuCNNQs7s.U3O', NULL, 'profile-photos/vNw2o6ShhM78RIaIkIwKwNg2WrnjIwsrEDy6wj4k.jpg', 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:35:18', '2026-04-11 05:31:34', NULL, 'Samantha', NULL, 'Kim', NULL, NULL, 'mssamantha12'),
+(103, 2, 'active', 'kimisamanttha@gmail.com', NULL, '$2y$12$T//na0UVyeybUqMdSJmqguEmgucAfOT8UA6KqHMdIuCNNQs7s.U3O', NULL, 'profile-photos/vNw2o6ShhM78RIaIkIwKwNg2WrnjIwsrEDy6wj4k.jpg', 1, NULL, '{\"theme\": \"dark\", \"language\": \"en\", \"date_format\": \"MM/DD/YYYY\", \"time_format\": \"12h\", \"system_updates\": \"1\", \"grade_reminders\": \"1\", \"profile_visible\": \"1\", \"show_last_active\": \"1\", \"attendance_alerts\": \"1\", \"sms_notifications\": \"0\", \"email_notifications\": \"1\", \"email_visible_to_students\": \"0\", \"new_student_notifications\": \"0\"}', 0, NULL, NULL, '2026-04-10 15:35:18', '2026-04-18 03:30:32', NULL, 'Samantha', NULL, 'Kim', NULL, NULL, 'mssamantha12'),
 (104, 2, 'active', 'msfilipinas@gmail.com', NULL, '$2y$12$3jAMKTeIflGKoVfyG/ZXTu1wTxn1N7fDdYiBS9NNiLcp3CEuLDsRO', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:37:46', '2026-04-10 15:37:46', NULL, 'Monique', NULL, 'Filipinas', NULL, NULL, 'msmonique11'),
 (105, 2, 'active', 'mranthon@gmail.com', NULL, '$2y$12$7Bpbm9PGKrr6jK0mRYDHp.XAv8gEt0FCBxB3ACcyo3yRld7FlhlxC', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:38:45', '2026-04-10 15:38:45', NULL, 'Anthony', NULL, 'Rapsing', NULL, NULL, 'mranthon113'),
 (107, 2, 'active', 'mslewis@gmail.com', NULL, '$2y$12$NNZ.iJZJ48H5pdUlBF4ugea2Hv3ZXqMHBSymBE9q44NFeVBKUyBHi', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-10 15:41:08', '2026-04-10 15:41:08', NULL, 'Nancy', NULL, 'Lewis', NULL, NULL, 'mslewis90'),
-(108, 4, 'active', 'baldomarnoime@gmail.com', NULL, '$2y$12$gocmQYI..qLmqx7w0gnXo.Ur7HtvFQknxA6/6b1g7ygwxbei5xoIO', NULL, 'photos/0EsnnH9CIokS28vtz1QjeoRgLpPO6xK6xdaspfjG.jpg', 0, NULL, NULL, 0, NULL, NULL, '2026-04-12 03:47:55', '2026-04-12 03:47:55', NULL, 'Noime', 'Talorete', 'Baldomar', NULL, NULL, 'evarocksredhell'),
-(112, 4, 'active', 'ejiemasestradio@gmail.com', NULL, '$2y$12$AgDcgZ2GCJHw4HmIrjZ8LOrTKfBI47Nn6PuOUtJVJQYDMBnMCcqY2', NULL, 'photos/JwLNZ4OkoaGPRTLp80D3oyRryXfjWq7QPTzxxlDW.jpg', 1, NULL, NULL, 0, NULL, NULL, '2026-04-14 05:40:49', '2026-04-14 05:40:49', NULL, 'Ejie Mae', 'Santos', 'Tradio', NULL, NULL, 'ezimei'),
 (113, 2, 'active', 'benitezmelv@gmail.com', NULL, '$2y$12$pFHUea8onil6UTfsSwPL6ehL81Q29bcji6NqJjXACflgq19AWOTRi', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-14 05:55:20', '2026-04-14 05:55:20', NULL, 'Melvin', NULL, 'Benitez', NULL, NULL, 'mrmelv88'),
-(115, 2, 'active', 'guerrerorein@gmail.com', NULL, '$2y$12$ho8yKZQSfeaTMDlAPOo.mup5JYcAhJ4hFAQwdPQj/ODHaDF/kvbry', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-15 18:26:10', '2026-04-15 18:26:10', NULL, 'Rein', NULL, 'Guererro', NULL, NULL, 'ReinGuererro');
+(116, 4, 'active', 'cresttuayon@gmail.com', NULL, '$2y$12$htT9Y.Lz5AZwHushLo0U2eZXaIlCXpSL9ebcpPgdwffFwJHF8mmAa', NULL, 'photos/ckCX8x2qyrp69Ufg0rrEepLcr4PF8B7Bv8pmQtTS.jpg', 0, NULL, NULL, 0, NULL, NULL, '2026-04-18 05:40:02', '2026-04-18 05:40:02', NULL, 'Crestian', 'Bajado', 'Tuayon', NULL, NULL, 'crstn'),
+(117, 4, 'active', 'ezimeitradio@gmail.com', NULL, '$2y$12$svB0JrxUphHTfSbHU52j0.g/HHydaL22zNwJrUiPS4PHkt3FCTW8.', NULL, NULL, 0, NULL, NULL, 0, NULL, NULL, '2026-04-18 07:00:07', '2026-04-18 07:00:07', NULL, 'Ejie Mae', 'Santos', 'Tradio', NULL, NULL, 'ezimei31'),
+(118, 4, 'active', 'evarocksredhell@gmail.com', NULL, '$2y$12$hIca/TKKecuCJGauMeYM0OBTIDBGGDre3hOMONq4grgzOp/EhLuOu', NULL, 'photos/44QrBVn5UY0hizHXp6Dc1AlTO1hB7QZJ3oZhIcGn.jpg', 0, NULL, NULL, 0, NULL, NULL, '2026-04-18 07:51:14', '2026-04-18 07:51:14', NULL, 'Noime', 'Talorete', 'Baldomar', NULL, NULL, 'evarocksredhell'),
+(119, 1, 'active', 'tesadmin@gmail.com', NULL, '$2y$12$6YbvfsF2YO5sTUBQe6ei/O812RITol7jcODvmyw4Qmim0kxXoA74S', NULL, NULL, 1, NULL, NULL, 0, NULL, NULL, '2026-04-18 08:14:13', '2026-04-18 08:14:13', NULL, 'TugaweES', NULL, 'Administrator', NULL, NULL, 'tesadmin');
 
 -- --------------------------------------------------------
 
@@ -2255,15 +1860,12 @@ CREATE TABLE `user_notification_settings` (
 INSERT INTO `user_notification_settings` (`id`, `user_id`, `email_new_message`, `email_announcement`, `email_grade_posted`, `email_attendance_alert`, `email_assignment_due`, `sms_new_message`, `sms_announcement`, `sms_grade_posted`, `sms_attendance_alert`, `sms_assignment_due`, `phone_number`, `phone_verified`, `created_at`, `updated_at`) VALUES
 (2, 66, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-08 19:38:36', '2026-04-08 19:38:36'),
 (4, 107, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, NULL, 0, '2026-04-13 19:30:01', '2026-04-13 20:33:18'),
-(5, 102, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, NULL, 0, '2026-04-13 20:40:09', '2026-04-13 20:43:48'),
 (6, 70, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
 (7, 103, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
 (8, 104, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
 (9, 105, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
 (10, 113, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
-(11, 115, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
-(12, 108, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03'),
-(13, 112, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-16 07:16:03', '2026-04-16 07:16:03');
+(14, 116, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, NULL, 0, '2026-04-18 08:24:04', '2026-04-18 08:24:04');
 
 --
 -- Indexes for dumped tables
@@ -2844,7 +2446,7 @@ ALTER TABLE `core_values`
 -- AUTO_INCREMENT for table `enrollments`
 --
 ALTER TABLE `enrollments`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT for table `enrollment_applications`
@@ -2910,13 +2512,13 @@ ALTER TABLE `kindergarten_domains`
 -- AUTO_INCREMENT for table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `message_attachments`
 --
 ALTER TABLE `message_attachments`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -3018,7 +2620,7 @@ ALTER TABLE `settings`
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
 
 --
 -- AUTO_INCREMENT for table `student_health_records`
@@ -3066,13 +2668,13 @@ ALTER TABLE `teaching_programs`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=116;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
 
 --
 -- AUTO_INCREMENT for table `user_notification_settings`
 --
 ALTER TABLE `user_notification_settings`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- Constraints for dumped tables

@@ -3,7 +3,7 @@
  * Handles caching, offline support, background sync, and push notifications
  */
 
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_NAME = `tessms-${CACHE_VERSION}`;
 const STATIC_CACHE_NAME = `tessms-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `tessms-dynamic-${CACHE_VERSION}`;
@@ -107,24 +107,10 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
-  // Skip non-GET requests (POST, PUT, DELETE, etc.)
+  // Let the browser handle non-GET requests (POST, PUT, DELETE, etc.) normally.
+  // Intercepting POST requests (form submissions) and returning JSON breaks
+  // Laravel's redirect-with-errors flow and masks real server errors.
   if (request.method !== 'GET') {
-    event.respondWith(
-      fetch(request).catch((error) => {
-        console.log('[SW] Network request failed:', error);
-        return new Response(
-          JSON.stringify({ 
-            error: 'You are offline',
-            offline: true,
-            timestamp: new Date().toISOString()
-          }),
-          {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
-      })
-    );
     return;
   }
   

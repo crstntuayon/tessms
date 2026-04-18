@@ -22,6 +22,34 @@ $contactsData = $contacts->map(function($c) use ($user) {
     ];
 });
 
+// Debug info for teachers
+$debugInfo = null;
+if ($isTeacher) {
+    $teacher = \App\Models\Teacher::where('user_id', $user->id)->first();
+    $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+    $sectionIds = collect();
+    if ($teacher) {
+        $sectionIds = $sectionIds->merge(\App\Models\Section::where('teacher_id', $teacher->id)->pluck('id'));
+        $pivotIds = \DB::table('teacher_sections')->where('teacher_id', $teacher->id)->pluck('section_id');
+        $sectionIds = $sectionIds->merge($pivotIds)->unique()->values();
+    }
+    // Check is_active values on student users to diagnose filtering issues
+    $sampleIsActive = null;
+    if ($contacts->isNotEmpty()) {
+        $sampleIsActive = $contacts->first()->is_active;
+    }
+    $debugInfo = [
+        'teacher_id' => $teacher?->id,
+        'teacher_name' => $teacher?->full_name,
+        'section_ids' => $sectionIds->toArray(),
+        'section_count' => $sectionIds->count(),
+        'active_school_year' => $activeSchoolYear?->name,
+        'contact_count' => $contacts->count(),
+        'user_role' => $user->role?->name,
+        'sample_is_active' => $sampleIsActive,
+    ];
+}
+
 // Sidebar-specific variables for student
 if ($isStudent) {
     $student = $user->student;
@@ -125,11 +153,29 @@ if ($isStudent) {
                 {{-- Contact List --}}
                 <div class="flex-1 overflow-y-auto scrollbar-thin">
                     <template x-if="filteredContacts.length === 0">
-                        <div class="p-8 text-center text-slate-400">
+                        <div class="p-4 text-center">
                             <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                 <i class="fas fa-search text-2xl text-slate-300"></i>
                             </div>
-                            <p class="text-sm">No contacts found</p>
+                            <p class="text-sm text-slate-400 mb-3">No contacts found</p>
+                            
+                            @if($isTeacher && $debugInfo)
+                                <div class="text-left bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
+                                    <p class="font-bold mb-1">Debug Info:</p>
+                                    <ul class="space-y-0.5">
+                                        <li>Teacher ID: {{ $debugInfo['teacher_id'] ?? 'N/A' }}</li>
+                                        <li>Teacher Name: {{ $debugInfo['teacher_name'] ?? 'N/A' }}</li>
+                                        <li>Role: {{ $debugInfo['user_role'] ?? 'N/A' }}</li>
+                                        <li>Active School Year: {{ $debugInfo['active_school_year'] ?? 'None' }}</li>
+                                        <li>Sections Found: {{ $debugInfo['section_count'] }}</li>
+                                        <li>Section IDs: {{ implode(', ', $debugInfo['section_ids'] ?: ['None']) }}</li>
+                                        <li>Contacts Returned: {{ $debugInfo['contact_count'] }}</li>
+                                        @if(!is_null($debugInfo['sample_is_active']))
+                                            <li>Sample is_active: {{ var_export($debugInfo['sample_is_active'], true) }}</li>
+                                        @endif
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                     </template>
                     
@@ -672,7 +718,11 @@ function messenger() {
                 const res = await fetch(`/api/conversations/${contact.id}`);
                 const data = await res.json();
                 
-                this.messages = data.messages.map(m => ({
+                if (!res.ok) {
+                    throw new Error(data.error || `HTTP ${res.status}`);
+                }
+                
+                this.messages = (data.messages || []).map(m => ({
                     ...m,
                     isMine: m.sender_id === this.currentUserId,
                     time: m.created_at 
@@ -693,7 +743,7 @@ function messenger() {
                 });
             } catch (err) {
                 console.error('Failed to load messages:', err);
-                this.showToast('Failed to load messages', 'error');
+                this.showToast('Failed to load messages: ' + (err.message || 'Unknown error'), 'error');
             } finally {
                 this.loadingMessages = false;
             }

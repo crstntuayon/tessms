@@ -17,7 +17,18 @@ class SectionController extends Controller
 {
     public function index(Request $request)
     {
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        
+        // Allow admin to override which school year to view
+        $selectedSchoolYearId = $request->get('school_year_id', $activeSchoolYear?->id);
+        $selectedSchoolYear = $selectedSchoolYearId ? SchoolYear::find($selectedSchoolYearId) : null;
+        
         $query = Section::with(['gradeLevel', 'teacher', 'schoolYear']);
+        
+        // Filter by selected school year (default = active school year)
+        if ($selectedSchoolYear) {
+            $query->where('school_year_id', $selectedSchoolYear->id);
+        }
         
         // Search functionality
         if ($request->filled('search')) {
@@ -35,32 +46,38 @@ class SectionController extends Controller
             });
         }
         
-        $sections = $query->orderBy('grade_level_id')->orderBy('name')->paginate(10);
+        $sections = $query->orderBy('grade_level_id')->orderBy('name')->paginate(10)->appends($request->query());
         
-        // Get active school year
-        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        // Get all school years for the dropdown
+        $schoolYears = SchoolYear::orderBy('start_date', 'desc')->get();
         
-        // Calculate total students - only active enrollments in active school year
+        // Calculate total students - only active enrollments in SELECTED school year
         $totalStudents = 0;
-        if ($activeSchoolYear) {
-            $totalStudents = Enrollment::where('school_year_id', $activeSchoolYear->id)
+        if ($selectedSchoolYear) {
+            $totalStudents = Enrollment::where('school_year_id', $selectedSchoolYear->id)
                 ->where('status', 'enrolled')
                 ->count();
         }
         
-        // Load only active students for each section
+        // Load only active students for each section (for the SELECTED school year)
         foreach ($sections as $section) {
             $section->active_students = collect();
-            if ($activeSchoolYear) {
-                $section->active_students = Student::whereHas('enrollments', function($q) use ($section, $activeSchoolYear) {
+            if ($selectedSchoolYear) {
+                $section->active_students = Student::whereHas('enrollments', function($q) use ($section, $selectedSchoolYear) {
                     $q->where('section_id', $section->id)
-                      ->where('school_year_id', $activeSchoolYear->id)
+                      ->where('school_year_id', $selectedSchoolYear->id)
                       ->where('status', 'enrolled'); // Only enrolled, not completed
                 })->get();
             }
         }
         
-        return view('admin.sections.index', compact('sections', 'totalStudents', 'activeSchoolYear'));
+        return view('admin.sections.index', compact(
+            'sections', 
+            'totalStudents', 
+            'activeSchoolYear', 
+            'selectedSchoolYear',
+            'schoolYears'
+        ));
     }
 
     public function show($id)

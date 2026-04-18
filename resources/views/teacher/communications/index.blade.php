@@ -76,22 +76,32 @@
                     </button>
                 </div>
                 
-                <form action="{{ route('teacher.communications.store') }}" method="POST">
+                <form action="{{ route('teacher.communications.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+                    <input type="hidden" name="recipient_type" value="multiple">
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Recipients</label>
                             <select name="recipient_ids[]" multiple required
                                     class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                                @foreach($sections ?? [] as $section)
-                                    <optgroup label="{{ $section->name }}">
-                                        @foreach($section->students as $student)
-                                            <option value="{{ $student->user_id }}">
-                                                {{ $student->full_name }} (Parent)
-                                            </option>
-                                        @endforeach
-                                    </optgroup>
-                                @endforeach
+                                @forelse($sections ?? [] as $section)
+                                    @php
+                                        $validEnrollments = $section->enrollments->filter(function($e) {
+                                            return $e->student && $e->student->user_id && $e->student->user;
+                                        });
+                                    @endphp
+                                    @if($validEnrollments->isNotEmpty())
+                                        <optgroup label="{{ $section->name }}">
+                                            @foreach($validEnrollments as $enrollment)
+                                                <option value="{{ $enrollment->student->user_id }}">
+                                                    {{ $enrollment->student->full_name }} (Parent)
+                                                </option>
+                                            @endforeach
+                                        </optgroup>
+                                    @endif
+                                @empty
+                                    <option value="" disabled>No sections assigned</option>
+                                @endforelse
                             </select>
                             <p class="text-xs text-slate-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
                         </div>
@@ -104,16 +114,23 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Message</label>
-                            <textarea name="message" rows="5" required
+                            <textarea name="body" rows="5" required
                                       class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
                         </div>
                         
                         <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Attachments (optional)</label>
+                            <input type="file" name="attachments[]" multiple
+                                   class="w-full px-3 py-2 border border-slate-200 rounded-lg">
+                            <p class="text-xs text-slate-500 mt-1">Max 10MB per file</p>
+                        </div>
+                        
+                        <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Template (optional)</label>
-                            <select x-on:change="document.querySelector('textarea[name=message]').value = $el.value"
+                            <select x-on:change="document.querySelector('textarea[name=body]').value = $el.value"
                                     class="w-full px-3 py-2 border border-slate-200 rounded-lg">
                                 <option value="">Select a template...</option>
-                                <option value="Dear Parent, Your child {{ $student->first_name ?? '[Name]' }} has been performing well in class. Keep up the good work!">Performance Praise</option>
+                                <option value="Dear Parent, Your child has been performing well in class. Keep up the good work!">Performance Praise</option>
                                 <option value="Dear Parent, This is to inform you that your child was absent today. Please provide an excuse letter.">Absence Notice</option>
                                 <option value="Dear Parent, We would like to schedule a meeting to discuss your child's progress.">Meeting Request</option>
                             </select>

@@ -24,6 +24,12 @@ return Application::configure(basePath: dirname(__DIR__))
                     ->withInput($request->except('_token'))
                     ->withErrors(['login' => 'Your session expired. Please try again.']);
             }
+
+            if ($request->is('register') || $request->is('enroll') || $request->is('enroll/check')) {
+                return redirect()->back()
+                    ->withInput($request->except('_token'))
+                    ->withErrors(['error' => 'Your session expired. Please refresh the page and try again.']);
+            }
             
             return redirect()->back()
                 ->withInput($request->except('_token'))

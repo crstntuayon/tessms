@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\User;
 use App\Models\Section;
 use App\Models\Teacher;
+use App\Models\Student;
 use App\Models\Enrollment;
 use App\Models\SchoolYear;
 use Illuminate\Http\Request;
@@ -88,7 +89,11 @@ class ConversationController extends Controller
         
         // Verify the user is an allowed contact before showing messages
         $allowedUserIds = $this->getAllowedContactIds($user, $roleName);
+        
+        \Log::info('API show: user=' . $user->id . ' role=' . $roleName . ' target=' . $userId . ' allowed=' . implode(',', $allowedUserIds));
+        
         if (!in_array((int) $userId, $allowedUserIds)) {
+            \Log::warning('API show: 403 - user ' . $userId . ' not in allowed list');
             return response()->json([
                 'error' => 'You can only message currently enrolled students.',
                 'messages' => [],
@@ -165,35 +170,61 @@ class ConversationController extends Controller
         $allowedIds = [];
         
         $activeSchoolYear = SchoolYear::where('is_active', true)->first();
-        if (!$activeSchoolYear) {
-            return $allowedIds;
-        }
         
         if ($roleName === 'teacher') {
             $teacher = Teacher::where('user_id', $user->id)->first();
             if ($teacher) {
-                $teacherSections = Section::where('teacher_id', $teacher->id)
-                    ->where('school_year_id', $activeSchoolYear->id)
-                    ->pluck('id');
+                // Build list of section IDs this teacher is assigned to
+                // NOTE: We do NOT filter sections by school_year_id here because
+                // sections may be tagged to a different year than their enrollments.
+                // We filter enrollments by school year instead.
+                $teacherSectionIds = collect();
                 
-                if ($teacherSections->isNotEmpty()) {
-                    $allowedIds = User::whereHas('student.enrollments', function ($query) use ($teacherSections, $activeSchoolYear) {
-                            $query->whereIn('section_id', $teacherSections)
-                                  ->where('school_year_id', $activeSchoolYear->id)
-                                  ->where('status', 'enrolled');
-                        })
-                        ->pluck('id')
-                        ->toArray();
+                // 1) Sections where teacher is the adviser (teacher_id)
+                $teacherSectionIds = $teacherSectionIds->merge(
+                    Section::where('teacher_id', $teacher->id)->pluck('id')
+                );
+                
+                // 2) Sections where teacher is assigned via teacher_sections pivot
+                $pivotSectionIds = \DB::table('teacher_sections')
+                    ->where('teacher_id', $teacher->id)
+                    ->pluck('section_id');
+                $teacherSectionIds = $teacherSectionIds->merge($pivotSectionIds)->unique()->values();
+                
+                \Log::info('API Conversation: Teacher ' . $teacher->id . ' section IDs: ' . $teacherSectionIds->implode(', '));
+                
+                if ($teacherSectionIds->isNotEmpty()) {
+                    // Find enrollments in teacher's sections for active school year
+                    $enrollmentQuery = Enrollment::whereIn('section_id', $teacherSectionIds)
+                        ->where('status', 'enrolled');
+                    
+                    if ($activeSchoolYear) {
+                        $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
+                    }
+                    
+                    $studentIds = $enrollmentQuery->pluck('student_id');
+                    
+                    $userIds = Student::whereIn('id', $studentIds)
+                        ->whereNotNull('user_id')
+                        ->pluck('user_id');
+                    
+                    $allowedIds = $userIds->toArray();
+                    
+                    \Log::info('API Conversation: Found ' . count($allowedIds) . ' allowed contacts');
                 }
             }
         } elseif ($roleName === 'student') {
-            $enrollment = Enrollment::whereHas('student', function ($q) use ($user) {
+            $enrollmentQuery = Enrollment::whereHas('student', function ($q) use ($user) {
                     $q->where('user_id', $user->id);
                 })
-                ->where('school_year_id', $activeSchoolYear->id)
                 ->where('status', 'enrolled')
-                ->with('section')
-                ->first();
+                ->with('section');
+            
+            if ($activeSchoolYear) {
+                $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
+            }
+            
+            $enrollment = $enrollmentQuery->first();
             
             if ($enrollment && $enrollment->section && $enrollment->section->teacher_id) {
                 $teacherUser = User::whereHas('teacher', function ($q) use ($enrollment) {

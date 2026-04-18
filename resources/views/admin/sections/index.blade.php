@@ -450,25 +450,52 @@
                     <div>
                         <h2 class="page-title">Sections Management</h2>
                         <p class="page-subtitle">Manage class sections, assign advisers, and monitor capacity</p>
-                        @if($activeSchoolYear)
+                        @if($selectedSchoolYear)
                             <span class="school-year-badge mt-2">
                                 <i class="fas fa-calendar-check"></i>
-                                Active: {{ $activeSchoolYear->name }}
+                                Showing: {{ $selectedSchoolYear->name }}
+                                @if($activeSchoolYear && $selectedSchoolYear->id == $activeSchoolYear->id)
+                                    <span class="ml-1 text-emerald-700 font-bold">(Active)</span>
+                                @endif
+                            </span>
+                        @else
+                            <span class="school-year-badge mt-2">
+                                <i class="fas fa-calendar"></i>
+                                Showing: All School Years
                             </span>
                         @endif
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                    <form action="{{ route('admin.sections.index') }}" method="GET" class="relative w-full sm:w-auto">
-                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search sections..." class="search-input">
-                        @if(request('search'))
-                            <a href="{{ route('admin.sections.index') }}" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                                <i class="fas fa-times"></i>
-                            </a>
-                        @endif
-                    </form>
+                <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                        {{-- Search --}}
+                        <form action="{{ route('admin.sections.index') }}" method="GET" class="relative w-full sm:w-auto">
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search sections..." class="search-input">
+                            @if(request('search'))
+                                <a href="{{ route('admin.sections.index') }}" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            @endif
+                        </form>
+                        
+                        {{-- School Year Filter --}}
+                        <form action="{{ route('admin.sections.index') }}" method="GET" id="schoolYearFilterForm" class="relative w-full sm:w-auto">
+                            @if(request('search'))
+                                <input type="hidden" name="search" value="{{ request('search') }}">
+                            @endif
+                            <select name="school_year_id" onchange="document.getElementById('schoolYearFilterForm').submit()"
+                                    class="w-full sm:w-56 px-4 py-3 border-2 border-slate-200 rounded-2xl text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all cursor-pointer">
+                                <option value="">All School Years</option>
+                                @foreach($schoolYears as $year)
+                                    <option value="{{ $year->id }}" {{ $selectedSchoolYear && $selectedSchoolYear->id == $year->id ? 'selected' : '' }}>
+                                        {{ $year->name }} {{ $year->is_active ? '★ Active' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </form>
+                    </div>
                     
                     <div class="flex gap-2 flex-wrap">
                         <button class="filter-pill active">All Grades</button>
@@ -606,11 +633,26 @@
                                         <div class="empty-state-icon">
                                             <i class="fas fa-th-large"></i>
                                         </div>
-                                        <h3 class="text-lg font-bold text-slate-900 mb-2">No Sections Found</h3>
-                                        <p class="text-slate-500 mb-6 max-w-md mx-auto">Get started by creating your first class section. Sections help organize students by grade level and assign advisers.</p>
+                                        <h3 class="text-lg font-bold text-slate-900 mb-2">
+                                            @if($selectedSchoolYear)
+                                                No Sections for {{ $selectedSchoolYear->name }}
+                                            @else
+                                                No Sections Found
+                                            @endif
+                                        </h3>
+                                        <p class="text-slate-500 mb-6 max-w-md mx-auto">
+                                            @if($selectedSchoolYear)
+                                                There are no sections created for {{ $selectedSchoolYear->name }} yet. 
+                                                @if($activeSchoolYear && $selectedSchoolYear->id != $activeSchoolYear->id)
+                                                    <a href="{{ route('admin.sections.index', ['school_year_id' => $activeSchoolYear->id]) }}" class="text-emerald-600 hover:underline font-semibold">Switch to active year {{ $activeSchoolYear->name }}</a>
+                                                @endif
+                                            @else
+                                                Get started by creating your first class section. Sections help organize students by grade level and assign advisers.
+                                            @endif
+                                        </p>
                                         <a href="{{ route('admin.sections.create') }}" class="btn-primary">
                                             <i class="fas fa-plus mr-2"></i>
-                                            Create First Section
+                                            {{ $selectedSchoolYear ? 'Create Section for ' . $selectedSchoolYear->name : 'Create First Section' }}
                                         </a>
                                     </div>
                                 </td>

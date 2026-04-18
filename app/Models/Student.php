@@ -138,10 +138,12 @@ public function section()
     // Full name accessor - gets from user relationship
     public function getFullNameAttribute(): ?string
     {
-        if ($this->relationLoaded('user') && $this->user) {
+        if ($this->user) {
             return trim($this->user->first_name . ' ' . ($this->user->middle_name ? $this->user->middle_name . ' ' : '') . $this->user->last_name);
         }
-        return 'Unknown';
+        return ($this->first_name && $this->last_name)
+            ? trim($this->first_name . ' ' . ($this->middle_name ? $this->middle_name . ' ' : '') . $this->last_name)
+            : 'Unknown';
     }
 
 

@@ -55,7 +55,7 @@
   async function registerServiceWorker() {
     try {
       // Bust cache to ensure browser fetches the latest sw.js
-      const swUrl = PWA_CONFIG.swPath + '?v=4&_=' + Date.now();
+      const swUrl = PWA_CONFIG.swPath + '?v=6&_=' + Date.now();
       const registration = await navigator.serviceWorker.register(swUrl, {
         scope: '/',
         updateViaCache: 'imports'

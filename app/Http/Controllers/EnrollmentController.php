@@ -30,13 +30,19 @@ class EnrollmentController extends Controller
         $enrollmentEnabledValue = \App\Models\Setting::get('enrollment_enabled', false);
         $enrollmentEnabled = $enrollmentEnabledValue === true || $enrollmentEnabledValue === '1' || $enrollmentEnabledValue === 1;
         if (!$enrollmentEnabled) {
-            return view('enrollment.closed');
+            $response = response()->view('enrollment.closed');
+            $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            return $response;
         }
 
         $currentSchoolYear = SchoolYear::where('is_active', true)->first();
         $gradeLevels = GradeLevel::orderBy('order')->get();
 
-        return view('enrollment.form', compact('currentSchoolYear', 'gradeLevels'));
+        $response = response()->view('enrollment.form', compact('currentSchoolYear', 'gradeLevels'));
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+        return $response;
     }
 
     /**

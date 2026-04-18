@@ -25,30 +25,55 @@ class MessengerController extends Controller
             $teacher = Teacher::firstOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'first_name' => explode(' ', $user->name)[0] ?? 'Teacher',
-                    'last_name'  => explode(' ', $user->name)[1] ?? '',
+                    'first_name' => $user->first_name ?? 'Teacher',
+                    'last_name'  => $user->last_name ?? '',
+                    'email'      => $user->email,
                 ]
             );
             
             // Get active school year
             $activeSchoolYear = SchoolYear::where('is_active', true)->first();
             
-            if ($activeSchoolYear) {
-                // Get teacher's sections for the ACTIVE school year only
-                $teacherSections = Section::where('teacher_id', $teacher->id)
-                    ->where('school_year_id', $activeSchoolYear->id)
-                    ->pluck('id');
+            // Build list of section IDs this teacher is assigned to
+            $teacherSectionIds = collect();
+            
+            // 1) Sections where teacher is the adviser (teacher_id)
+            $teacherSectionIds = $teacherSectionIds->merge(
+                Section::where('teacher_id', $teacher->id)->pluck('id')
+            );
+            
+            // 2) Sections where teacher is assigned via teacher_sections pivot
+            $pivotSectionIds = \DB::table('teacher_sections')
+                ->where('teacher_id', $teacher->id)
+                ->pluck('section_id');
+            $teacherSectionIds = $teacherSectionIds->merge($pivotSectionIds)->unique()->values();
+            
+            \Log::info('Messenger: Teacher ' . $teacher->id . ' section IDs: ' . $teacherSectionIds->implode(', '));
+            
+            if ($teacherSectionIds->isNotEmpty()) {
+                // Find enrollments in teacher's sections for active school year
+                $enrollmentQuery = Enrollment::whereIn('section_id', $teacherSectionIds)
+                    ->where('status', 'enrolled');
                 
-                // Get only students with ACTIVE enrollment in those sections for the active school year
-                if ($teacherSections->isNotEmpty()) {
-                    $contacts = User::whereHas('student.enrollments', function ($query) use ($teacherSections, $activeSchoolYear) {
-                            $query->whereIn('section_id', $teacherSections)
-                                  ->where('school_year_id', $activeSchoolYear->id)
-                                  ->where('status', 'enrolled');
-                        })
-                        ->where('id', '!=', $user->id)
-                        ->get();
+                if ($activeSchoolYear) {
+                    $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
                 }
+                
+                $studentIds = $enrollmentQuery->pluck('student_id');
+                
+                // Get user IDs from those students
+                $userIds = Student::whereIn('id', $studentIds)
+                    ->whereNotNull('user_id')
+                    ->pluck('user_id');
+                
+                // Load contact users
+                $contacts = User::whereIn('id', $userIds)
+                    ->where('id', '!=', $user->id)
+                    ->get();
+                
+                \Log::info('Messenger: Found ' . $contacts->count() . ' contacts for teacher ' . $teacher->id);
+            } else {
+                \Log::info('Messenger: No sections found for teacher ' . $teacher->id);
             }
                 
         } elseif ($roleName === 'student') {

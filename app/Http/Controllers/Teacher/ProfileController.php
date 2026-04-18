@@ -15,7 +15,11 @@ class ProfileController extends Controller
 
         $teacher = Teacher::firstOrCreate(
             ['user_id' => $user->id],
-            ['email' => $user->email]
+            [
+                'first_name' => $user->first_name ?? 'Teacher',
+                'last_name'  => $user->last_name ?? '',
+                'email'      => $user->email,
+            ]
         );
 
         return view('teacher.profile.index', compact('user', 'teacher'));
@@ -27,7 +31,11 @@ class ProfileController extends Controller
 
         $teacher = Teacher::firstOrCreate(
             ['user_id' => $user->id],
-            ['email' => $user->email]
+            [
+                'first_name' => $user->first_name ?? 'Teacher',
+                'last_name'  => $user->last_name ?? '',
+                'email'      => $user->email,
+            ]
         );
 
         return view('teacher.profile.edit', compact('user', 'teacher'));

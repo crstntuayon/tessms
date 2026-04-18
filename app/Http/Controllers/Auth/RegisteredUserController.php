@@ -23,14 +23,15 @@ class RegisteredUserController extends Controller
     /**
      * Show registration form
      */
-    public function create(): View
+    public function create(): \Illuminate\Http\RedirectResponse
     {
         if (!SettingsEnforcer::isRegistrationEnabled()) {
             abort(403, 'User registration is currently disabled.');
         }
 
-        $gradeLevels = GradeLevel::orderBy('order')->get();
-        return view('auth.register', compact('gradeLevels'));
+        // Redirect to landing page and flash panel mode so the auth panel
+        // opens once, but stays closed on refresh.
+        return redirect('/')->with('panel_mode', 'register');
     }
 
     /**
@@ -39,12 +40,13 @@ class RegisteredUserController extends Controller
     public function store(Request $request)
     {
         if (!SettingsEnforcer::isRegistrationEnabled()) {
-            return back()->withErrors(['error' => 'User registration is currently disabled.'])->withInput();
+            return redirect('/')->withErrors(['error' => 'User registration is currently disabled.'])->withInput()->with('panel_mode', 'register');
         }
+
         // Generate full LRN if provided
         $fullLrn = $request->filled('lrn_suffix') ? '120231' . $request->lrn_suffix : null;
 
-        $request->validate([
+        $validator = \Validator::make($request->all(), [
             'lrn_suffix' => [
                 'nullable',
                 'digits:6',
@@ -103,6 +105,15 @@ class RegisteredUserController extends Controller
             'good_moral' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'transfer_credential' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
+
+        if ($validator->fails()) {
+            return redirect('/')
+                ->withErrors($validator)
+                ->withInput()
+                ->with('panel_mode', 'register');
+        }
+
+        $validated = $validator->validated();
 
         DB::beginTransaction();
 
@@ -243,9 +254,9 @@ class RegisteredUserController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->withErrors([
+            return redirect('/')->withErrors([
                 'error' => $e->getMessage()
-            ])->withInput();
+            ])->withInput()->with('panel_mode', 'register');
         }
     }
 }

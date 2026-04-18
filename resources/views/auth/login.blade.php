@@ -11,7 +11,17 @@
         ->latest()
         ->take(6)
         ->get();
-    $teachers = Teacher::with('user')->get();
+    $teachers = Teacher::with('user')
+        ->whereHas('user', function ($q) {
+            $q->whereHas('role', function ($r) {
+                $r->where('name', 'Teacher');
+            });
+        })
+        ->where(function ($q) {
+            $q->whereNotNull('first_name')->where('first_name', '!=', '')
+              ->orWhereNotNull('last_name')->where('last_name', '!=', '');
+        })
+        ->get();
     $students = Student::whereHas('enrollments', function($q) {
         $q->where('status', 'enrolled');
     })->get();
@@ -1278,7 +1288,7 @@ function imageSlider() {
 
 <!-- resources/views/auth/register.blade.php -->
 
-<form action="{{ route('register') }}" method="POST" enctype="multipart/form-data" class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+<form action="{{ route('register') }}" method="POST" enctype="multipart/form-data" class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden" onsubmit="handleAuthSubmit(event, 'register')">
     @csrf
     
     <!-- Header -->
@@ -1823,11 +1833,15 @@ function imageSlider() {
 
         <!-- Submit Button -->
         <div class="pt-4">
-            <button type="submit" class="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-3">
+            <button type="submit" id="regSubmitBtn" class="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-3">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                Complete Registration
+                <span id="regBtnText">Complete Registration</span>
+                <svg id="regSpinner" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
             </button>
             <p class="text-center text-sm text-slate-500 mt-4">
                 By registering, you agree to our <a href="#" class="text-teal-600 hover:underline font-medium">Terms of Service</a> and <a href="#" class="text-teal-600 hover:underline font-medium">Privacy Policy</a>
@@ -2020,21 +2034,17 @@ function togglePreviousSchool() {
     const documentRequirementsText = document.getElementById('documentRequirementsText');
     const birthCertLabel = document.getElementById('birthCertLabel');
     const birthCertRequired = document.getElementById('birthCertRequired');
-    
+
     if (typeSelect.value === 'transferee') {
         previousSchoolField.classList.remove('hidden');
-        previousSchoolInput.setAttribute('required', 'required');
         transferCredentialField.classList.remove('hidden');
-        transferCredentialInput.setAttribute('required', 'required');
         documentRequirementsText.textContent = 'Transferees: Report Card, Good Moral, Transfer Credentials (Birth Certificate optional)';
         birthCertLabel.textContent = 'Birth Certificate (Optional)';
         birthCertRequired.classList.add('hidden');
     } else if (typeSelect.value === 'new') {
         previousSchoolField.classList.add('hidden');
-        previousSchoolInput.removeAttribute('required');
         previousSchoolInput.value = '';
         transferCredentialField.classList.add('hidden');
-        transferCredentialInput.removeAttribute('required');
         transferCredentialInput.value = '';
         documentRequirementsText.textContent = 'New Students: Birth Certificate, Report Card, Good Moral Certificate';
         birthCertLabel.textContent = 'Birth Certificate';
@@ -2042,10 +2052,8 @@ function togglePreviousSchool() {
     } else {
         // Continuing students - no documents required
         previousSchoolField.classList.add('hidden');
-        previousSchoolInput.removeAttribute('required');
         previousSchoolInput.value = '';
         transferCredentialField.classList.add('hidden');
-        transferCredentialInput.removeAttribute('required');
         transferCredentialInput.value = '';
     }
 }
@@ -2080,11 +2088,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
     
-    // Check for mode=register query parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('mode') === 'register') {
-        openAuthPanel('register');
-    }
 });
         // Mobile Menu Toggle
         function toggleMobileMenu() {
@@ -2161,30 +2164,6 @@ document.addEventListener('DOMContentLoaded', function () {
             input.type = type;
         }
 
-        // CSRF Token refresh mechanism
-        function refreshCsrfToken() {
-            return fetch('/sanctum/csrf-cookie', {
-                method: 'GET',
-                credentials: 'same-origin'
-            }).then(() => {
-                // Update meta tag and form tokens
-                return fetch('/csrf-token')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.token) {
-                            document.querySelector('meta[name="csrf-token"]').setAttribute('content', data.token);
-                            // Update all form CSRF inputs
-                            document.querySelectorAll('input[name="_token"]').forEach(input => {
-                                input.value = data.token;
-                            });
-                        }
-                    });
-            }).catch(() => {
-                // Silently fail - the existing token might still work
-            });
-        }
-
-        // Refresh CSRF token when auth panel opens
         function openAuthPanel(mode = 'login') {
             const panel = document.getElementById('authSidePanel');
             const overlay = document.getElementById('sidePanelOverlay');
@@ -2198,9 +2177,6 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 switchAuthMode('login');
             }
-            
-            // Refresh CSRF token when opening the panel
-            refreshCsrfToken();
         }
 
         // Form Submit Handler
@@ -2278,21 +2254,111 @@ document.addEventListener('DOMContentLoaded', function () {
             section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             observer.observe(section);
         });
-        
-        // Refresh CSRF token periodically to prevent 419 errors (every 30 minutes)
-        setInterval(refreshCsrfToken, 30 * 60 * 1000);
-        
-        // Also refresh when the page becomes visible again
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                refreshCsrfToken();
+
+        // Sound effects — same as School Year Closure admin page
+        let _audioCtx = null;
+
+        function _getAudioCtx() {
+            if (!_audioCtx) {
+                _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
-        });
+            if (_audioCtx.state === 'suspended') {
+                _audioCtx.resume();
+            }
+            return _audioCtx;
+        }
+
+        // Initialize audio on first user interaction (required by some browsers)
+        document.addEventListener('click', function _initAudioOnce() {
+            _getAudioCtx();
+            document.removeEventListener('click', _initAudioOnce);
+        }, { once: true });
+
+        function playSuccessSound() {
+            try {
+                const ctx = _getAudioCtx();
+                const now = ctx.currentTime;
+                const duration = 2.0;
+
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.25, now + 0.05);
+                gain.gain.setValueAtTime(0.25, now + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                osc.start(now);
+                osc.stop(now + duration);
+            } catch (e) {
+                // Silently fail if audio is blocked or unsupported
+            }
+        }
+
+        function playErrorSound() {
+            try {
+                const ctx = _getAudioCtx();
+                const now = ctx.currentTime;
+                const duration = 2.0;
+                const interval = 0.4;
+
+                // First beep
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(400, now);
+                gain1.gain.setValueAtTime(0, now);
+                gain1.gain.linearRampToValueAtTime(0.25, now + 0.02);
+                gain1.gain.setValueAtTime(0.25, now + 0.1);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + interval);
+                osc1.start(now);
+                osc1.stop(now + interval);
+
+                // Second beep
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(300, now + interval);
+                gain2.gain.setValueAtTime(0, now + interval);
+                gain2.gain.linearRampToValueAtTime(0.25, now + interval + 0.02);
+                gain2.gain.setValueAtTime(0.25, now + interval + 0.1);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + interval * 2);
+                osc2.start(now + interval);
+                osc2.stop(now + interval * 2);
+
+                // Third beep
+                const osc3 = ctx.createOscillator();
+                const gain3 = ctx.createGain();
+                osc3.connect(gain3);
+                gain3.connect(ctx.destination);
+                osc3.type = 'sine';
+                osc3.frequency.setValueAtTime(200, now + interval * 2);
+                gain3.gain.setValueAtTime(0, now + interval * 2);
+                gain3.gain.linearRampToValueAtTime(0.25, now + interval * 2 + 0.02);
+                gain3.gain.setValueAtTime(0.25, now + interval * 2 + 0.3);
+                gain3.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                osc3.start(now + interval * 2);
+                osc3.stop(now + duration);
+            } catch (e) {
+                // Silently fail if audio is blocked or unsupported
+            }
+        }
     </script>
 
     @if(session('success'))
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        playSuccessSound();
         Swal.fire({
             icon: 'success',
             title: 'Success',
@@ -2305,7 +2371,22 @@ document.addEventListener('DOMContentLoaded', function () {
     </script>
     @endif
 
-    
+    @if(session('error') || $errors->has('error'))
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        playErrorSound();
+        Swal.fire({
+            icon: 'error',
+            title: 'Registration Failed',
+            text: "{{ session('error') ?? $errors->first('error') }}",
+            confirmButtonColor: '#dc2626',
+            background: '#ffffff',
+            color: '#1e293b',
+            iconColor: '#dc2626'
+        });
+    </script>
+    @endif
+
 @php
 $loginOnlyErrors = ['username', 'password'];
 $hasRegistrationErrors = false;
@@ -2317,16 +2398,11 @@ foreach($errors->keys() as $key) {
 }
 @endphp
 
-@if($hasRegistrationErrors)
+@if($hasRegistrationErrors || session('panel_mode') === 'register')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    playErrorSound();
     openAuthPanel('register');
-});
-</script>
-@elseif($errors->has('username') || $errors->has('password'))
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    openAuthPanel('login');
 });
 </script>
 @endif

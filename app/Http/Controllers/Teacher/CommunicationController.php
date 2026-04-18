@@ -30,12 +30,32 @@ class CommunicationController extends Controller
         $teacher = Teacher::firstOrCreate(
             ['user_id' => $user->id],
             [
-                'first_name' => explode(' ', $user->name)[0] ?? 'Teacher',
-                'last_name'  => explode(' ', $user->name)[1] ?? '',
+                'first_name' => $user->first_name ?? 'Teacher',
+                'last_name'  => $user->last_name ?? '',
+                'email'      => $user->email,
             ]
         );
         
-        $sections = $teacher->sections()->with('gradeLevel')->get();
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        
+        // Load teacher's sections for the active school year with enrolled students
+        $sectionsQuery = $teacher->sections()->with('gradeLevel');
+        if ($activeSchoolYear) {
+            $sectionsQuery->where('school_year_id', $activeSchoolYear->id);
+        }
+        $sections = $sectionsQuery->get();
+        
+        // Eager-load enrolled students for each section via enrollments
+        foreach ($sections as $section) {
+            $section->load(['enrollments' => function($q) use ($activeSchoolYear) {
+                $q->where('status', 'enrolled');
+                if ($activeSchoolYear) {
+                    $q->where('school_year_id', $activeSchoolYear->id);
+                }
+                $q->with(['student.user']);
+            }]);
+        }
+        
         $tab = $request->get('tab', 'inbox');
         $search = $request->get('search');
 
@@ -54,24 +74,51 @@ class CommunicationController extends Controller
         $messages = $query->orderByDesc('created_at')->paginate(20);
         $unreadCount = Message::receivedBy($user->id)->unread()->count();
 
+        // Stats for dashboard cards
+        $sentCount = Message::where('sender_id', $user->id)
+            ->whereDate('created_at', today())
+            ->count();
+        
+        $parentCount = 0;
+        foreach ($sections as $section) {
+            foreach ($section->enrollments as $enrollment) {
+                if ($enrollment->student && $enrollment->student->user_id) {
+                    $parentCount++;
+                }
+            }
+        }
+        // Make unique count (a parent could have multiple children)
+        $parentCount = $sections->flatMap(function ($s) {
+            return $s->enrollments->pluck('student.user_id')->filter();
+        })->unique()->count();
+        
+        $announcementCount = Message::where('sender_id', $user->id)
+            ->where('is_bulk', true)
+            ->count();
+
         return view('teacher.communications.index', compact(
             'sections',
             'messages',
             'unreadCount',
             'tab',
-            'search'
+            'search',
+            'sentCount',
+            'parentCount',
+            'announcementCount'
         ));
     }
 
     /**
-     * Send message to individual student
+     * Send message to student(s)
      */
     public function store(Request $request)
     {
         $request->validate([
-            'recipient_type' => 'required|in:individual,section',
+            'recipient_type' => 'required|in:individual,section,multiple',
             'recipient_id' => 'required_if:recipient_type,individual|exists:users,id',
             'section_id' => 'required_if:recipient_type,section|exists:sections,id',
+            'recipient_ids' => 'required_if:recipient_type,multiple|array|min:1',
+            'recipient_ids.*' => 'exists:users,id',
             'subject' => 'required|string|max:255',
             'body' => 'required|string|max:5000',
             'attachments.*' => 'nullable|file|max:10240',
@@ -79,8 +126,10 @@ class CommunicationController extends Controller
 
         if ($request->recipient_type === 'individual') {
             return $this->sendIndividualMessage($request);
-        } else {
+        } elseif ($request->recipient_type === 'section') {
             return $this->sendBulkMessage($request);
+        } else {
+            return $this->sendMultipleMessages($request);
         }
     }
 
@@ -109,12 +158,51 @@ class CommunicationController extends Controller
             ->with('success', 'Message sent successfully!');
     }
 
+    private function sendMultipleMessages(Request $request)
+    {
+        $sentCount = 0;
+
+        foreach ($request->recipient_ids as $userId) {
+            $message = Message::create([
+                'sender_id' => Auth::id(),
+                'recipient_id' => $userId,
+                'subject' => $request->subject,
+                'body' => $request->body,
+                'is_read' => false,
+                'is_bulk' => true,
+            ]);
+
+            $this->handleAttachments($request, $message);
+            
+            // Broadcast to each recipient (optional)
+            try {
+                broadcast(new MessageSent($message))->toOthers();
+            } catch (\Exception $e) {
+                \Log::info('Broadcast failed (Reverb may not be running): ' . $e->getMessage());
+            }
+            
+            $sentCount++;
+        }
+
+        return redirect()->route('teacher.communications.index', ['tab' => 'sent'])
+            ->with('success', "Message sent to {$sentCount} parent(s)!");
+    }
+
     private function sendBulkMessage(Request $request)
     {
         $section = Section::findOrFail($request->section_id);
-        $students = $section->students()->whereHas('user', function ($q) {
-            $q->where('is_active', true);
-        })->with('user')->get();
+        $currentSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        
+        // Get students through enrollments (the reliable way)
+        $query = Student::whereHas('enrollments', function ($q) use ($section, $currentSchoolYear) {
+            $q->where('section_id', $section->id)
+              ->where('status', 'enrolled');
+            if ($currentSchoolYear) {
+                $q->where('school_year_id', $currentSchoolYear->id);
+            }
+        })->whereHas('user');
+        
+        $students = $query->with('user')->get();
 
         $sentCount = 0;
 
@@ -301,18 +389,14 @@ class CommunicationController extends Controller
         
         \Log::info('Loading students for section: ' . $section->id . ', school year: ' . ($currentSchoolYear ? $currentSchoolYear->id : 'none'));
         
-        $query = $section->students()
-            ->whereHas('user', function ($q) {
-                $q->where('is_active', true);
-            });
-            
-        // Only filter by enrollment if we have a current school year
-        if ($currentSchoolYear) {
-            $query->whereHas('enrollments', function ($q) use ($currentSchoolYear) {
-                $q->where('status', 'enrolled')
-                  ->where('school_year_id', $currentSchoolYear->id);
-            });
-        }
+        // Query students through enrollments (the reliable way)
+        $query = Student::whereHas('enrollments', function ($q) use ($section, $currentSchoolYear) {
+            $q->where('section_id', $section->id)
+              ->where('status', 'enrolled');
+            if ($currentSchoolYear) {
+                $q->where('school_year_id', $currentSchoolYear->id);
+            }
+        })->whereHas('user');
         
         $students = $query->with('user')
             ->orderBy('last_name')

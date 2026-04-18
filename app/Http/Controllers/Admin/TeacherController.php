@@ -15,7 +15,18 @@ class TeacherController extends Controller
     // Display list of teachers
     public function index()
     {
-        $teachers = Teacher::with('user')->latest()->get();
+        $teachers = Teacher::with('user')
+            ->whereHas('user', function ($q) {
+                $q->whereHas('role', function ($r) {
+                    $r->where('name', 'Teacher');
+                });
+            })
+            ->where(function ($q) {
+                $q->whereNotNull('first_name')->where('first_name', '!=', '')
+                  ->orWhereNotNull('last_name')->where('last_name', '!=', '');
+            })
+            ->latest()
+            ->get();
         return view('admin.teachers.index', compact('teachers'));
     }
 
@@ -393,7 +404,10 @@ class TeacherController extends Controller
                 \App\Models\SectionFinalization::where('finalized_by', $teacher->user->id)
                     ->update(['finalized_by' => null]);
 
-                $teacher->user->delete();
+                // Delete the user ONLY if they are a Teacher (not Admin/Registrar/Student)
+                if ($teacher->user->role && $teacher->user->role->name === 'Teacher') {
+                    $teacher->user->delete();
+                }
             }
             $teacher->delete();
             DB::commit();

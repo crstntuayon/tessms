@@ -178,34 +178,7 @@
             }
         }
         
-        // CSRF Token refresh mechanism - refresh token periodically to prevent 419 errors
-        function refreshCsrfToken() {
-            return fetch('/csrf-token')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.token) {
-                        document.querySelector('meta[name="csrf-token"]').setAttribute('content', data.token);
-                        // Update the form CSRF input
-                        const tokenInput = document.querySelector('input[name="_token"]');
-                        if (tokenInput) {
-                            tokenInput.value = data.token;
-                        }
-                    }
-                })
-                .catch(() => {
-                    // Silently fail - the existing token might still work
-                });
-        }
-        
-        // Refresh CSRF token every 30 minutes while on the page
-        setInterval(refreshCsrfToken, 30 * 60 * 1000);
-        
-        // Also refresh when the page becomes visible again
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                refreshCsrfToken();
-            }
-        });
+
     </script>
 </body>
 </html>
