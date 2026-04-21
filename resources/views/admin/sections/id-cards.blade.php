@@ -29,9 +29,59 @@
                 border: none !important;
                 background: white !important;
                 max-width: none !important;
+                padding: 0 !important;
             }
+            .cards-scroll-area {
+                max-height: none !important;
+                overflow: visible !important;
+                background: white !important;
+                padding: 0 !important;
+            }
+
+            /* Landscape bond paper with small margins */
+            @page { size: landscape; margin: 0.25in; }
+
+            /* Override component's single-card print styles for bulk layout */
+            body * { visibility: visible !important; }
+            .id-card-wrapper {
+                position: static !important;
+                left: auto !important;
+                top: auto !important;
+                transform: none !important;
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 0.1in !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            /* 2 students per row */
+            .bulk-grid {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 0.2in !important;
+                align-items: start !important;
+                justify-items: center !important;
+            }
+
             .id-card-pair {
-                margin-bottom: 0.2in;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                margin-bottom: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                width: 100% !important;
+                display: flex !important;
+                justify-content: center !important;
+            }
+
+            .id-card {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+                border: 1px solid #94a3b8 !important;
+                page-break-inside: avoid !important;
             }
         }
     </style>
@@ -56,7 +106,7 @@
         </div>
 
         <!-- Cards Content -->
-        <div class="p-5 max-h-[75vh] overflow-y-auto bg-slate-50">
+        <div class="cards-scroll-area p-5 max-h-[75vh] overflow-y-auto bg-slate-50">
             @if($students->isEmpty())
                 <div class="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm no-print">
                     <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -66,7 +116,7 @@
                     <p class="text-slate-500">This section has no enrolled students for the active school year.</p>
                 </div>
             @else
-                <div class="flex flex-col items-center gap-5">
+                <div class="bulk-grid flex flex-col items-center gap-5">
                     @foreach($students as $student)
                         <div class="id-card-pair bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                             @include('components.student-id-card', ['student' => $student, 'showPrint' => false])

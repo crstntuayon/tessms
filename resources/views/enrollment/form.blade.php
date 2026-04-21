@@ -85,7 +85,7 @@
             @endif
 
             <!-- Form Card -->
-            <div class="glass rounded-3xl shadow-2xl p-8" x-data="continuingEnrollment()">
+            <div class="glass rounded-3xl shadow-2xl p-8" x-data="continuingEnrollment()" x-init="init()">
                 
                 <!-- Step 1: LRN Lookup -->
                 <div x-show="step === 1" x-transition>
@@ -144,7 +144,7 @@
                         </div>
                     </div>
 
-                    <form action="{{ route('enrollment.submit') }}" method="POST">
+                    <form action="{{ route('enrollment.submit') }}" method="POST" @submit="clearState()">
                         @csrf
                         <input type="hidden" name="application_type" value="continuing">
                         <input type="hidden" name="school_year_id" value="{{ $currentSchoolYear->id ?? '' }}">
@@ -218,6 +218,48 @@
                 lastSchoolYear: '',
                 loading: false,
                 error: '',
+
+                init() {
+                    // Restore state from localStorage on page load
+                    const saved = localStorage.getItem('enrollment_state');
+                    if (saved) {
+                        try {
+                            const data = JSON.parse(saved);
+                            this.step = data.step ?? 1;
+                            this.lrn = data.lrn ?? '';
+                            this.studentId = data.studentId ?? '';
+                            this.studentName = data.studentName ?? '';
+                            this.lastGrade = data.lastGrade ?? '';
+                            this.lastSchoolYear = data.lastSchoolYear ?? '';
+                        } catch (e) {
+                            localStorage.removeItem('enrollment_state');
+                        }
+                    }
+
+                    // Watch for changes and save to localStorage
+                    this.$watch('step', () => this.saveState());
+                    this.$watch('lrn', () => this.saveState());
+                    this.$watch('studentId', () => this.saveState());
+                    this.$watch('studentName', () => this.saveState());
+                    this.$watch('lastGrade', () => this.saveState());
+                    this.$watch('lastSchoolYear', () => this.saveState());
+                },
+
+                saveState() {
+                    const data = {
+                        step: this.step,
+                        lrn: this.lrn,
+                        studentId: this.studentId,
+                        studentName: this.studentName,
+                        lastGrade: this.lastGrade,
+                        lastSchoolYear: this.lastSchoolYear
+                    };
+                    localStorage.setItem('enrollment_state', JSON.stringify(data));
+                },
+
+                clearState() {
+                    localStorage.removeItem('enrollment_state');
+                },
 
                 async lookupStudent() {
                     // Clean the LRN - remove any non-digit characters

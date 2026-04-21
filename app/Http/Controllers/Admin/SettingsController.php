@@ -197,7 +197,7 @@ class SettingsController extends Controller
     {
         try {
             $value = $request->input('enrollment_enabled', '0');
-            $enabled = $value === '1' || $value === true || $value === 1;
+            $enabled = $value === '1' || $value === true || $value === 1 || $value === 'true';
             
             Setting::set(
                 'enrollment_enabled', 
@@ -215,7 +215,9 @@ class SettingsController extends Controller
                 "Enrollment submissions {$status}"
             );
             
-            if ($request->ajax()) {
+            $isAjax = $request->ajax() || $request->wantsJson() || $request->isJson();
+            
+            if ($isAjax) {
                 return response()->json([
                     'success' => true,
                     'message' => "Enrollment submissions {$status}!",
@@ -224,13 +226,15 @@ class SettingsController extends Controller
             }
             
             return redirect()
-                ->back()
+                ->route('admin.enrollment.index')
                 ->with('success', "Enrollment submissions {$status}!");
                 
         } catch (\Exception $e) {
             Log::error('Enrollment toggle failed: ' . $e->getMessage());
             
-            if ($request->ajax()) {
+            $isAjax = $request->ajax() || $request->wantsJson() || $request->isJson();
+            
+            if ($isAjax) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to toggle enrollment: ' . $e->getMessage()

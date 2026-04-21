@@ -40,6 +40,17 @@
 <meta name="format-detection" content="telephone=no">
 
 {{-- PWA Scripts --}}
+{{-- SW Registration DISABLED: force unregister any existing service workers --}}
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    });
+    caches.keys().then(names => {
+      names.forEach(n => caches.delete(n));
+    });
+  }
+</script>
 <script src="/js/pwa/offline-support.js" defer></script>
 <script src="/js/pwa/register.js" defer></script>
 <script src="/js/pwa/biometric-auth.js" defer></script>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
+use App\Models\SchoolYear;
 use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,11 @@ class AssignmentController extends Controller
     {
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         $assignments = Assignment::where('section_id', $section->id)
@@ -31,6 +37,11 @@ class AssignmentController extends Controller
             abort(403);
         }
 
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
+        }
+
         $subjects = $section->gradeLevel->subjects ?? collect();
         
         return view('teacher.assignments.create', compact('section', 'subjects'));
@@ -40,6 +51,11 @@ class AssignmentController extends Controller
     {
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         $request->validate([
@@ -88,6 +104,11 @@ class AssignmentController extends Controller
             abort(403);
         }
 
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
+        }
+
         $assignment->load(['submissions.student.user', 'subject']);
         
         $students = $section->students()
@@ -102,6 +123,11 @@ class AssignmentController extends Controller
     {
         if ($section->teacher_id !== auth()->user()->teacher->id || $assignment->section_id !== $section->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         $request->validate([
@@ -126,6 +152,11 @@ class AssignmentController extends Controller
     {
         if ($section->teacher_id !== auth()->user()->teacher->id || $assignment->section_id !== $section->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         // Delete attachments

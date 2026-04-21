@@ -120,10 +120,13 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((response) => {
           if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
+            const cacheControl = response.headers.get('Cache-Control') || '';
+            if (!cacheControl.includes('no-store')) {
+              const responseClone = response.clone();
+              caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+                cache.put(request, responseClone);
+              });
+            }
           }
           return response;
         })
@@ -154,10 +157,14 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((response) => {
           if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
+            // Only cache if the response doesn't explicitly say not to
+            const cacheControl = response.headers.get('Cache-Control') || '';
+            if (!cacheControl.includes('no-store')) {
+              const responseClone = response.clone();
+              caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+                cache.put(request, responseClone);
+              });
+            }
           }
           return response;
         })

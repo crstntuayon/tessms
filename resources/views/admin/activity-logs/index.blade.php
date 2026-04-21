@@ -5,7 +5,7 @@
 @section('header-title', 'Activity Audit Logs')
 
 @section('content')
-<div class="max-w-7xl mx-auto" x-data="{ showClearModal: false }">
+<div class="max-w-7xl mx-auto" x-data="{ showClearModal: false }" id="activity-logs-page">
     <!-- Stats Cards -->
     <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
@@ -101,7 +101,7 @@
                 <a href="{{ route('admin.activity-logs.export', request()->query()) }}" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
                     <i class="fas fa-download mr-2"></i>Export
                 </a>
-                <button type="button" @click="showClearModal = true" class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors ml-auto">
+                <button type="button" @click="showClearModal = true" onclick="document.getElementById('clearLogsModal').style.display='block'" class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors ml-auto">
                     <i class="fas fa-trash-alt mr-2"></i>Clear Old Logs
                 </button>
             </div>
@@ -181,7 +181,7 @@
     </div>
 
     <!-- Clear Logs Modal -->
-    <div x-show="showClearModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
+    <div x-show="showClearModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" id="clearLogsModal">
         <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" @click="showClearModal = false"></div>
         <div class="flex min-h-full items-center justify-center p-4">
             <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
@@ -200,7 +200,7 @@
                                    class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500">
                         </div>
                         <div class="flex gap-3">
-                            <button type="button" @click="showClearModal = false" 
+                            <button type="button" @click="showClearModal = false" onclick="document.getElementById('clearLogsModal').style.display='none'"
                                     class="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-colors">
                                 Cancel
                             </button>

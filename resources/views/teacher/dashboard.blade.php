@@ -875,7 +875,7 @@
                                         <i class="fas fa-clipboard-list text-2xl text-slate-400"></i>
                                     </div>
                                     <p class="font-medium text-slate-700">No recent grades</p>
-                                    <a href="{{ route('teacher.sections.grades', $section) }}"  class="mt-4 inline-block px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all">Encode Grades</a>
+                                    <a href="{{ $activeSection ? route('teacher.sections.grades', $activeSection) : '#' }}"  class="mt-4 inline-block px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all">Encode Grades</a>
                                 </div>
                                 @endforelse
                             </div>
@@ -889,7 +889,7 @@
                                     Quick Actions
                                 </h3>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <a href="{{ route('teacher.sections.grades', $section) }}"  class="p-4 bg-indigo-50 hover:bg-indigo-100 rounded-xl text-center transition-all group border border-transparent hover:border-indigo-200">
+                                    <a href="{{ $activeSection ? route('teacher.sections.grades', $activeSection) : '#' }}"  class="p-4 bg-indigo-50 hover:bg-indigo-100 rounded-xl text-center transition-all group border border-transparent hover:border-indigo-200">
                                         <i class="fas fa-plus-circle text-2xl text-indigo-600 mb-2 group-hover:scale-110 transition-transform inline-block"></i>
                                         <p class="text-xs font-bold text-indigo-800">Encode Grades</p>
                                     </a>

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\GradeLevel;
+use App\Models\SchoolYear;
 
 class StudentController extends Controller
 {
@@ -18,6 +19,11 @@ class StudentController extends Controller
         // Ensure teacher only accesses their own section
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403, 'Unauthorized access.');
+        }
+
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         // Load only active/enrolled students - exclude completed/inactive

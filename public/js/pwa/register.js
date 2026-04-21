@@ -22,17 +22,15 @@
   }
   
   function init() {
-    console.log('[PWA] Initializing...');
+    console.log('[PWA] Service Worker registration DISABLED for debugging');
     
     if (!('serviceWorker' in navigator)) {
       console.log('[PWA] Service workers not supported');
       return;
     }
     
-    // Unregister old service workers to prevent stale caches from interfering
-    unregisterOldServiceWorkers().then(() => {
-      registerServiceWorker();
-    });
+    // FORCE UNREGISTER all service workers to prevent cache issues
+    unregisterOldServiceWorkers();
     
     setupInstallPrompt();
     setupOnlineStatus();

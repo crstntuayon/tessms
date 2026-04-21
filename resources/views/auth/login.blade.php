@@ -478,7 +478,7 @@ img {
                     </p>
                     
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="{{ route('enrollment.form') }}" class="btn-primary text-white px-8 py-4 rounded-full font-semibold inline-flex items-center justify-center gap-2 shadow-xl shadow-teal-500/30 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                        <a href="{{ url('/enroll') }}" class="btn-primary text-white px-8 py-4 rounded-full font-semibold inline-flex items-center justify-center gap-2 shadow-xl shadow-teal-500/30 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
                             <i class="fas fa-user-plus"></i>
                             Enroll Now
                         </a>

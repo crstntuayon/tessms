@@ -136,8 +136,6 @@ Route::middleware(['auth'])->prefix('teacher')->name('teacher.')->group(function
 
 
     Route::get('sections/{section}/students', [App\Http\Controllers\Teacher\SectionsController::class, 'students'])->name('sections.students');
-    Route::get('sections/{section}/attendance', [App\Http\Controllers\Teacher\SectionsController::class, 'attendance'])->name('sections.attendance');
-    Route::get('sections/{section}/grades', [App\Http\Controllers\Teacher\SectionsController::class, 'grades'])->name('sections.grades');
   // Core Values Routes
     Route::get('/sections/{section}/core-values', [App\Http\Controllers\Teacher\CoreValueController::class, 'index'])
         ->name('sections.core-values.index');

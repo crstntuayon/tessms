@@ -16,6 +16,11 @@ class AnalyticsController extends Controller
             abort(403);
         }
 
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
+        }
+
         $activeSchoolYear = SchoolYear::where('is_active', true)->first();
         $quarter = $request->get('quarter', 1);
 

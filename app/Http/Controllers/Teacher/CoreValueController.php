@@ -31,8 +31,14 @@ class CoreValueController extends Controller
             abort(403);
         }
 
-        $currentQuarter = $request->get('quarter', $this->getCurrentQuarter());
         $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+
+        // Security: section must belong to active school year
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
+        }
+
+        $currentQuarter = $request->get('quarter', $this->getCurrentQuarter());
         
         // Check finalization status
         $finalization = null;

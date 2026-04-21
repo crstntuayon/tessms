@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Section;
+use App\Models\SchoolYear;
 
 class SectionsController extends Controller
 {
@@ -17,6 +18,11 @@ class SectionsController extends Controller
 
         if ($section->teacher_id != $teacherId) {
             abort(403, 'Unauthorized');
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         return view('teacher.sections.show', compact('section'));
@@ -37,6 +43,11 @@ class SectionsController extends Controller
 
         if ($section->teacher_id != $teacherId) {
             abort(403, 'Unauthorized');
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         $students = $section->students; // assumes Section has students() relationship

@@ -132,24 +132,22 @@
         </div>
         
         <!-- Enrollment Toggle -->
-        <div class="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm border border-slate-200">
+        <form action="{{ route('admin.settings.toggle-enrollment') }}" method="POST" class="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm border border-slate-200" id="enrollmentToggleWrapper">
+            @csrf
             <div class="text-right">
                 <p class="text-sm font-medium text-slate-700">Student Enrollment</p>
                 <p class="text-xs text-slate-500">Allow students to submit requests</p>
             </div>
-            <form action="{{ route('admin.settings.toggle-enrollment') }}" method="POST" class="inline">
-                @csrf
-                <input type="hidden" name="enrollment_enabled" value="{{ $enrollmentEnabled ? '0' : '1' }}">
-                <button type="submit" 
-                        class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 {{ $enrollmentEnabled ? 'bg-emerald-500' : 'bg-slate-300' }}">
-                    <span class="sr-only">Toggle enrollment</span>
-                    <span class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform {{ $enrollmentEnabled ? 'translate-x-6' : 'translate-x-1' }}"></span>
-                </button>
-            </form>
+            <input type="hidden" name="enrollment_enabled" value="{{ $enrollmentEnabled ? '0' : '1' }}">
+            <button type="submit" 
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 {{ $enrollmentEnabled ? 'bg-emerald-500' : 'bg-slate-300' }}">
+                <span class="sr-only">Toggle enrollment</span>
+                <span class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform {{ $enrollmentEnabled ? 'translate-x-6' : 'translate-x-1' }}"></span>
+            </button>
             <span class="text-xs font-medium {{ $enrollmentEnabled ? 'text-emerald-600' : 'text-slate-500' }}">
                 {{ $enrollmentEnabled ? 'OPEN' : 'CLOSED' }}
             </span>
-        </div>
+        </form>
     </div>
 
     @if(!$enrollmentEnabled)

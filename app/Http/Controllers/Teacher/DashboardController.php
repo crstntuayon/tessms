@@ -40,10 +40,18 @@ class DashboardController extends Controller
         );
 
         // -----------------------------
-        // Sections assigned to teacher ✅ FIXED
+        // Active School Year
+        // -----------------------------
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+
+        // -----------------------------
+        // Sections assigned to teacher (filtered by active school year)
         // -----------------------------
         $sections = Section::with(['students.user', 'teacher.user', 'gradeLevel'])
-            ->where('teacher_id', $teacher->id) // 🔥 IMPORTANT FILTER
+            ->where('teacher_id', $teacher->id)
+            ->when($activeSchoolYear, function ($query) use ($activeSchoolYear) {
+                $query->where('school_year_id', $activeSchoolYear->id);
+            })
             ->where('is_active', true)
             ->get();
 
@@ -82,11 +90,6 @@ class DashboardController extends Controller
         $totalStudents  = $students->count();
         $maleStudents   = $students->where('gender', 'male')->count();
         $femaleStudents = $students->where('gender', 'female')->count();
-
-        // -----------------------------
-        // School Year
-        // -----------------------------
-        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
 
         // -----------------------------
         // Quarter Logic

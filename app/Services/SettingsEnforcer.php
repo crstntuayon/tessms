@@ -36,10 +36,12 @@ class SettingsEnforcer
      */
     public static function applySessionConfig(): void
     {
-        $timeout = (int) Setting::get('session_timeout', 30);
-        if ($timeout > 0) {
-            Config::set('session.lifetime', $timeout);
+        // Only override if a valid database setting exists; otherwise respect .env/config default
+        $dbTimeout = Setting::get('session_timeout');
+        if ($dbTimeout !== null && $dbTimeout !== '' && (int) $dbTimeout > 0) {
+            Config::set('session.lifetime', (int) $dbTimeout);
         }
+        // If no DB setting, keep the value from config/session.php (which reads SESSION_LIFETIME from .env)
     }
 
     /**

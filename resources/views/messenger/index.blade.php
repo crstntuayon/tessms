@@ -159,22 +159,8 @@ if ($isStudent) {
                             </div>
                             <p class="text-sm text-slate-400 mb-3">No contacts found</p>
                             
-                            @if($isTeacher && $debugInfo)
-                                <div class="text-left bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-                                    <p class="font-bold mb-1">Debug Info:</p>
-                                    <ul class="space-y-0.5">
-                                        <li>Teacher ID: {{ $debugInfo['teacher_id'] ?? 'N/A' }}</li>
-                                        <li>Teacher Name: {{ $debugInfo['teacher_name'] ?? 'N/A' }}</li>
-                                        <li>Role: {{ $debugInfo['user_role'] ?? 'N/A' }}</li>
-                                        <li>Active School Year: {{ $debugInfo['active_school_year'] ?? 'None' }}</li>
-                                        <li>Sections Found: {{ $debugInfo['section_count'] }}</li>
-                                        <li>Section IDs: {{ implode(', ', $debugInfo['section_ids'] ?: ['None']) }}</li>
-                                        <li>Contacts Returned: {{ $debugInfo['contact_count'] }}</li>
-                                        @if(!is_null($debugInfo['sample_is_active']))
-                                            <li>Sample is_active: {{ var_export($debugInfo['sample_is_active'], true) }}</li>
-                                        @endif
-                                    </ul>
-                                </div>
+                            @if($isTeacher && empty($contacts))
+                                <p class="text-xs text-slate-400 mt-2">No pupils available for messaging.</p>
                             @endif
                         </div>
                     </template>

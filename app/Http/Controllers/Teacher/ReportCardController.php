@@ -11,6 +11,7 @@ use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use App\Models\SchoolYear;
 
 class ReportCardController extends Controller
 {
@@ -18,6 +19,11 @@ class ReportCardController extends Controller
     {
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         $students = $section->students()
@@ -40,6 +46,11 @@ class ReportCardController extends Controller
             abort(403);
         }
 
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
+        }
+
         $gradingPeriod = $request->input('grading_period', '1st');
         
         $data = $this->getReportCardData($section, $student, $gradingPeriod);
@@ -55,6 +66,11 @@ class ReportCardController extends Controller
     {
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         $gradingPeriod = $request->input('grading_period', '1st');
@@ -85,6 +101,11 @@ class ReportCardController extends Controller
     {
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         $data = $this->getReportCardData($section, $student, '1st');

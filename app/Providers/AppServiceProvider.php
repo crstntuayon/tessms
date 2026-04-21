@@ -33,8 +33,11 @@ public function boot()
         $user = auth()->user();
 
         if ($user) {
-          $teacher = Teacher::with('sections.gradeLevel')->where('user_id', $user->id)->first();
-            $sections = $teacher ? $teacher->sections : collect([]);
+            $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+            $teacher = Teacher::with(['sections.gradeLevel'])->where('user_id', $user->id)->first();
+            $sections = $teacher ? $teacher->sections->filter(function ($section) use ($activeSchoolYear) {
+                return !$activeSchoolYear || $section->school_year_id == $activeSchoolYear->id;
+            }) : collect([]);
         } else {
             $sections = collect([]);
         }

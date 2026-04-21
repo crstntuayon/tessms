@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Section;
 use Illuminate\Http\Request;
+use App\Models\SchoolYear;
 
 class SeatingController extends Controller
 {
@@ -12,6 +13,11 @@ class SeatingController extends Controller
     {
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         $students = $section->students()
@@ -31,6 +37,11 @@ class SeatingController extends Controller
             abort(403);
         }
 
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
+        }
+
         $request->validate([
             'arrangement' => 'required|array',
         ]);
@@ -46,6 +57,11 @@ class SeatingController extends Controller
     {
         if ($section->teacher_id !== auth()->user()->teacher->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         $students = $section->students()

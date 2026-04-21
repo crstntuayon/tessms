@@ -54,6 +54,11 @@ public function issue(Section $section)
         abort(403);
     }
 
+    $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+    if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+        abort(403, 'This section is not in the active school year.');
+    }
+
     $activeSchoolYear = $this->getActiveSchoolYear();
 
     // Get enrolled students - sorted by gender (male first) then alphabetically by last name
@@ -200,6 +205,11 @@ public function storeIssue(Request $request)
         // Authorization check
         if ($section->teacher_id !== Auth::user()->teacher->id) {
             abort(403);
+        }
+
+        $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        if ($activeSchoolYear && $section->school_year_id !== $activeSchoolYear->id) {
+            abort(403, 'This section is not in the active school year.');
         }
 
         $activeSchoolYear = $this->getActiveSchoolYear();

@@ -13,11 +13,23 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append(\App\Http\Middleware\InjectAppearance::class);
+        // CRITICAL: Explicitly define the web middleware group with session support
+        // This ensures cookies and sessions work properly
+        $middleware->group('web', [
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ]);
         
+        // Add InjectAppearance AFTER session is started
+        $middleware->web(append: [
+            \App\Http\Middleware\InjectAppearance::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Handle 419 Page Expired errors - redirect to login with fresh session
         $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
             if ($request->is('login') || $request->is('student/login') || $request->is('logout')) {
                 return redirect('/')
@@ -30,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     ->withInput($request->except('_token'))
                     ->withErrors(['error' => 'Your session expired. Please refresh the page and try again.']);
             }
-            
+
             return redirect()->back()
                 ->withInput($request->except('_token'))
                 ->withErrors(['error' => 'Your session expired. Please try again.']);

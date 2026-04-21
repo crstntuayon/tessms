@@ -15,6 +15,9 @@
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
+        /* Alpine.js x-cloak: hide elements until Alpine initializes */
+        [x-cloak] { display: none !important; }
+        
         /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
@@ -214,14 +217,14 @@
                             setInterval(() => this.fetchUnreadCount(), 30000);
                         },
                         fetchUnreadCount() {
-                            fetch('{{ route('notifications.unread-count') }}')
+                            fetch('{{ route('notifications.unread-count') }}', { credentials: 'include' })
                                 .then(r => r.json())
                                 .then(data => this.unreadCount = data.count || 0)
                                 .catch(() => {});
                         },
                         fetchRecent() {
                             this.loading = true;
-                            fetch('{{ route('notifications.recent') }}')
+                            fetch('{{ route('notifications.recent') }}', { credentials: 'include' })
                                 .then(r => r.json())
                                 .then(data => {
                                     this.notifications = data.notifications || [];
@@ -233,6 +236,7 @@
                         markAllRead() {
                             fetch('{{ route('notifications.mark-all-read') }}', {
                                 method: 'POST',
+                                credentials: 'include',
                                 headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '' }
                             })
                             .then(r => r.json())
@@ -246,6 +250,7 @@
                             if (!n.read_at) {
                                 fetch(`{{ url('notifications') }}/${n.id}/read`, {
                                     method: 'POST',
+                                    credentials: 'include',
                                     headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '' }
                                 })
                                 .then(() => {
