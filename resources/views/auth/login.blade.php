@@ -477,23 +477,17 @@ img {
                         Dauin, Negros Oriental. Committed to academic excellence and holistic development.
                     </p>
                     
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="{{ url('/enroll') }}" class="btn-primary text-white px-8 py-4 rounded-full font-semibold inline-flex items-center justify-center gap-2 shadow-xl shadow-teal-500/30 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                    <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                        <button onclick="openModal('enrollTermsModal')" class="btn-primary text-white px-8 py-4 rounded-full font-semibold inline-flex items-center justify-center gap-2 shadow-xl shadow-teal-500/30 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
                             <i class="fas fa-user-plus"></i>
                             Enroll Now
-                        </a>
-                        <a href="{{ route('student.login') }}" class="px-8 py-4 rounded-full font-semibold text-slate-700 bg-white border-2 border-slate-200 hover:border-teal-500 hover:text-teal-600 inline-flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl">
+                        </button>
+                        <button onclick="openModal('locationModal')" class="px-8 py-4 rounded-full font-semibold inline-flex items-center justify-center gap-2 shadow-lg border-2 border-slate-200 text-slate-700 hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50 transition-all duration-300 text-base">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
-                            Pupil Portal
-                        </a>
-                        <button onclick="openAuthPanel('login')" class="px-8 py-4 rounded-full font-semibold text-slate-700 bg-white border-2 border-slate-200 hover:border-teal-500 hover:text-teal-600 inline-flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                            </svg>
-                            Staff Portal
+                            Location
                         </button>
                     </div>
 
@@ -1226,23 +1220,7 @@ function imageSlider() {
                         </button>
                     </form>
 
-                    <!-- Student Login Link -->
-                    <div class="mt-5 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-user-graduate text-indigo-600"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-indigo-900">Are you a pupil?</p>
-                                    <p class="text-xs text-indigo-700">Click the button to access pupil login</p>
-                                </div>
-                            </div>
-                            <a href="{{ route('student.login') }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                Pupil Login
-                            </a>
-                        </div>
-                    </div>
+               
 
                     <!-- Help Box -->
                     <div class="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-xl">
@@ -1303,87 +1281,120 @@ function imageSlider() {
     </div>
 
     <div class="p-8 space-y-8">
-        
-        <!-- LRN Section -->
+
+        <!-- 1. Academic Information -->
         <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
             <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">1</span>
-                Learner Reference Number (LRN)
+                Academic Information
             </h3>
-            <label class="block text-sm font-medium text-slate-700 mb-2">LRN</label>
-            <div class="flex max-w-md">
-                <span class="inline-flex items-center px-4 py-3 bg-teal-50 border-2 border-r-0 border-teal-200 rounded-l-lg text-teal-700 font-semibold text-sm">120231</span>
-                <input type="text" name="lrn_suffix" maxlength="6" placeholder="Last 6 digits"
-                       value="{{ old('lrn_suffix') }}"
-                       class="flex-1 px-4 py-3 border-2 border-slate-200 rounded-r-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-mono text-lg tracking-wider placeholder:text-slate-400">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Grade Level <span class="text-red-500">*</span></label>
+                    <select name="grade_level_id" required
+                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
+                        <option value="">Select Grade Level</option>
+                        @foreach($gradeLevels as $level)
+                            <option value="{{ $level->id }}" @selected(old('grade_level_id') == $level->id)>{{ $level->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Student Type <span class="text-red-500">*</span></label>
+                    <select name="type" id="studentType" required onchange="toggleStudentTypeFields()"
+                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
+                        <option value="new" @selected(old('type') == 'new')>New Pupil</option>
+                        <option value="transferee" @selected(old('type') == 'transferee')>Transferee</option>
+                        <option value="continuing" @selected(old('type') == 'continuing')>Continuing</option>
+                    </select>
+                </div>
             </div>
-            <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Enter the last 6 digits of the pupil's LRN
-            </p>
+            <div id="previousSchoolField" class="mt-4 hidden">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Previous School <span class="text-red-500">*</span></label>
+                <input type="text" name="previous_school" id="previousSchoolInput"
+                       value="{{ old('previous_school') }}"
+                       placeholder="Name of previous school"
+                       class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
+                <p class="text-xs text-slate-500 mt-2">Required for transferee pupils</p>
+            </div>
         </div>
-
-        <!-- Personal Information -->
+        
+        <!-- 2. LRN -->
         <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
             <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">2</span>
+                Learner Reference Number (LRN)
+            </h3>
+            <div id="lrnNewField">
+                <label class="block text-sm font-medium text-slate-700 mb-2">LRN <span class="text-slate-400 font-normal">(New Pupils)</span></label>
+                <div class="flex">
+                    <span class="inline-flex items-center px-4 py-3 bg-teal-50 border-2 border-r-0 border-teal-200 rounded-l-lg text-teal-700 font-semibold text-sm">120231</span>
+                    <input type="text" name="lrn_suffix" id="lrn_suffix" maxlength="6" placeholder="Last 6 digits"
+                           value="{{ old('lrn_suffix') }}"
+                           class="flex-1 px-4 py-3 border-2 border-slate-200 rounded-r-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-mono text-lg tracking-wider placeholder:text-slate-400">
+                </div>
+                <p class="text-xs text-slate-500 mt-2">Enter the last 6 digits. Leave blank and we will auto-generate one for you.</p>
+            </div>
+            <div id="lrnExistingField" class="hidden">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Existing LRN <span class="text-slate-400 font-normal">(From Previous School)</span></label>
+                <input type="text" name="lrn" id="lrn_full" maxlength="12" placeholder="12-digit LRN"
+                       value="{{ old('lrn') }}"
+                       class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-mono text-lg tracking-wider placeholder:text-slate-400">
+                <p class="text-xs text-slate-500 mt-2">Enter the full 12-digit LRN from your previous school</p>
+            </div>
+        </div>
+
+        <!-- 3. Personal Information -->
+        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">3</span>
                 Personal Information
             </h3>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                <div class="group">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">First Name <span class="text-red-500">*</span></label>
-                    <input type="text" name="first_name" placeholder="Juan" required 
+                    <input type="text" name="first_name" placeholder="Juan" required
                            value="{{ old('first_name') }}"
-                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all group-hover:border-slate-300">
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
-                <div class="group">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Middle Name</label>
-                    <input type="text" name="middle_name" placeholder="Dela Cruz" 
-                           value="{{ old('middle_name') }}"
-                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all group-hover:border-slate-300">
-                </div>
-                <div class="group">
+                <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Last Name <span class="text-red-500">*</span></label>
-                    <input type="text" name="last_name" placeholder="Santos" required 
+                    <input type="text" name="last_name" placeholder="Santos" required
                            value="{{ old('last_name') }}"
-                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all group-hover:border-slate-300">
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
-            </div>
-            
-            <div class="max-w-xs">
-                <label class="block text-sm font-medium text-slate-700 mb-2">Suffix</label>
-                <select name="suffix" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
-                    <option value="" @selected(old('suffix') == '')>None</option>
-                    <option value="Jr." @selected(old('suffix') == 'Jr.')>Jr.</option>
-                    <option value="Sr." @selected(old('suffix') == 'Sr.')>Sr.</option>
-                    <option value="II" @selected(old('suffix') == 'II')>II</option>
-                    <option value="III" @selected(old('suffix') == 'III')>III</option>
-                    <option value="IV" @selected(old('suffix') == 'IV')>IV</option>
-                </select>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div class="group">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Middle Name</label>
+                    <input type="text" name="middle_name" placeholder="Dela Cruz"
+                           value="{{ old('middle_name') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Suffix</label>
+                    <select name="suffix" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
+                        <option value="" @selected(old('suffix') == '')>None</option>
+                        <option value="Jr." @selected(old('suffix') == 'Jr.')>Jr.</option>
+                        <option value="Sr." @selected(old('suffix') == 'Sr.')>Sr.</option>
+                        <option value="II" @selected(old('suffix') == 'II')>II</option>
+                        <option value="III" @selected(old('suffix') == 'III')>III</option>
+                        <option value="IV" @selected(old('suffix') == 'IV')>IV</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Birthdate <span class="text-red-500">*</span></label>
-                    <input type="date" name="birthday" required 
+                    <input type="date" name="birthday" required
                            value="{{ old('birthday') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all text-slate-600">
                 </div>
-                <div class="group">
+                <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Place of Birth <span class="text-red-500">*</span></label>
-                    <input type="text" name="birth_place" placeholder="City, Province" required 
+                    <input type="text" name="birth_place" placeholder="City, Province" required
                            value="{{ old('birth_place') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                <div class="group">
+                <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Gender <span class="text-red-500">*</span></label>
-                    <select name="gender" required 
+                    <select name="gender" required
                             class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
                         <option value="">Select Gender</option>
                         <option value="Male" @selected(old('gender') == 'Male')>Male</option>
@@ -1391,129 +1402,106 @@ function imageSlider() {
                         <option value="Other" @selected(old('gender') == 'Other')>Other</option>
                     </select>
                 </div>
-                <div class="group">
+                <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Nationality <span class="text-red-500">*</span></label>
-                    <input type="text" name="nationality" placeholder="Filipino" required 
+                    <input type="text" name="nationality" placeholder="Filipino" required
                            value="{{ old('nationality') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
-                <div class="group">
+                <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Religion <span class="text-red-500">*</span></label>
                     <input type="text" name="religion" placeholder="Roman Catholic" required
                            value="{{ old('religion') }}"
                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
-                <div class="group">
-    <label class="block text-sm font-medium text-slate-700 mb-2">Ethnicity <span class="text-red-500">*</span></label>
-    <input type="text" name="ethnicity" placeholder="e.g., Cebuano, Tagalog" required
-           value="{{ old('ethnicity') }}"
-           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-</div>
-<div class="group">
-    <label class="block text-sm font-medium text-slate-700 mb-2">Mother Tongue <span class="text-red-500">*</span></label>
-    <input type="text" name="mother_tongue" placeholder="e.g., Cebuano, Filipino" required
-           value="{{ old('mother_tongue') }}"
-           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-</div>
-            </div>
-        </div>
-
-        <!-- Family Information -->
-        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
-            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">3</span>
-                Family Information
-            </h3>
-            
-            <div class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white rounded-lg border border-slate-200">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                            Father's Name <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="father_name" placeholder="Full Name" required
-                               value="{{ old('father_name') }}"
-                               class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Occupation <span class="text-red-500">*</span></label>
-                        <input type="text" name="father_occupation" placeholder="e.g., Engineer" required
-                               value="{{ old('father_occupation') }}"
-                               class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Ethnicity <span class="text-red-500">*</span></label>
+                    <input type="text" name="ethnicity" placeholder="e.g., Cebuano, Tagalog" required
+                           value="{{ old('ethnicity') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white rounded-lg border border-slate-200">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                            Mother's Name <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="mother_name" placeholder="Full Name" required
-                               value="{{ old('mother_name') }}"
-                               class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Occupation <span class="text-red-500">*</span></label>
-                        <input type="text" name="mother_occupation" placeholder="e.g., Teacher" required
-                               value="{{ old('mother_occupation') }}"
-                               class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-slate-200">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                            </svg>
-                            Guardian's Name <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="guardian_name" placeholder="Full Name" required
-                               value="{{ old('guardian_name') }}"
-                               class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Relationship <span class="text-red-500">*</span></label>
-                        <select name="guardian_relationship" required class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
-                            <option value="">Select</option>
-                            <option value="Parent" @selected(old('guardian_relationship') == 'Parent')>Parent</option>
-                            <option value="Grandparent" @selected(old('guardian_relationship') == 'Grandparent')>Grandparent</option>
-                            <option value="Sibling" @selected(old('guardian_relationship') == 'Sibling')>Sibling</option>
-                            <option value="Relative" @selected(old('guardian_relationship') == 'Relative')>Relative</option>
-                            <option value="Other" @selected(old('guardian_relationship') == 'Other')>Other</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Contact Number</label>
-                        <input type="tel" name="guardian_contact" placeholder="09XX XXX XXXX" 
-                               value="{{ old('guardian_contact') }}"
-                               class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-                    </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Mother Tongue <span class="text-red-500">*</span></label>
+                    <input type="text" name="mother_tongue" placeholder="e.g., Cebuano, Filipino" required
+                           value="{{ old('mother_tongue') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
             </div>
         </div>
 
-        <!-- Address -->
+        <!-- 4. Family Information -->
         <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
             <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">4</span>
+                Family Information
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Father's Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="father_name" placeholder="Full Name" required
+                           value="{{ old('father_name') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Father's Occupation <span class="text-red-500">*</span></label>
+                    <input type="text" name="father_occupation" placeholder="e.g., Engineer" required
+                           value="{{ old('father_occupation') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Mother's Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="mother_name" placeholder="Full Name" required
+                           value="{{ old('mother_name') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Mother's Occupation <span class="text-red-500">*</span></label>
+                    <input type="text" name="mother_occupation" placeholder="e.g., Teacher" required
+                           value="{{ old('mother_occupation') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Guardian's Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="guardian_name" placeholder="Full Name" required
+                           value="{{ old('guardian_name') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Relationship <span class="text-red-500">*</span></label>
+                    <select name="guardian_relationship" required
+                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
+                        <option value="">Select</option>
+                        <option value="Parent" @selected(old('guardian_relationship') == 'Parent')>Parent</option>
+                        <option value="Grandparent" @selected(old('guardian_relationship') == 'Grandparent')>Grandparent</option>
+                        <option value="Sibling" @selected(old('guardian_relationship') == 'Sibling')>Sibling</option>
+                        <option value="Relative" @selected(old('guardian_relationship') == 'Relative')>Relative</option>
+                        <option value="Other" @selected(old('guardian_relationship') == 'Other')>Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Guardian Contact</label>
+                    <input type="tel" name="guardian_contact" id="guardianContact" maxlength="11" placeholder="09XXXXXXXXX"
+                           value="{{ old('guardian_contact') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-mono tracking-wider">
+                    <p class="text-xs text-slate-500 mt-1">11 digits only</p>
+                </div>
+                <div class="hidden md:block"></div>
+            </div>
+        </div>
+
+        <!-- 5. Address -->
+        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">5</span>
                 Address Information
             </h3>
-            
             <div class="mb-4">
                 <label class="block text-sm font-medium text-slate-700 mb-2">Street Address <span class="text-red-500">*</span></label>
                 <input type="text" name="street_address" placeholder="House No., Street, Subdivision" required
                        value="{{ old('street_address') }}"
                        class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
             </div>
-            
-           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Barangay <span class="text-red-500">*</span></label>
                     <input type="text" name="barangay" placeholder="Barangay" required
@@ -1541,125 +1529,39 @@ function imageSlider() {
             </div>
         </div>
 
-        <!-- Academic Information -->
-<div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
-    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-        <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">5</span>
-        Academic Information
-    </h3>
-    
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Grade Level <span class="text-red-500">*</span></label>
-            <select name="grade_level_id" required 
-                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
-                <option value="">Select Grade Level</option>
-                @foreach($gradeLevels as $level)
-                    <option value="{{ $level->id }}" @selected(old('grade_level_id') == $level->id)>{{ $level->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Student Type <span class="text-red-500">*</span></label>
-            <select name="type" id="studentType" required onchange="togglePreviousSchool()"
-                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
-                <option value="new" @selected(old('type') == 'new')>New Pupil</option>
-                <option value="transferee" @selected(old('type') == 'transferee')>Transferee</option>
-                <option value="continuing" @selected(old('type') == 'continuing')>Continuing</option>
-            </select>
-        </div>
-    </div>
 
-    <!-- Previous School Field - Hidden by default, shown for transferees -->
-    <div id="previousSchoolField" class="mt-4 hidden">
-        <label class="block text-sm font-medium text-slate-700 mb-2">
-            Previous School <span class="text-red-500">*</span>
-        </label>
-        <div class="relative">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                </svg>
-            </span>
-            <input type="text" name="previous_school" id="previousSchoolInput" 
-                   value="{{ old('previous_school') }}"
-                   placeholder="Name of previous school" 
-                   class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-        </div>
-        <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Required for transferee pupils
-        </p>
-    </div>
-</div>
 
-        <!-- Account & Photo -->
+        <!-- 6. Account & Photo -->
         <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
             <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">6</span>
                 Account Setup & Photo
             </h3>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Username <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                        </span>
-                        <input type="text" name="username" placeholder="juan.santos" required 
-                               value="{{ old('username') }}"
-                               class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-                    </div>
+                    <input type="text" name="username" placeholder="juan.santos" required
+                           value="{{ old('username') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Email <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
-                            </svg>
-                        </span>
-                        <input type="email" name="email" placeholder="juan@example.com" required 
-                               value="{{ old('email') }}"
-                               class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-                    </div>
+                    <input type="email" name="email" placeholder="juan@example.com" required
+                           value="{{ old('email') }}"
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Password <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                            </svg>
-                        </span>
-                        <input type="password" name="password" placeholder="••••••••" required 
-                               class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-                    </div>
+                    <input type="password" name="password" placeholder="••••••••" required
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">Confirm Password <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </span>
-                        <input type="password" name="password_confirmation" placeholder="••••••••" required 
-                               class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
-                    </div>
+                    <input type="password" name="password_confirmation" placeholder="••••••••" required
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all">
                 </div>
             </div>
-
-            <!-- Photo Upload -->
-            <div class="mt-6">
+            <div>
                 <label class="block text-sm font-medium text-slate-700 mb-3">Pupil Photo</label>
                 <div class="flex items-center justify-center w-full">
                     <label for="photo" class="flex flex-col items-center justify-center w-full h-40 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
@@ -1680,156 +1582,149 @@ function imageSlider() {
         </div>
 
 
-        <!-- Remarks/Legend Section -->
-<div class="mt-6 bg-slate-50 p-6 rounded-xl border border-slate-200">
-    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-        <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">7</span>
-        Pupil Remarks <span class="text-slate-400 font-normal text-sm">(Optional)</span>
-    </h3>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">Remark Code</label>
-            <select name="remarks" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
-                <option value="" @selected(old('remarks') == '')>-- Select Remark (Optional) --</option>
-                <option value="TI" @selected(old('remarks') == 'TI')>TI - Transferred In</option>
-                <option value="TO" @selected(old('remarks') == 'TO')>TO - Transferred Out</option>
-                <option value="DO" @selected(old('remarks') == 'DO')>DO - Dropped Out</option>
-                <option value="LE" @selected(old('remarks') == 'LE')>LE - Late Enrollee</option>
-                <option value="CCT" @selected(old('remarks') == 'CCT')>CCT - CCT Recipient</option>
-                <option value="BA" @selected(old('remarks') == 'BA')>BA - Balik Aral</option>
-                <option value="LWD" @selected(old('remarks') == 'LWD')>LWD - Learner With Disability</option>
-            </select>
+        <!-- 7. Remarks -->
+        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">7</span>
+                Pupil Remarks <span class="text-slate-400 font-normal text-sm">(Optional)</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Remark Code</label>
+                    <select name="remarks" class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all bg-white">
+                        <option value="" @selected(old('remarks') == '')>-- Select Remark (Optional) --</option>
+                        <option value="TI" @selected(old('remarks') == 'TI')>TI - Transferred In</option>
+                        <option value="TO" @selected(old('remarks') == 'TO')>TO - Transferred Out</option>
+                        <option value="DO" @selected(old('remarks') == 'DO')>DO - Dropped Out</option>
+                        <option value="LE" @selected(old('remarks') == 'LE')>LE - Late Enrollee</option>
+                        <option value="CCT" @selected(old('remarks') == 'CCT')>CCT - CCT Recipient</option>
+                        <option value="BA" @selected(old('remarks') == 'BA')>BA - Balik Aral</option>
+                        <option value="LWD" @selected(old('remarks') == 'LWD')>LWD - Learner With Disability</option>
+                    </select>
+                </div>
+                <div class="flex items-center">
+                    <div class="p-4 bg-amber-50 border border-amber-100 rounded-lg w-full">
+                        <p class="text-xs text-amber-800 leading-relaxed">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Select only if applicable. Multiple selections require admin assistance.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="flex items-center">
-            <div class="p-4 bg-amber-50 border border-amber-100 rounded-lg w-full">
-                <p class="text-xs text-amber-800 leading-relaxed">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Select only if applicable. Multiple selections require admin assistance.
+
+        <!-- 8. Documents -->
+        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200" id="documentsSection">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">8</span>
+                Required Documents
+            </h3>
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
+                <p class="text-sm text-blue-800">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span id="documentRequirementsText">New Pupils: Birth Certificate, Report Card, Good Moral Certificate</span>
                 </p>
             </div>
-        </div>
-    </div>
-</div>
-
-        <!-- Required Documents Upload Section -->
-<div class="mt-6 bg-slate-50 p-6 rounded-xl border border-slate-200" id="documentsSection">
-    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-        <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center text-sm font-bold">8</span>
-        Required Documents
-    </h3>
-    
-    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
-        <p class="text-sm text-blue-800">
-            <i class="fas fa-info-circle mr-2"></i>
-            <span id="documentRequirementsText">New Pupils: Birth Certificate, Report Card, Good Moral Certificate</span>
-        </p>
-    </div>
-    
-    <div class="space-y-4">
-        <!-- Birth Certificate -->
-        <div class="bg-white p-4 rounded-lg border border-slate-200">
-            <label class="block text-sm font-medium text-slate-700 mb-2">
-                <span id="birthCertLabel">Birth Certificate</span> 
-                <span class="text-slate-400 text-xs" id="birthCertRequired">(Optional)</span>
-            </label>
-            <div class="flex items-center justify-center w-full">
-                <label for="birth_certificate" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
-                    <div class="flex flex-col items-center justify-center pt-2 pb-2">
-                        <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
-                        <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Birth Certificate -->
+                <div class="bg-white p-4 rounded-lg border border-slate-200">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        <span id="birthCertLabel">Birth Certificate</span>
+                        <span class="text-slate-400 text-xs" id="birthCertRequired">(Optional)</span>
+                    </label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="birth_certificate" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
+                            <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                                <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
+                                <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                            </div>
+                            <input id="birth_certificate" type="file" name="birth_certificate" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'birthCertPreview')" />
+                        </label>
                     </div>
-                    <input id="birth_certificate" type="file" name="birth_certificate" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'birthCertPreview')" />
-                </label>
-            </div>
-            <div id="birthCertPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span class="file-name"></span>
-            </div>
-        </div>
-        
-        <!-- Report Card -->
-        <div class="bg-white p-4 rounded-lg border border-slate-200">
-            <label class="block text-sm font-medium text-slate-700 mb-2">
-                Report Card / Form 138 <span class="text-slate-400 text-xs">(Optional)</span>
-            </label>
-            <div class="flex items-center justify-center w-full">
-                <label for="report_card" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
-                    <div class="flex flex-col items-center justify-center pt-2 pb-2">
-                        <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    <div id="birthCertPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
-                        <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                        <span class="file-name"></span>
                     </div>
-                    <input id="report_card" type="file" name="report_card" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'reportCardPreview')" />
-                </label>
-            </div>
-            <div id="reportCardPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span class="file-name"></span>
-            </div>
-        </div>
-        
-        <!-- Good Moral Certificate -->
-        <div class="bg-white p-4 rounded-lg border border-slate-200">
-            <label class="block text-sm font-medium text-slate-700 mb-2">
-                Certificate of Good Moral Character <span class="text-slate-400 text-xs">(Optional)</span>
-            </label>
-            <div class="flex items-center justify-center w-full">
-                <label for="good_moral" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
-                    <div class="flex flex-col items-center justify-center pt-2 pb-2">
-                        <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </div>
+                <!-- Report Card -->
+                <div class="bg-white p-4 rounded-lg border border-slate-200">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Report Card / Form 138 <span class="text-slate-400 text-xs">(Optional)</span>
+                    </label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="report_card" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
+                            <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                                <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
+                                <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                            </div>
+                            <input id="report_card" type="file" name="report_card" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'reportCardPreview')" />
+                        </label>
+                    </div>
+                    <div id="reportCardPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
-                        <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                        <span class="file-name"></span>
                     </div>
-                    <input id="good_moral" type="file" name="good_moral" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'goodMoralPreview')" />
-                </label>
-            </div>
-            <div id="goodMoralPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span class="file-name"></span>
-            </div>
-        </div>
-        
-        <!-- Transfer Credentials (for transferees only) -->
-        <div class="bg-white p-4 rounded-lg border border-slate-200 hidden" id="transferCredentialField">
-            <label class="block text-sm font-medium text-slate-700 mb-2">
-                Transfer Credentials / Honorable Dismissal <span class="text-slate-400 text-xs">(Optional)</span>
-            </label>
-            <div class="flex items-center justify-center w-full">
-                <label for="transfer_credential" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
-                    <div class="flex flex-col items-center justify-center pt-2 pb-2">
-                        <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </div>
+                <!-- Good Moral -->
+                <div class="bg-white p-4 rounded-lg border border-slate-200">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Certificate of Good Moral Character <span class="text-slate-400 text-xs">(Optional)</span>
+                    </label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="good_moral" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
+                            <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                                <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
+                                <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                            </div>
+                            <input id="good_moral" type="file" name="good_moral" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'goodMoralPreview')" />
+                        </label>
+                    </div>
+                    <div id="goodMoralPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
-                        <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                        <span class="file-name"></span>
                     </div>
-                    <input id="transfer_credential" type="file" name="transfer_credential" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'transferCredPreview')" />
-                </label>
-            </div>
-            <div id="transferCredPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span class="file-name"></span>
+                </div>
+                <!-- Transfer Credentials -->
+                <div class="bg-white p-4 rounded-lg border border-slate-200 hidden" id="transferCredentialField">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Transfer Credentials / Honorable Dismissal <span class="text-slate-400 text-xs">(Optional)</span>
+                    </label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="transfer_credential" class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-slate-50 hover:border-teal-400 transition-all group">
+                            <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                                <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p class="text-sm text-slate-500 group-hover:text-slate-600"><span class="font-semibold">Click to upload</span></p>
+                                <p class="text-xs text-slate-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                            </div>
+                            <input id="transfer_credential" type="file" name="transfer_credential" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="previewDocument(this, 'transferCredPreview')" />
+                        </label>
+                    </div>
+                    <div id="transferCredPreview" class="mt-2 hidden flex items-center gap-2 text-sm text-teal-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="file-name"></span>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
         <!-- Submit Button -->
         <div class="pt-4">
@@ -1957,6 +1852,220 @@ function imageSlider() {
         </div>
     </div>
 
+    <!-- Enrollment Terms & Process Modal -->
+    <div id="enrollTermsModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal('enrollTermsModal')"></div>
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-3xl shadow-2xl flex flex-col">
+                <div class="sticky top-0 bg-white border-b border-slate-100 p-6 flex items-center justify-between z-10">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Enrollment Guidelines</h2>
+                        <p class="text-sm text-slate-500">Please read before proceeding</p>
+                    </div>
+                    <button onclick="closeModal('enrollTermsModal')" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <!-- Enrollment Process -->
+                    <div class="bg-teal-50 border border-teal-100 rounded-2xl p-6">
+                        <h3 class="text-lg font-bold text-teal-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                            </svg>
+                            Enrollment Process
+                        </h3>
+                        <ol class="space-y-3 text-sm text-teal-900">
+                            <li class="flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-teal-200 text-teal-800 flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+                                <span>Fill out the online registration form with accurate personal and guardian information.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-teal-200 text-teal-800 flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+                                <span>Upload the required documents (Birth Certificate, Report Card, Good Moral Certificate).</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-teal-200 text-teal-800 flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+                                <span>Wait for the school administrator to review and verify your application.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-teal-200 text-teal-800 flex items-center justify-center text-xs font-bold flex-shrink-0">4</span>
+                                <span>Check your account status. You will receive a notification once approved.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-teal-200 text-teal-800 flex items-center justify-center text-xs font-bold flex-shrink-0">5</span>
+                                <span>Visit the school office to complete the enrollment and submit original documents if required.</span>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <!-- Terms & Conditions -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Terms & Conditions
+                        </h3>
+                        <ul class="space-y-3 text-sm text-slate-700">
+                            <li class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                All information provided must be true and accurate. False information may result in disqualification.
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Uploaded documents must be clear, legible, and in the accepted formats (PDF, JPG, PNG).
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Account approval is subject to the school administrator's verification and availability of slots.
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Parents or guardians are responsible for the pupil's attendance, behavior, and compliance with school policies.
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Personal data collected will be used solely for enrollment and school record purposes in accordance with DepEd guidelines.
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                The school reserves the right to accept or decline enrollment applications based on policy and capacity.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Select Student Type -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                            Select Your Student Type
+                        </h3>
+                        <p class="text-sm text-slate-500 mb-4">Choose the option that applies to you. This will determine where you need to go next:</p>
+                        <div class="space-y-3">
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="studentTypeSelect" value="new" class="peer hidden" onchange="toggleProceedBtn()">
+                                <div class="flex items-start gap-4 p-4 rounded-xl border-2 border-slate-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition-all">
+                                    <div class="w-10 h-10 rounded-full bg-emerald-100 peer-checked:bg-emerald-500 text-emerald-600 peer-checked:text-white flex items-center justify-center text-sm font-bold flex-shrink-0 transition-colors">
+                                        N
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-800 peer-checked:text-emerald-900">New Pupil</p>
+                                        <p class="text-sm text-slate-500 peer-checked:text-emerald-700 leading-relaxed">Enrolling for the <strong>first time</strong>. You will be redirected to the <strong>Registration Form</strong> to create a new account.</p>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="studentTypeSelect" value="transferee" class="peer hidden" onchange="toggleProceedBtn()">
+                                <div class="flex items-start gap-4 p-4 rounded-xl border-2 border-slate-200 peer-checked:border-orange-500 peer-checked:bg-orange-50 transition-all">
+                                    <div class="w-10 h-10 rounded-full bg-orange-100 peer-checked:bg-orange-500 text-orange-600 peer-checked:text-white flex items-center justify-center text-sm font-bold flex-shrink-0 transition-colors">
+                                        T
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-800 peer-checked:text-orange-900">Transferee</p>
+                                        <p class="text-sm text-slate-500 peer-checked:text-orange-700 leading-relaxed">Coming <strong>from another school</strong>. You will be redirected to the <strong>Registration Form</strong> to create a new account.</p>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="studentTypeSelect" value="continuing" class="peer hidden" onchange="toggleProceedBtn()">
+                                <div class="flex items-start gap-4 p-4 rounded-xl border-2 border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 peer-checked:bg-blue-500 text-blue-600 peer-checked:text-white flex items-center justify-center text-sm font-bold flex-shrink-0 transition-colors">
+                                        C
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-800 peer-checked:text-blue-900">Continuing</p>
+                                        <p class="text-sm text-slate-500 peer-checked:text-blue-700 leading-relaxed">Previously enrolled at Tugawe ES, moving to the <strong>next grade level</strong>. You will be redirected to the <strong>Login Form</strong> to sign in with your existing account.</p>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Agreement Checkbox -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" id="agreeTerms" class="custom-checkbox mt-0.5" onchange="toggleProceedBtn()">
+                            <span class="text-sm text-amber-900">
+                                I have read and understood the <strong>enrollment process</strong>, selected my <strong>student type</strong>, and agree to the <strong>terms and conditions</strong> stated above. I confirm that all information I will provide is accurate and true.
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="p-6 border-t border-slate-100 bg-white sticky bottom-0">
+                    <button onclick="handleEnrollProceed()" id="proceedEnrollBtn" class="w-full btn-primary text-white py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-xl shadow-teal-500/30 opacity-50 pointer-events-none transition-all duration-300">
+                        <span id="proceedBtnText">Select student type to proceed</span>
+                        <svg id="proceedBtnIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Modal -->
+    <div id="locationModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal('locationModal')"></div>
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl shadow-2xl flex flex-col">
+                <div class="sticky top-0 bg-white border-b border-slate-100 p-6 flex items-center justify-between z-10">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">School Location</h2>
+                        <p class="text-sm text-slate-500">Tugawe, Dauin, Negros Oriental, Philippines</p>
+                    </div>
+                    <button onclick="closeModal('locationModal')" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex-1 min-h-[400px] relative">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3563.9846177980307!2d123.26033327450058!3d9.21464268605648!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33ab430c59411a49%3A0xa072deccc8e36750!2sTugawe%20Elementary%20School!5e1!3m2!1sen!2sph!4v1776898197524!5m2!1sen!2sph" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                        width="100%" 
+                        height="100%" 
+                        style="border:0; min-height: 450px;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade"
+                        class="absolute inset-0">
+                    </iframe>
+                </div>
+                <div class="p-6 bg-slate-50 border-t border-slate-100">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-900">Tugawe Elementary School</p>
+                            <p class="text-sm text-slate-500">Brgy. Tugawe, Dauin, Negros Oriental, Philippines</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Faculty Modal -->
     <div id="facultyModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal('facultyModal')"></div>
@@ -2025,7 +2134,7 @@ function imageSlider() {
     <script>
 
 
-function togglePreviousSchool() {
+function toggleStudentTypeFields() {
     const typeSelect = document.getElementById('studentType');
     const previousSchoolField = document.getElementById('previousSchoolField');
     const previousSchoolInput = document.getElementById('previousSchoolInput');
@@ -2034,14 +2143,24 @@ function togglePreviousSchool() {
     const documentRequirementsText = document.getElementById('documentRequirementsText');
     const birthCertLabel = document.getElementById('birthCertLabel');
     const birthCertRequired = document.getElementById('birthCertRequired');
+    const lrnNewField = document.getElementById('lrnNewField');
+    const lrnExistingField = document.getElementById('lrnExistingField');
+    const lrnSuffixInput = document.getElementById('lrn_suffix');
+    const lrnFullInput = document.getElementById('lrn_full');
 
     if (typeSelect.value === 'transferee') {
+        // Show transferee fields
         previousSchoolField.classList.remove('hidden');
         transferCredentialField.classList.remove('hidden');
         documentRequirementsText.textContent = 'Transferees: Report Card, Good Moral, Transfer Credentials (Birth Certificate optional)';
         birthCertLabel.textContent = 'Birth Certificate (Optional)';
         birthCertRequired.classList.add('hidden');
+        // Show full LRN input, hide suffix input
+        lrnNewField.classList.add('hidden');
+        lrnExistingField.classList.remove('hidden');
+        lrnSuffixInput.value = '';
     } else if (typeSelect.value === 'new') {
+        // Show new student fields
         previousSchoolField.classList.add('hidden');
         previousSchoolInput.value = '';
         transferCredentialField.classList.add('hidden');
@@ -2049,12 +2168,23 @@ function togglePreviousSchool() {
         documentRequirementsText.textContent = 'New Students: Birth Certificate, Report Card, Good Moral Certificate';
         birthCertLabel.textContent = 'Birth Certificate';
         birthCertRequired.classList.remove('hidden');
+        // Show suffix LRN input, hide full LRN input
+        lrnNewField.classList.remove('hidden');
+        lrnExistingField.classList.add('hidden');
+        lrnFullInput.value = '';
     } else {
-        // Continuing students - no documents required
+        // Continuing students
         previousSchoolField.classList.add('hidden');
         previousSchoolInput.value = '';
         transferCredentialField.classList.add('hidden');
         transferCredentialInput.value = '';
+        documentRequirementsText.textContent = 'Continuing Students: Birth Certificate, Report Card, Good Moral Certificate';
+        birthCertLabel.textContent = 'Birth Certificate';
+        birthCertRequired.classList.remove('hidden');
+        // Show full LRN input (they already have one), hide suffix input
+        lrnNewField.classList.add('hidden');
+        lrnExistingField.classList.remove('hidden');
+        lrnSuffixInput.value = '';
     }
 }
 
@@ -2073,21 +2203,32 @@ function previewDocument(input, previewId) {
 
 // Run on page load to handle old input
 document.addEventListener('DOMContentLoaded', function() {
-    togglePreviousSchool();
+    toggleStudentTypeFields();
 });
 
 
 
 document.addEventListener('DOMContentLoaded', function () {
     const suffixInput = document.getElementById('lrn_suffix');
-
     if (suffixInput) {
         suffixInput.addEventListener('input', function () {
-            // Allow only numbers
             this.value = this.value.replace(/\D/g, '');
         });
     }
-    
+
+    const fullLrnInput = document.getElementById('lrn_full');
+    if (fullLrnInput) {
+        fullLrnInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    }
+
+    const guardianContact = document.getElementById('guardianContact');
+    if (guardianContact) {
+        guardianContact.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 11);
+        });
+    }
 });
         // Mobile Menu Toggle
         function toggleMobileMenu() {
@@ -2197,6 +2338,43 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 800);
         }
 
+        // Enrollment Terms Toggle
+        function toggleProceedBtn() {
+            const checkbox = document.getElementById('agreeTerms');
+            const btn = document.getElementById('proceedEnrollBtn');
+            const btnText = document.getElementById('proceedBtnText');
+            const btnIcon = document.getElementById('proceedBtnIcon');
+            const selectedType = document.querySelector('input[name="studentTypeSelect"]:checked');
+
+            if (checkbox.checked && selectedType) {
+                btn.classList.remove('opacity-50', 'pointer-events-none');
+                btnIcon.classList.remove('hidden');
+                
+                if (selectedType.value === 'continuing') {
+                    btnText.textContent = "Sign In to Enroll";
+                } else {
+                    btnText.textContent = "Proceed to Registration";
+                }
+            } else {
+                btn.classList.add('opacity-50', 'pointer-events-none');
+                btnIcon.classList.add('hidden');
+                btnText.textContent = "Select student type and agree to proceed";
+            }
+        }
+
+        function handleEnrollProceed() {
+            const selectedType = document.querySelector('input[name="studentTypeSelect"]:checked');
+            if (!selectedType) return;
+            
+            closeModal('enrollTermsModal');
+            
+            if (selectedType.value === 'continuing') {
+                openAuthPanel('login');
+            } else {
+                window.location.href = "{{ route('register') }}";
+            }
+        }
+
         // Modal Functions
         function openModal(id) {
             document.getElementById(id).classList.remove('hidden');
@@ -2212,7 +2390,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeAuthPanel();
-                ['allAnnouncementsModal', 'facultyModal'].forEach(id => closeModal(id));
+                ['allAnnouncementsModal', 'facultyModal', 'locationModal', 'enrollTermsModal'].forEach(id => closeModal(id));
             }
         });
 

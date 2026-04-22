@@ -52,6 +52,12 @@ class EnrollmentController extends Controller
     {
         $applicationType = $request->input('application_type', 'continuing');
 
+        // Security: continuing student enrollment must be done through the authenticated student portal
+        if ($applicationType === 'continuing' && !auth()->check()) {
+            return redirect()->route('login')
+                ->withErrors(['error' => 'Please log in to your Pupil Portal to enroll as a continuing student.']);
+        }
+
         if ($applicationType === 'continuing') {
             return $this->submitContinuingStudentEnrollment($request);
         }

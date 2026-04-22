@@ -32,8 +32,12 @@ Route::get('/password-expired', function () {
     return view('auth.password-expired');
 })->name('password.expired');
 
-// Public Student Lookup API (for enrollment)
-Route::get('/api/students/lookup', [App\Http\Controllers\Api\StudentController::class, 'lookupByLrn']);
+Route::get('/signing-in', function () {
+    return view('auth.signing-in');
+})->name('auth.signing-in');
+
+// Student Lookup API (requires authentication - removed from public to prevent LRN brute force)
+Route::middleware(['auth'])->get('/api/students/lookup', [App\Http\Controllers\Api\StudentController::class, 'lookupByLrn']);
 
 // Online Enrollment Routes (Public)
 Route::prefix('enroll')->name('enrollment.')->group(function () {
@@ -486,6 +490,10 @@ Route::prefix('teacher')->name('teacher.')->middleware(['auth'])->group(function
 Route::prefix('student')->name('student.')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/id-card', [App\Http\Controllers\Student\DashboardController::class, 'idCard'])->name('id-card');
+
+    // Student Enrollment (Continuing Students - Secure)
+    Route::get('/enrollment', [App\Http\Controllers\Student\EnrollmentController::class, 'index'])->name('enrollment.index');
+    Route::post('/enrollment', [App\Http\Controllers\Student\EnrollmentController::class, 'store'])->name('enrollment.store');
     
     // Student Announcements
     Route::get('/announcements', [App\Http\Controllers\Student\AnnouncementController::class, 'index'])->name('announcements');

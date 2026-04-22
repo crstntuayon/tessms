@@ -20,20 +20,17 @@ Route::middleware('web')->group(function () {
 
         Route::post('register', [RegisteredUserController::class, 'store']);
 
-        // Admin/Teacher Login
+        // Unified Login (all roles)
         Route::get('login', [AuthenticatedSessionController::class, 'create'])
             ->name('login');
 
         Route::post('login', [AuthenticatedSessionController::class, 'store'])
             ->middleware('throttle:login');
 
-        // Student Login
-        Route::get('student/login', [AuthenticatedSessionController::class, 'createStudent'])
-            ->name('student.login');
-
-        Route::post('student/login', [AuthenticatedSessionController::class, 'storeStudent'])
-            ->name('student.login.post')
-            ->middleware('throttle:login');
+        // Redirect old student login URL to unified login
+        Route::get('student/login', function () {
+            return redirect()->route('login');
+        })->name('student.login');
 
         Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
             ->name('password.request');

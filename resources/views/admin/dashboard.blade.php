@@ -242,6 +242,41 @@
         $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
         $activeSchoolYearId = $activeSchoolYear ? $activeSchoolYear->id : null;
         $activeSchoolYearName = $activeSchoolYear ? $activeSchoolYear->name : 'No Active School Year';
+        
+        // Find the most recent Monday that has attendance data (for subtitle)
+        $today = now();
+        $monday = $today->isWeekend() 
+            ? $today->copy()->previous(\Carbon\Carbon::MONDAY)
+            : $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+        
+        $weeksToCheck = 12;
+        $foundMonday = null;
+        
+        for ($w = 0; $w < $weeksToCheck; $w++) {
+            $checkMonday = $monday->copy()->subWeeks($w);
+            $weekDates = collect(range(0, 4))->map(function($i) use ($checkMonday) {
+                return $checkMonday->copy()->addDays($i)->format('Y-m-d');
+            });
+            
+            $hasData = \App\Models\Attendance::whereIn('date', $weekDates->toArray())
+                ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                    return $q->whereHas('student', function($eq) use ($activeSchoolYearId) {
+                        $eq->where('school_year_id', $activeSchoolYearId);
+                    });
+                })
+                ->exists();
+            
+            if ($hasData) {
+                $foundMonday = $checkMonday;
+                break;
+            }
+        }
+        
+        if (!$foundMonday) {
+            $foundMonday = $monday;
+        }
+        
+        $weekRangeLabel = $foundMonday->format('M d') . ' – ' . $foundMonday->copy()->addDays(4)->format('M d, Y');
     @endphp
 
     <!-- Mobile Overlay -->
@@ -460,16 +495,16 @@
                             $presentToday = \App\Models\Attendance::whereDate('date', $today)
                                 ->where('status', 'present')
                                 ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
-                                    return $q->whereHas('student.enrollments', function($eq) use ($activeSchoolYearId) {
-                                        $eq->where('school_year_id', $activeSchoolYearId)->whereIn('status', ['approved', 'enrolled', 'completed']);
+                                    return $q->whereHas('student', function($eq) use ($activeSchoolYearId) {
+                                        $eq->where('school_year_id', $activeSchoolYearId);
                                     });
                                 })->count();
                             
                             $absentToday = \App\Models\Attendance::whereDate('date', $today)
                                 ->where('status', 'absent')
                                 ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
-                                    return $q->whereHas('student.enrollments', function($eq) use ($activeSchoolYearId) {
-                                        $eq->where('school_year_id', $activeSchoolYearId)->whereIn('status', ['approved', 'enrolled', 'completed']);
+                                    return $q->whereHas('student', function($eq) use ($activeSchoolYearId) {
+                                        $eq->where('school_year_id', $activeSchoolYearId);
                                     });
                                 })->count();
                             
@@ -569,7 +604,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
                             <div>
                                 <h3 class="text-base sm:text-lg font-bold text-slate-900">Attendance Trends</h3>
-                                <p class="text-xs sm:text-sm text-slate-500">Last 7 days overview • {{ $activeSchoolYearName }}</p>
+                                <p class="text-xs sm:text-sm text-slate-500">{{ $weekRangeLabel }} • {{ $activeSchoolYearName }}</p>
                             </div>
                             <button class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all self-start sm:self-auto">
                                 <i class="fas fa-download"></i>
@@ -880,30 +915,68 @@
 
         // Attendance Chart
         @php
-            $last7Days = collect(range(0, 6))->map(function($i) {
-                return now()->subDays($i)->format('Y-m-d');
-            })->reverse()->values();
+            $today = now();
+            
+            // Find the most recent Monday that has attendance data
+            // Go back up to 12 weeks to find data
+            $monday = $today->isWeekend() 
+                ? $today->copy()->previous(\Carbon\Carbon::MONDAY)
+                : $today->copy()->startOfWeek(\Carbon\Carbon::MONDAY);
+            
+            $weeksToCheck = 12;
+            $foundMonday = null;
+            
+            for ($w = 0; $w < $weeksToCheck; $w++) {
+                $checkMonday = $monday->copy()->subWeeks($w);
+                $weekDates = collect(range(0, 4))->map(function($i) use ($checkMonday) {
+                    return $checkMonday->copy()->addDays($i)->format('Y-m-d');
+                });
+                
+                $hasData = \App\Models\Attendance::whereIn('date', $weekDates->toArray())
+                    ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
+                        return $q->whereHas('student', function($eq) use ($activeSchoolYearId) {
+                            $eq->where('school_year_id', $activeSchoolYearId);
+                        });
+                    })
+                    ->exists();
+                
+                if ($hasData) {
+                    $foundMonday = $checkMonday;
+                    break;
+                }
+            }
+            
+            // Fallback to current week if no data found anywhere
+            if (!$foundMonday) {
+                $foundMonday = $monday;
+            }
+            
+            $lastWeekdays = collect(range(0, 4))->map(function($i) use ($foundMonday) {
+                return $foundMonday->copy()->addDays($i)->format('Y-m-d');
+            })->values();
+            
 
-            $attendanceLabels = $last7Days->map(function($date) {
-                return \Carbon\Carbon::parse($date)->format('D');
+
+            $attendanceLabels = $lastWeekdays->map(function($date) {
+                return \Carbon\Carbon::parse($date)->format('l'); // Full day name: Monday, Tuesday, etc.
             });
 
-            $presentData = $last7Days->map(function($date) use ($activeSchoolYearId) {
+            $presentData = $lastWeekdays->map(function($date) use ($activeSchoolYearId) {
                 return \App\Models\Attendance::whereDate('date', $date)
                     ->where('status', 'present')
                     ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
-                        return $q->whereHas('student.enrollments', function($eq) use ($activeSchoolYearId) {
-                            $eq->where('school_year_id', $activeSchoolYearId)->whereIn('status', ['approved', 'enrolled', 'completed']);
+                        return $q->whereHas('student', function($eq) use ($activeSchoolYearId) {
+                            $eq->where('school_year_id', $activeSchoolYearId);
                         });
                     })->count();
             });
 
-            $absentData = $last7Days->map(function($date) use ($activeSchoolYearId) {
+            $absentData = $lastWeekdays->map(function($date) use ($activeSchoolYearId) {
                 return \App\Models\Attendance::whereDate('date', $date)
                     ->where('status', 'absent')
                     ->when($activeSchoolYearId, function($q) use ($activeSchoolYearId) {
-                        return $q->whereHas('student.enrollments', function($eq) use ($activeSchoolYearId) {
-                            $eq->where('school_year_id', $activeSchoolYearId)->whereIn('status', ['approved', 'enrolled', 'completed']);
+                        return $q->whereHas('student', function($eq) use ($activeSchoolYearId) {
+                            $eq->where('school_year_id', $activeSchoolYearId);
                         });
                     })->count();
             });

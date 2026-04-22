@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use App\Services\SettingsEnforcer;
 use Illuminate\Http\Request;
 
@@ -14,11 +15,23 @@ class UserController extends Controller
     /**
      * Display a listing of users.
      */
-    public function index()
+    public function index(Request $request)
     {
         // Eager load role to avoid N+1
-        $users = User::with('role')->latest()->paginate(10);
-        return view('admin.users.index', compact('users'));
+        $query = User::with('role');
+
+        // Filter by role if provided
+        $selectedRole = $request->get('role');
+        if ($selectedRole) {
+            $query->whereHas('role', function ($q) use ($selectedRole) {
+                $q->where('name', $selectedRole);
+            });
+        }
+
+        $users = $query->latest()->paginate(10)->withQueryString();
+        $roles = Role::orderBy('name')->get();
+
+        return view('admin.users.index', compact('users', 'roles', 'selectedRole'));
     }
 
     /**

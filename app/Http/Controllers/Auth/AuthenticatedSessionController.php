@@ -40,25 +40,8 @@ class AuthenticatedSessionController extends Controller
     }
     
     /**
-     * Display the student login view.
-     */
-    public function createStudent(Request $request): \Illuminate\Http\Response
-    {
-        // Ensure session is started with a valid CSRF token
-        if (!$request->session()->isStarted()) {
-            $request->session()->start();
-        }
-        
-        $response = response()->view('auth.student-login');
-        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-        $response->headers->set('Pragma', 'no-cache');
-        $response->headers->set('Expires', '0');
-        return $response;
-    }
-
-    /**
      * Handle an incoming authentication request using username.
-     * This is for Admin/Teacher portal.
+     * Handles all roles: Admin, Teacher, Registrar, and Student.
      */
     public function store(Request $request)
     {
@@ -79,81 +62,42 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->route('password.expired');
             }
 
-            // BLOCK students from logging in via admin/teacher portal
-            if ($user->role->name === 'Student' || $user->role->name === 'student') {
-                Auth::logout();
-                return redirect()->route('student.login')
-                    ->withErrors([
-                        'login' => 'Please use the Student Login portal.'
-                    ]);
+            $roleName = strtolower($user->role?->name ?? '');
+            $displayRole = $user->role?->name ?? 'User';
+
+            // Check if student is approved/active
+            if ($roleName === 'student') {
+                $student = $user->student;
+                if (!$student || $student->status !== 'active') {
+                    Auth::logout();
+                    return redirect()->route('auth.pending')
+                        ->withErrors([
+                            'login' => 'Your registration is pending admin approval. You cannot log in yet.'
+                        ]);
+                }
+
+                session()->flash('signing_in_role', $displayRole);
+                session()->flash('signing_in_redirect', route('student.dashboard'));
+                return redirect()->route('auth.signing-in');
             }
 
             // Role-based redirect for Admin/Teacher/Registrar
-            switch ($user->role->name) {
-                case 'System Admin':
-                case 'admin':
-                    return redirect()->route('admin.dashboard');
-                case 'Registrar':
-                case 'registrar':
-                    return redirect()->route('registrar.dashboard');
-                case 'Teacher':
-                case 'teacher':
-                    return redirect()->route('teacher.dashboard');
-                default:
-                    Auth::logout();
-                    return redirect('/login')->withErrors([
-                        'login' => 'Access denied. This portal is for Staff only.',
-                    ]);
-            }
-        }
+            $redirectUrl = match ($roleName) {
+                'system admin', 'admin' => route('admin.dashboard'),
+                'registrar' => route('registrar.dashboard'),
+                'teacher' => route('teacher.dashboard'),
+                default => null,
+            };
 
-        return back()->withErrors([
-            'login' => 'The provided credentials do not match our records.',
-        ]);
-    }
-    
-    /**
-     * Handle student login request.
-     */
-    public function storeStudent(Request $request)
-    {
-        $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
-
-        $credentials = $request->only('username', 'password');
-
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            $user = Auth::user();
-
-            // Check password expiry
-            if (SettingsEnforcer::isPasswordExpired($user)) {
-                Auth::logout();
-                return redirect()->route('password.expired');
+            if (!$redirectUrl) {
+                return redirect()->route('login')->withErrors([
+                    'login' => 'Access denied. Unrecognized user role.',
+                ]);
             }
 
-            // BLOCK non-students from logging in via student portal
-            if ($user->role->name !== 'Student' && $user->role->name !== 'student') {
-                Auth::logout();
-                return redirect()->route('login')
-                    ->withErrors([
-                        'login' => 'Please use the Staff Login portal.'
-                    ]);
-            }
-
-            // Check if student is approved
-            $student = $user->student;
-            if (!$student || $student->status !== 'active') {
-                Auth::logout();
-                return redirect()->route('auth.pending')
-                    ->withErrors([
-                        'login' => 'Your registration is pending admin approval. You cannot log in yet.'
-                    ]);
-            }
-
-            return redirect()->route('student.dashboard');
+            session()->flash('signing_in_role', $displayRole);
+            session()->flash('signing_in_redirect', $redirectUrl);
+            return redirect()->route('auth.signing-in');
         }
 
         return back()->withErrors([

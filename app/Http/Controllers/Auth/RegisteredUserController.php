@@ -35,6 +35,27 @@ class RegisteredUserController extends Controller
     }
 
     /**
+     * Generate a unique LRN for new students in the format 120231######
+     */
+    private function generateNewStudentLrn(): string
+    {
+        $prefix = '120231';
+        $lastStudent = Student::where('lrn', 'like', $prefix . '%')
+            ->whereRaw('LENGTH(lrn) = 12')
+            ->orderByDesc('lrn')
+            ->first();
+
+        if ($lastStudent) {
+            $lastSuffix = (int) substr($lastStudent->lrn, 6);
+            $newSuffix = $lastSuffix + 1;
+        } else {
+            $newSuffix = 1;
+        }
+
+        return $prefix . str_pad($newSuffix, 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Handle registration
      */
     public function store(Request $request)
@@ -43,15 +64,44 @@ class RegisteredUserController extends Controller
             return redirect('/')->withErrors(['error' => 'User registration is currently disabled.'])->withInput()->with('panel_mode', 'register');
         }
 
-        // Generate full LRN if provided
-        $fullLrn = $request->filled('lrn_suffix') ? '120231' . $request->lrn_suffix : null;
+        $studentType = $request->input('type', 'new');
+
+        // Build full LRN based on student type
+        if ($studentType === 'new') {
+            if ($request->filled('lrn_suffix')) {
+                $fullLrn = '120231' . $request->lrn_suffix;
+            } else {
+                $fullLrn = $this->generateNewStudentLrn();
+            }
+        } else {
+            // Transferee or continuing - use full existing LRN
+            $fullLrn = $request->input('lrn');
+        }
 
         $validator = \Validator::make($request->all(), [
             'lrn_suffix' => [
                 'nullable',
                 'digits:6',
-                function ($attribute, $value, $fail) use ($fullLrn) {
+                function ($attribute, $value, $fail) use ($fullLrn, $studentType) {
+                    if ($studentType !== 'new') return;
                     if ($fullLrn && Student::where('lrn', $fullLrn)->exists()) {
+                        $fail('The LRN is already taken.');
+                    }
+                },
+            ],
+            'lrn' => [
+                'nullable',
+                function ($attribute, $value, $fail) use ($fullLrn, $studentType) {
+                    if ($studentType === 'new') return;
+                    if (empty($value)) {
+                        $fail('The LRN is required for transferee and continuing students.');
+                        return;
+                    }
+                    if (!preg_match('/^\d{12}$/', $value)) {
+                        $fail('The LRN must be exactly 12 digits.');
+                        return;
+                    }
+                    if (Student::where('lrn', $value)->exists()) {
                         $fail('The LRN is already taken.');
                     }
                 },
@@ -75,7 +125,7 @@ class RegisteredUserController extends Controller
 
             'guardian_name' => 'required|string|max:255',
             'guardian_relationship' => 'required|string|max:255',
-            'guardian_contact' => 'nullable|string|max:50',
+            'guardian_contact' => 'nullable|string|size:11|regex:/^\d{11}$/',
 
             'street_address' => 'required|string|max:255',
             'barangay' => 'required|string|max:255',

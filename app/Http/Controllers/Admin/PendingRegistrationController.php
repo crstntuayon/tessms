@@ -178,34 +178,35 @@ class PendingRegistrationController extends Controller
             'school_year_id' => 'required|exists:school_years,id',
         ]);
 
+        $schoolYearId = $validated['school_year_id'];
+
+        $section = Section::find($validated['section_id']);
+
+        if (!$section || !$section->is_active) {
+            return redirect()->back()->with('error', 'Selected section is not available.');
+        }
+
+        // Check capacity for THIS school year only
+        $currentCount = Enrollment::where('section_id', $section->id)
+            ->where('school_year_id', $schoolYearId)
+            ->where('status', 'enrolled')
+            ->count();
+
+        if ($currentCount >= $section->capacity) {
+            return redirect()->back()->with('error', 'Selected section is already full for this school year.');
+        }
+
+        $enrollment = $student->enrollments()
+            ->where('school_year_id', $schoolYearId)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$enrollment) {
+            return redirect()->back()->with('error', 'No pending enrollment found for this school year.');
+        }
+
+        DB::beginTransaction();
         try {
-            $schoolYearId = $validated['school_year_id'];
-            
-            $section = Section::find($validated['section_id']);
-
-            if (!$section || !$section->is_active) {
-                return redirect()->back()->with('error', 'Selected section is not available.');
-            }
-
-            // Check capacity for THIS school year only
-            $currentCount = Enrollment::where('section_id', $section->id)
-                ->where('school_year_id', $schoolYearId)
-                ->where('status', 'enrolled')
-                ->count();
-
-            if ($currentCount >= $section->capacity) {
-                return redirect()->back()->with('error', 'Selected section is already full for this school year.');
-            }
-
-            $enrollment = $student->enrollments()
-                ->where('school_year_id', $schoolYearId)
-                ->where('status', 'pending')
-                ->first();
-
-            if (!$enrollment) {
-                return redirect()->back()->with('error', 'No pending enrollment found for this school year.');
-            }
-
             // Update student status and current section
             $student->update([
                 'status' => 'active',
@@ -221,10 +222,22 @@ class PendingRegistrationController extends Controller
                 'remarks' => $validated['remarks'] ?? null,
             ]);
 
+            // Activate the user account so they can log in
+            if ($student->user) {
+                $student->user->update([
+                    'status' => 'active',
+                    'is_active' => true,
+                ]);
+            }
+
+            DB::commit();
+
+            $lastName = $student->user?->last_name ?? $student->last_name ?? 'Student';
             $schoolYear = SchoolYear::find($schoolYearId);
-            return redirect()->back()->with('success', "Student {$student->user->last_name} enrolled in {$section->name} for {$schoolYear->name}.");
+            return redirect()->back()->with('success', "Student {$lastName} enrolled in {$section->name} for {$schoolYear->name}.");
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Enrollment failed', ['student_id' => $student->id, 'error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to enroll student.');
         }
@@ -234,24 +247,39 @@ class PendingRegistrationController extends Controller
     {
         $schoolYearId = $request->input('school_year_id') ?? SchoolYear::where('is_active', true)->first()?->id;
 
+        DB::beginTransaction();
         try {
             $enrollment = $student->enrollments()
                 ->where('school_year_id', $schoolYearId)
                 ->where('status', 'pending')
                 ->first();
 
-            if ($enrollment) $enrollment->update(['status'=>'rejected']);
-
-            // Only reject student if no pending enrollments in ANY school year
-            if (!$student->enrollments()->where('status','pending')->exists()) {
-                $student->update(['status'=>'rejected']);
+            if ($enrollment) {
+                $enrollment->update(['status' => 'rejected']);
             }
 
-            return redirect()->back()->with('success', "Student {$student->user->last_name} rejected.");
+            // Only reject student if no pending enrollments in ANY school year
+            if (!$student->enrollments()->where('status', 'pending')->exists()) {
+                $student->update(['status' => 'rejected']);
+            }
+
+            // Deactivate the user account so they appear as inactive on the Users page
+            if ($student->user) {
+                $student->user->update([
+                    'status' => 'inactive',
+                    'is_active' => false,
+                ]);
+            }
+
+            DB::commit();
+
+            $lastName = $student->user?->last_name ?? $student->last_name ?? 'Student';
+            return redirect()->back()->with('success', "Student {$lastName} rejected.");
 
         } catch (\Exception $e) {
-            Log::error('Rejection failed', ['student_id'=>$student->id,'error'=>$e->getMessage()]);
-            return redirect()->back()->with('error','Failed to reject student.');
+            DB::rollBack();
+            Log::error('Rejection failed', ['student_id' => $student->id, 'error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to reject student.');
         }
     }
 

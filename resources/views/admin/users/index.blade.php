@@ -433,6 +433,23 @@
                     </a>
                 </div>
 
+                <!-- Role Filter -->
+                <div class="px-6 py-3 border-b border-slate-100 bg-white">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1">Filter by Role:</span>
+                        <a href="{{ route('admin.users.index') }}" 
+                           class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all {{ !$selectedRole ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                            All
+                        </a>
+                        @foreach($roles as $role)
+                            <a href="{{ route('admin.users.index', ['role' => $role->name]) }}" 
+                               class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all {{ $selectedRole === $role->name ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                                {{ ucfirst($role->name) }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+
                 <!-- Table -->
                 <div class="overflow-x-auto">
                     <table class="w-full">

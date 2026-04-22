@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'School Year Management')
 
@@ -20,7 +20,7 @@
     }
 </style>
 
-<div class="max-w-7xl mx-auto" x-data="{ open: false }">
+<div class="max-w-7xl mx-auto" id="schoolYearPage">
             <!-- Page Header -->
             <div class="mb-8">
                 <div class="flex items-center gap-4">
@@ -272,80 +272,10 @@
                     <i class="fas fa-calendar-check mr-2"></i>Closure Dashboard
                 </a>
                 @endif
-                
-                <div x-data="{ open: false }">
-                    <!-- Button to trigger modal -->
-                    <button @click="open = true" 
-                        class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-0.5">
-                        <i class="fas fa-plus mr-2"></i>Create New
-                    </button>
-
-    <!-- Modal -->
-    <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-cloak>
-        <div @click.away="open = false" class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 relative">
-            <h2 class="text-2xl font-bold mb-6 text-center">Create School Year</h2>
+                </div>
+            </div>
             
-            <form action="{{ route('admin.school-years.store') }}" method="POST" class="space-y-4">
-                @csrf
-
-                <div>
-                    <label for="name" class="block font-medium mb-1">Name</label>
-                    <input type="text" name="name" id="name" placeholder="e.g., 2026-2027" 
-                           class="border border-gray-300 rounded px-3 py-2 w-full" required>
-                </div>
-
-                <div>
-                    <label for="start_date" class="block font-medium mb-1">Start Date</label>
-                    <input type="date" name="start_date" id="start_date" 
-                           class="border border-gray-300 rounded px-3 py-2 w-full" required>
-                </div>
-
-                <div>
-                    <label for="end_date" class="block font-medium mb-1">End Date</label>
-                    <input type="date" name="end_date" id="end_date" 
-                           class="border border-gray-300 rounded px-3 py-2 w-full" required>
-                </div>
-
-                <div>
-                    <label for="description" class="block font-medium mb-1">Description</label>
-                    <textarea name="description" id="description" rows="3" 
-                              class="border border-gray-300 rounded px-3 py-2 w-full" placeholder="Optional description"></textarea>
-                </div>
-
-                <div class="flex items-center">
-                    <input type="checkbox" name="is_active" id="is_active" value="1" class="mr-2">
-                    <label for="is_active" class="font-medium">Set as active</label>
-                </div>
-
-                <div class="flex justify-end space-x-2 mt-4">
-                    <button type="button" @click="open = false" 
-                            class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-medium">
-                        Cancel
-                    </button>
-                    <button type="submit" 
-                            class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-                        Save
-                    </button>
-                </div>
-            </form>
-
-            <!-- Close button -->
-            <button @click="open = false" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    </div>
-</div>
-</div>
-
-<!-- Include Alpine.js if not already -->
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
-
-
-                </div>
-                
-                <div class="overflow-x-auto">
+            <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-slate-50/80">
                             <tr>
@@ -358,7 +288,19 @@
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                             @forelse($schoolYears as $year)
-                            <tr class="hover:bg-slate-50/80 transition-all group">
+                            @php
+                                $yearData = json_encode([
+                                    'id' => $year->id,
+                                    'name' => $year->name,
+                                    'start_date' => $year->start_date ? $year->start_date->format('Y-m-d') : '',
+                                    'end_date' => $year->end_date ? $year->end_date->format('Y-m-d') : '',
+                                    'description' => $year->description,
+                                ]);
+                            @endphp
+                            <tr data-year='{{ $yearData }}'
+                                onclick="selectYear(this)"
+                                class="transition-all group cursor-pointer hover:bg-slate-50/80"
+                                id="year-row-{{ $year->id }}">
                                 <td class="px-8 py-5">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center text-blue-600 font-bold text-sm">
@@ -368,7 +310,7 @@
                                     </div>
                                 </td>
                                 <td class="px-8 py-5 text-slate-600">{{ $year->start_date->format('M d, Y') }}</td>
-                                <td class="px-8 py-5 text-slate-600">{{ optional($year->end_date)->format('M d, Y') ?? '—' }}</td>
+                                <td class="px-8 py-5 text-slate-600">{{ optional($year->end_date)->format('M d, Y') ?? 'â€”' }}</td>
                                 <td class="px-8 py-5">
                                     @if($year->is_active)
                                         <span class="inline-flex items-center px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold shadow-sm">
@@ -383,7 +325,7 @@
                                 </td>
                                 <td class="px-8 py-5">
                                     @if(!$year->is_active)
-                                    <form action="{{ route('admin.school-year.start') }}" method="POST" class="inline">
+                                    <form action="{{ route('admin.school-year.start') }}" method="POST" class="inline" @click.stop>
                                         @csrf
                                         <input type="hidden" name="school_year_id" value="{{ $year->id }}">
                                         <button type="submit" 
@@ -429,11 +371,124 @@
                 </div>
                 @endif
             </div>
-        </main>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3" id="fabGroup">
+        <!-- Add Button -->
+        <button onclick="openCreateModal()"
+                class="w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/40 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center"
+                title="Create New School Year">
+            <i class="fas fa-plus text-lg"></i>
+        </button>
+
+        <!-- Edit Button -->
+        <button onclick="openEditModal()"
+                id="editFabBtn"
+                class="w-14 h-14 rounded-full bg-slate-300 cursor-not-allowed shadow-none text-white transition-all flex items-center justify-center"
+                title="Edit Selected School Year">
+            <i class="fas fa-pen text-lg"></i>
+        </button>
+
+        <!-- Delete Button -->
+        <form id="deleteForm" action="#" method="POST" class="inline">
+            @csrf
+            @method('DELETE')
+            <button type="button"
+                    onclick="confirmDelete()"
+                    id="deleteFabBtn"
+                    class="w-14 h-14 rounded-full bg-slate-300 cursor-not-allowed shadow-none text-white transition-all flex items-center justify-center"
+                    title="Delete Selected School Year">
+                <i class="fas fa-trash text-lg"></i>
+            </button>
+        </form>
+    </div>
+
+    <!-- Create Modal -->
+    <div id="createModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 relative" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-bold mb-6 text-center">Create School Year</h2>
+            <form action="{{ route('admin.school-years.store') }}" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="name" class="block font-medium mb-1">Name</label>
+                    <input type="text" name="name" id="name" placeholder="e.g., 2026-2027"
+                           class="border border-gray-300 rounded px-3 py-2 w-full" required>
+                </div>
+                <div>
+                    <label for="start_date" class="block font-medium mb-1">Start Date</label>
+                    <input type="date" name="start_date" id="start_date"
+                           class="border border-gray-300 rounded px-3 py-2 w-full" required>
+                </div>
+                <div>
+                    <label for="end_date" class="block font-medium mb-1">End Date</label>
+                    <input type="date" name="end_date" id="end_date"
+                           class="border border-gray-300 rounded px-3 py-2 w-full" required>
+                </div>
+                <div>
+                    <label for="description" class="block font-medium mb-1">Description</label>
+                    <textarea name="description" id="description" rows="3"
+                              class="border border-gray-300 rounded px-3 py-2 w-full" placeholder="Optional description"></textarea>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" name="is_active" id="is_active" value="1" class="mr-2">
+                    <label for="is_active" class="font-medium">Set as active</label>
+                </div>
+                <div class="flex justify-end space-x-2 mt-4">
+                    <button type="button" onclick="closeCreateModal()"
+                            class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-medium">Cancel</button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold">Save</button>
+                </div>
+            </form>
+            <button onclick="closeCreateModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 relative" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-bold mb-6 text-center">Edit School Year</h2>
+            <form id="editForm" action="#" method="POST" class="space-y-4">
+                @csrf
+                @method('PUT')
+                <div>
+                    <label class="block font-medium mb-1">Name</label>
+                    <input type="text" name="name" id="editName"
+                           class="border border-gray-300 rounded px-3 py-2 w-full" required>
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">Start Date</label>
+                    <input type="date" name="start_date" id="editStartDate"
+                           class="border border-gray-300 rounded px-3 py-2 w-full" required>
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">End Date</label>
+                    <input type="date" name="end_date" id="editEndDate"
+                           class="border border-gray-300 rounded px-3 py-2 w-full" required>
+                </div>
+                <div>
+                    <label class="block font-medium mb-1">Description</label>
+                    <textarea name="description" id="editDescription" rows="3"
+                              class="border border-gray-300 rounded px-3 py-2 w-full" placeholder="Optional description"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2 mt-4">
+                    <button type="button" onclick="closeEditModal()"
+                            class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-medium">Cancel</button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded bg-amber-600 hover:bg-amber-700 text-white font-semibold">Update</button>
+                </div>
+            </form>
+            <button onclick="closeEditModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
     </div>
 
     <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
+    <div id="toastContainer" class="fixed top-6 right-6 z-50 flex flex-col gap-3"></div>
 
     <!-- End School Year Modal -->
     <div id="endSchoolYearModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -731,6 +786,97 @@
                 closeEndSchoolYearModal();
             }
         });
+
+        // --- School Year Row Selection & FABs ---
+        let selectedYear = null;
+
+        function selectYear(row) {
+            const yearData = JSON.parse(row.dataset.year);
+            const yearId = yearData.id;
+
+            if (selectedYear && selectedYear.id === yearId) {
+                // Deselect
+                selectedYear = null;
+                row.classList.remove('bg-blue-50/80', 'ring-1', 'ring-blue-200');
+                row.classList.add('hover:bg-slate-50/80');
+            } else {
+                // Deselect previous
+                if (selectedYear) {
+                    const prevRow = document.getElementById('year-row-' + selectedYear.id);
+                    if (prevRow) {
+                        prevRow.classList.remove('bg-blue-50/80', 'ring-1', 'ring-blue-200');
+                        prevRow.classList.add('hover:bg-slate-50/80');
+                    }
+                }
+                // Select new
+                selectedYear = yearData;
+                row.classList.remove('hover:bg-slate-50/80');
+                row.classList.add('bg-blue-50/80', 'ring-1', 'ring-blue-200');
+            }
+
+            updateFabButtons();
+        }
+
+        function updateFabButtons() {
+            const editBtn = document.getElementById('editFabBtn');
+            const deleteBtn = document.getElementById('deleteFabBtn');
+
+            if (selectedYear) {
+                editBtn.classList.remove('bg-slate-300', 'cursor-not-allowed', 'shadow-none');
+                editBtn.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-orange-500', 'hover:from-amber-600', 'hover:to-orange-600', 'shadow-amber-500/40', 'hover:-translate-y-0.5', 'shadow-lg');
+                editBtn.disabled = false;
+
+                deleteBtn.classList.remove('bg-slate-300', 'cursor-not-allowed', 'shadow-none');
+                deleteBtn.classList.add('bg-gradient-to-r', 'from-rose-500', 'to-red-600', 'hover:from-rose-600', 'hover:to-red-700', 'shadow-rose-500/40', 'hover:-translate-y-0.5', 'shadow-lg');
+                deleteBtn.disabled = false;
+            } else {
+                editBtn.classList.add('bg-slate-300', 'cursor-not-allowed', 'shadow-none');
+                editBtn.classList.remove('bg-gradient-to-r', 'from-amber-500', 'to-orange-500', 'hover:from-amber-600', 'hover:to-orange-600', 'shadow-amber-500/40', 'hover:-translate-y-0.5', 'shadow-lg');
+                editBtn.disabled = true;
+
+                deleteBtn.classList.add('bg-slate-300', 'cursor-not-allowed', 'shadow-none');
+                deleteBtn.classList.remove('bg-gradient-to-r', 'from-rose-500', 'to-red-600', 'hover:from-rose-600', 'hover:to-red-700', 'shadow-rose-500/40', 'hover:-translate-y-0.5', 'shadow-lg');
+                deleteBtn.disabled = true;
+            }
+        }
+
+        function openCreateModal() {
+            document.getElementById('createModal').classList.remove('hidden');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.add('hidden');
+        }
+
+        function openEditModal() {
+            if (!selectedYear) return;
+            document.getElementById('editName').value = selectedYear.name;
+            document.getElementById('editStartDate').value = selectedYear.start_date;
+            document.getElementById('editEndDate').value = selectedYear.end_date;
+            document.getElementById('editDescription').value = selectedYear.description || '';
+            document.getElementById('editForm').action = '{{ url('admin/school-years') }}/' + selectedYear.id;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        function confirmDelete() {
+            if (!selectedYear) return;
+            if (confirm('Are you sure you want to delete "' + selectedYear.name + '"?')) {
+                document.getElementById('deleteForm').action = '{{ url('admin/school-years') }}/' + selectedYear.id;
+                document.getElementById('deleteForm').submit();
+            }
+        }
+
+        // Close modals on backdrop click
+        document.getElementById('createModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCreateModal();
+        });
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
     </script>
-</div>
 @endsection
+

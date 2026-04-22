@@ -707,6 +707,64 @@ class SchoolYearController extends Controller
     }
 
     /**
+     * Show edit form for a school year
+     */
+    public function edit(SchoolYear $schoolYear)
+    {
+        return view('admin.school-years.edit', compact('schoolYear'));
+    }
+
+    /**
+     * Update a school year
+     */
+    public function update(Request $request, SchoolYear $schoolYear)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:school_years,name,' . $schoolYear->id,
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'description' => 'nullable|string',
+        ]);
+
+        try {
+            $schoolYear->update([
+                'name' => $request->name,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'description' => $request->description,
+            ]);
+
+            return redirect()->route('admin.school-years.index')
+                ->with('success', "School year '{$schoolYear->name}' updated successfully.");
+        } catch (\Exception $e) {
+            Log::error('Update school year failed', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to update school year.');
+        }
+    }
+
+    /**
+     * Delete a school year
+     */
+    public function destroy(SchoolYear $schoolYear)
+    {
+        try {
+            // Prevent deleting active school year
+            if ($schoolYear->is_active) {
+                return redirect()->back()->with('error', 'Cannot delete an active school year. Please deactivate it first.');
+            }
+
+            $name = $schoolYear->name;
+            $schoolYear->delete();
+
+            return redirect()->route('admin.school-years.index')
+                ->with('success', "School year '{$name}' deleted successfully.");
+        } catch (\Exception $e) {
+            Log::error('Delete school year failed', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to delete school year.');
+        }
+    }
+
+    /**
      * Store a newly created school year
      */
     public function store(Request $request)

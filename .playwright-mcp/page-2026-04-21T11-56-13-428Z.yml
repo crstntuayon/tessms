@@ -1,0 +1,503 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "Logo Tugawe Elementary School DepEd Negros Oriental" [ref=e5] [cursor=pointer]:
+        - /url: "#"
+        - img "Logo" [ref=e7]
+        - generic [ref=e9]:
+          - paragraph [ref=e10]: Tugawe Elementary School
+          - paragraph [ref=e11]: DepEd Negros Oriental
+      - generic [ref=e12]:
+        - link "About" [ref=e13] [cursor=pointer]:
+          - /url: "#about"
+        - link "Announcements" [ref=e14] [cursor=pointer]:
+          - /url: "#announcements"
+        - link "Faculty" [ref=e15] [cursor=pointer]:
+          - /url: "#faculty"
+        - button "Sign In" [ref=e16] [cursor=pointer]
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e25]: Department of Education • Negros Island Region
+      - heading "Building foundations for lifelong learning" [level=1] [ref=e26]
+      - paragraph [ref=e27]: Tugawe Elementary School provides quality basic education to the children of Dauin, Negros Oriental. Committed to academic excellence and holistic development.
+      - link "Enroll Now" [ref=e29] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/enroll
+        - text: Enroll Now
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - paragraph [ref=e32]: 3+
+          - paragraph [ref=e33]: Students
+        - generic [ref=e34]:
+          - paragraph [ref=e35]: 7+
+          - paragraph [ref=e36]: Teachers
+        - generic [ref=e37]:
+          - paragraph [ref=e38]: "7"
+          - paragraph [ref=e39]: Sections
+    - generic [ref=e40]:
+      - generic [ref=e43]:
+        - img "School Photo" [ref=e45]
+        - button [ref=e46] [cursor=pointer]:
+          - img [ref=e47]
+        - button [ref=e49] [cursor=pointer]:
+          - img [ref=e50]
+        - generic [ref=e52]:
+          - button [ref=e53] [cursor=pointer]
+          - button [ref=e54] [cursor=pointer]
+          - button [ref=e55] [cursor=pointer]
+          - button [ref=e56] [cursor=pointer]
+          - button [ref=e57] [cursor=pointer]
+        - generic [ref=e58]: 1 / 5
+      - generic [ref=e60]:
+        - img [ref=e62]
+        - generic [ref=e64]:
+          - paragraph [ref=e65]: DepEd Certified
+          - paragraph [ref=e66]: Excellence in Education
+  - generic [ref=e72]:
+    - generic [ref=e73]:
+      - generic [ref=e74]:
+        - img "Tugawe Elementary School Logo" [ref=e79]
+        - img [ref=e81]
+        - generic [ref=e84]:
+          - paragraph
+      - generic [ref=e85]:
+        - heading "TUGAWE ELEMENTARY SCHOOL" [level=3] [ref=e86]
+        - paragraph [ref=e87]: Brgy. Tugawe, Dauin, Negros Oriental
+      - generic [ref=e94]:
+        - img [ref=e96]
+        - generic [ref=e98]:
+          - paragraph [ref=e99]: Our Mission
+          - paragraph [ref=e100]: Provide quality basic education accessible to all learners.
+    - generic [ref=e101]:
+      - generic [ref=e106]: About Our School
+      - generic [ref=e107]:
+        - heading "Nurturing young minds for a brighter tomorrow" [level=2] [ref=e108]:
+          - text: Nurturing
+          - generic [ref=e109]:
+            - text: young minds
+            - img [ref=e110]
+          - text: for a brighter tomorrow
+        - paragraph [ref=e112]: A premier public elementary institution committed to academic excellence and holistic development.
+      - generic [ref=e113]:
+        - paragraph [ref=e114]:
+          - generic [ref=e115]: T
+          - text: ugawe Elementary School stands as a beacon of quality education in Barangay Tugawe, serving the Dauin district and neighboring communities across Negros Oriental.
+        - paragraph [ref=e116]:
+          - text: Under the Department of Education, we are dedicated to molding
+          - strong [ref=e117]: academically competent
+          - text: ","
+          - strong [ref=e118]: socially responsible
+          - text: ", and"
+          - strong [ref=e119]: morally upright
+          - text: individuals ready to face future challenges.
+      - generic [ref=e120]:
+        - generic [ref=e121]:
+          - img [ref=e124]
+          - paragraph [ref=e126]: "120231"
+          - paragraph [ref=e127]: School ID
+        - generic [ref=e128]:
+          - img [ref=e131]
+          - paragraph [ref=e134]: Dauin
+          - paragraph [ref=e135]: District
+        - generic [ref=e136]:
+          - img [ref=e139]
+          - paragraph [ref=e141]: Negros Oriental
+          - paragraph [ref=e142]: Division
+        - generic [ref=e143]:
+          - img [ref=e146]
+          - paragraph [ref=e148]: NIR
+          - paragraph [ref=e149]: Negros Island Region
+  - generic [ref=e151]:
+    - generic [ref=e153]:
+      - generic [ref=e155]: School Updates
+      - heading "Announcements" [level=2] [ref=e156]
+    - generic [ref=e157]:
+      - img [ref=e159]
+      - paragraph [ref=e161]: No announcements posted at this time.
+  - generic [ref=e164]:
+    - generic [ref=e165]:
+      - generic [ref=e167]: Our People
+      - heading "School Faculty & Staff" [level=2] [ref=e168]
+      - paragraph [ref=e169]: Meet the dedicated educators and administrators committed to providing quality education to our learners.
+    - generic [ref=e170]:
+      - generic [ref=e171]:
+        - img "Maria Santos" [ref=e175]
+        - heading "Maria Santos" [level=4] [ref=e176]
+        - paragraph [ref=e177]: Teacher 1
+      - generic [ref=e178]:
+        - img "Shane Mendes" [ref=e182]
+        - heading "Shane Mendes" [level=4] [ref=e183]
+        - paragraph [ref=e184]: Teacher
+      - generic [ref=e185]:
+        - img "Samantha Kim" [ref=e189]
+        - heading "Samantha Kim" [level=4] [ref=e190]
+        - paragraph [ref=e191]: Teacher
+      - generic [ref=e192]:
+        - img "Monique Filipinas" [ref=e196]
+        - heading "Monique Filipinas" [level=4] [ref=e197]
+        - paragraph [ref=e198]: Teacher
+      - generic [ref=e199]:
+        - img "Anthony Rapsing" [ref=e203]
+        - heading "Anthony Rapsing" [level=4] [ref=e204]
+        - paragraph [ref=e205]: Teacher
+      - generic [ref=e206]:
+        - img "Nancy Lewis" [ref=e210]
+        - heading "Nancy Lewis" [level=4] [ref=e211]
+        - paragraph [ref=e212]: Teacher
+  - generic [ref=e218]:
+    - generic [ref=e219]:
+      - heading "Get in touch" [level=2] [ref=e220]
+      - paragraph [ref=e221]: For inquiries regarding enrollment, pupil records, or other school matters, please contact us or visit the school administration office.
+      - generic [ref=e222]:
+        - generic [ref=e223]:
+          - img [ref=e225]
+          - generic [ref=e228]:
+            - paragraph [ref=e229]: Address
+            - paragraph [ref=e230]: Tugawe, Dauin, Negros Oriental, Philippines
+        - generic [ref=e231]:
+          - img [ref=e233]
+          - generic [ref=e235]:
+            - paragraph [ref=e236]: Email
+            - paragraph [ref=e237]: tugawe.es@deped.gov.ph
+    - generic [ref=e238]:
+      - heading "School Hours" [level=3] [ref=e239]: School Hours
+      - generic [ref=e241]:
+        - generic [ref=e242]:
+          - generic [ref=e243]:
+            - img [ref=e245]
+            - generic [ref=e247]: Monday - Friday
+          - generic [ref=e248]: 7:00 AM - 4:00 PM
+        - generic [ref=e249]:
+          - generic [ref=e250]:
+            - img [ref=e252]
+            - generic [ref=e254]: Saturday & Sunday
+          - generic [ref=e255]: Closed
+      - generic [ref=e257]:
+        - img [ref=e258]
+        - paragraph [ref=e260]: For urgent matters, please contact the school directly during operating hours.
+  - contentinfo [ref=e261]:
+    - generic [ref=e263]:
+      - generic [ref=e264]:
+        - img [ref=e265]
+        - generic [ref=e266]:
+          - generic [ref=e267]: Tugawe Elementary School
+          - text: Excellence in Education
+      - generic [ref=e268]:
+        - link "Privacy Policy" [ref=e269] [cursor=pointer]:
+          - /url: "#"
+        - link "Terms of Use" [ref=e270] [cursor=pointer]:
+          - /url: "#"
+        - link "Contact" [ref=e271] [cursor=pointer]:
+          - /url: "#"
+      - paragraph [ref=e272]: © 2026 Department of Education. All rights reserved.
+  - generic [ref=e274]:
+    - generic [ref=e275]:
+      - generic [ref=e276]:
+        - img [ref=e278]
+        - generic [ref=e280]:
+          - heading "Tugawe ES Portal" [level=2] [ref=e281]
+          - paragraph [ref=e282]: Pupil Management System
+      - button [ref=e283] [cursor=pointer]:
+        - img [ref=e284]
+    - generic [ref=e287]:
+      - img [ref=e289]
+      - generic [ref=e291]:
+        - heading "School Portal" [level=3] [ref=e292]
+        - paragraph [ref=e293]: Sign in to your account.
+    - generic [ref=e295]:
+      - button "Sign In" [ref=e297] [cursor=pointer]
+      - button "Pupil Sign Up" [ref=e298] [cursor=pointer]
+    - generic [ref=e299]:
+      - generic [ref=e300]:
+        - generic [ref=e301]:
+          - generic [ref=e302]:
+            - generic [ref=e303]:
+              - generic [ref=e304]: Username
+              - generic [ref=e305]:
+                - img [ref=e307]
+                - textbox "Enter your username" [ref=e309]
+            - generic [ref=e310]:
+              - generic [ref=e311]: Password
+              - generic [ref=e312]:
+                - img [ref=e314]
+                - textbox "Enter your password" [ref=e316]
+                - button [ref=e317] [cursor=pointer]:
+                  - img [ref=e318]
+          - button "Sign In to Portal" [ref=e321] [cursor=pointer]:
+            - generic [ref=e322]: Sign In to Portal
+        - generic [ref=e324]:
+          - img [ref=e326]
+          - generic [ref=e328]:
+            - paragraph [ref=e329]: Need Help?
+            - paragraph [ref=e330]: Contact the school admin office if you're having trouble signing in.
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - img
+            - generic:
+              - paragraph: Pupil Registration Only
+              - paragraph: This portal is exclusively for enrolled pupils.
+        - generic:
+          - generic:
+            - heading "Pupil Registration" [level=2]:
+              - img
+              - text: Pupil Registration
+            - paragraph: Complete the form below to register a new pupil
+          - generic:
+            - generic:
+              - heading "1 Learner Reference Number (LRN)" [level=3]:
+                - generic: "1"
+                - text: Learner Reference Number (LRN)
+              - generic: LRN
+              - generic:
+                - generic: "120231"
+                - textbox "Last 6 digits"
+              - paragraph:
+                - img
+                - text: Enter the last 6 digits of the pupil's LRN
+            - generic:
+              - heading "2 Personal Information" [level=3]:
+                - generic: "2"
+                - text: Personal Information
+              - generic:
+                - generic:
+                  - generic: First Name *
+                  - textbox "Juan"
+                - generic:
+                  - generic: Middle Name
+                  - textbox "Dela Cruz"
+                - generic:
+                  - generic: Last Name *
+                  - textbox "Santos"
+              - generic:
+                - generic: Suffix
+                - combobox:
+                  - option "None" [selected]
+                  - option "Jr."
+                  - option "Sr."
+                  - option "II"
+                  - option "III"
+                  - option "IV"
+              - generic:
+                - generic:
+                  - generic: Birthdate *
+                  - textbox
+                - generic:
+                  - generic: Place of Birth *
+                  - textbox "City, Province"
+              - generic:
+                - generic:
+                  - generic: Gender *
+                  - combobox:
+                    - option "Select Gender" [selected]
+                    - option "Male"
+                    - option "Female"
+                    - option "Other"
+                - generic:
+                  - generic: Nationality *
+                  - textbox "Filipino"
+                - generic:
+                  - generic: Religion *
+                  - textbox "Roman Catholic"
+                - generic:
+                  - generic: Ethnicity *
+                  - textbox "e.g., Cebuano, Tagalog"
+                - generic:
+                  - generic: Mother Tongue *
+                  - textbox "e.g., Cebuano, Filipino"
+            - generic:
+              - heading "3 Family Information" [level=3]:
+                - generic: "3"
+                - text: Family Information
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                      - text: Father's Name
+                      - generic: "*"
+                    - textbox "Full Name"
+                  - generic:
+                    - generic: Occupation *
+                    - textbox "e.g., Engineer"
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                      - text: Mother's Name
+                      - generic: "*"
+                    - textbox "Full Name"
+                  - generic:
+                    - generic: Occupation *
+                    - textbox "e.g., Teacher"
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                      - text: Guardian's Name
+                      - generic: "*"
+                    - textbox "Full Name"
+                  - generic:
+                    - generic: Relationship *
+                    - combobox:
+                      - option "Select" [selected]
+                      - option "Parent"
+                      - option "Grandparent"
+                      - option "Sibling"
+                      - option "Relative"
+                      - option "Other"
+                  - generic:
+                    - generic: Contact Number
+                    - textbox "09XX XXX XXXX"
+            - generic:
+              - heading "4 Address Information" [level=3]:
+                - generic: "4"
+                - text: Address Information
+              - generic:
+                - generic: Street Address *
+                - textbox "House No., Street, Subdivision"
+              - generic:
+                - generic:
+                  - generic: Barangay *
+                  - textbox "Barangay"
+                - generic:
+                  - generic: City *
+                  - textbox "City"
+                - generic:
+                  - generic: Province *
+                  - textbox "Province"
+                - generic:
+                  - generic: ZIP Code *
+                  - textbox "ZIP"
+            - generic:
+              - heading "5 Academic Information" [level=3]:
+                - generic: "5"
+                - text: Academic Information
+              - generic:
+                - generic:
+                  - generic: Grade Level *
+                  - combobox:
+                    - option "Select Grade Level" [selected]
+                    - option "Kindergarten"
+                    - option "Grade 1"
+                    - option "Grade 2"
+                    - option "Grade 3"
+                    - option "Grade 4"
+                    - option "Grade 5"
+                    - option "Grade 6"
+                - generic:
+                  - generic: Student Type *
+                  - combobox:
+                    - option "New Pupil" [selected]
+                    - option "Transferee"
+                    - option "Continuing"
+            - generic:
+              - heading "6 Account Setup & Photo" [level=3]:
+                - generic: "6"
+                - text: Account Setup & Photo
+              - generic:
+                - generic:
+                  - generic: Username *
+                  - generic:
+                    - generic:
+                      - img
+                    - textbox "juan.santos"
+                - generic:
+                  - generic: Email *
+                  - generic:
+                    - generic:
+                      - img
+                    - textbox "juan@example.com"
+              - generic:
+                - generic:
+                  - generic: Password *
+                  - generic:
+                    - generic:
+                      - img
+                    - textbox "••••••••"
+                - generic:
+                  - generic: Confirm Password *
+                  - generic:
+                    - generic:
+                      - img
+                    - textbox "••••••••"
+              - generic:
+                - generic: Pupil Photo
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Click to upload or drag and drop
+                      - paragraph: PNG, JPG or JPEG (MAX. 2MB)
+            - generic:
+              - heading "7 Pupil Remarks (Optional)" [level=3]:
+                - generic: "7"
+                - text: Pupil Remarks
+                - generic: (Optional)
+              - generic:
+                - generic:
+                  - generic: Remark Code
+                  - combobox:
+                    - option "-- Select Remark (Optional) --" [selected]
+                    - option "TI - Transferred In"
+                    - option "TO - Transferred Out"
+                    - option "DO - Dropped Out"
+                    - option "LE - Late Enrollee"
+                    - option "CCT - CCT Recipient"
+                    - option "BA - Balik Aral"
+                    - option "LWD - Learner With Disability"
+                - generic:
+                  - generic:
+                    - paragraph: Select only if applicable. Multiple selections require admin assistance.
+            - generic:
+              - heading "8 Required Documents" [level=3]:
+                - generic: "8"
+                - text: Required Documents
+              - generic:
+                - paragraph: "New Students: Birth Certificate, Report Card, Good Moral Certificate"
+              - generic:
+                - generic:
+                  - generic: Birth Certificate (Optional)
+                  - generic:
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Click to upload
+                        - paragraph: PDF, JPG, PNG (MAX. 5MB)
+                - generic:
+                  - generic: Report Card / Form 138 (Optional)
+                  - generic:
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Click to upload
+                        - paragraph: PDF, JPG, PNG (MAX. 5MB)
+                - generic:
+                  - generic: Certificate of Good Moral Character (Optional)
+                  - generic:
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Click to upload
+                        - paragraph: PDF, JPG, PNG (MAX. 5MB)
+            - generic:
+              - button "Complete Registration":
+                - img
+                - generic: Complete Registration
+              - paragraph:
+                - text: By registering, you agree to our
+                - link "Terms of Service":
+                  - /url: "#"
+                - text: and
+                - link "Privacy Policy":
+                  - /url: "#"
+        - generic:
+          - generic:
+            - generic:
+              - img
+            - generic:
+              - paragraph: Account Verification Required
+              - paragraph: Your account will be reviewed by the school admin before activation. You'll receive a notification once approved.
+    - paragraph [ref=e332]:
+      - img [ref=e333]
+      - text: Secured by Tugawe ES Admin • DepEd Negros Oriental

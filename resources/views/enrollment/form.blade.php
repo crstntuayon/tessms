@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Continuing Pupil Enrollment - Tugawe Elementary School</title>
+    <title>Online Enrollment - Tugawe Elementary School</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -45,27 +45,13 @@
     <main class="py-12 px-4">
         <div class="max-w-xl mx-auto">
             
-            <!-- Notice for New Students -->
-            <div class="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                <div class="flex items-start gap-3">
-                    <i class="fas fa-info-circle text-amber-600 mt-0.5"></i>
-                    <div>
-                        <p class="text-sm font-semibold text-amber-800">For New Pupils & Transferees</p>
-                        <p class="text-xs text-amber-700 mt-1">
-                            If you are a new pupil (Kindergarten) or transferee, please 
-                            <a href="{{ route('register') }}" class="underline font-semibold hover:text-amber-900">register here</a> instead.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
             <!-- Title -->
             <div class="text-center mb-8">
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
-                    <i class="fas fa-user-check text-white text-2xl"></i>
+                    <i class="fas fa-user-plus text-white text-2xl"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-white mb-2">Continuing Pupil Enrollment</h1>
-                <p class="text-white/80">For old pupils enrolling in the new school year</p>
+                <h1 class="text-3xl font-bold text-white mb-2">Online Enrollment</h1>
+                <p class="text-white/80">Select the option that applies to you</p>
                 @if($currentSchoolYear)
                     <div class="mt-3 inline-flex items-center gap-2 bg-white/20 px-4 py-1.5 rounded-full">
                         <i class="fas fa-calendar-alt text-white/90"></i>
@@ -74,240 +60,61 @@
                 @endif
             </div>
 
-            @if($errors->any())
-                <div class="mb-6 bg-rose-50 border-l-4 border-rose-500 rounded-r-xl p-4">
-                    <ul class="text-sm text-rose-700 space-y-1">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            @php
+                $enrollmentEnabledValue = \App\Models\Setting::get('enrollment_enabled', false);
+                $enrollmentEnabled = $enrollmentEnabledValue === true || $enrollmentEnabledValue === '1' || $enrollmentEnabledValue === 1;
+            @endphp
 
-            <!-- Form Card -->
-            <div class="glass rounded-3xl shadow-2xl p-8" x-data="continuingEnrollment()" x-init="init()">
-                
-                <!-- Step 1: LRN Lookup -->
-                <div x-show="step === 1" x-transition>
-                    <h2 class="text-xl font-bold text-slate-800 mb-2">Find Your Record</h2>
-                    <p class="text-slate-500 text-sm mb-6">Enter your Learner Reference Number (LRN) to retrieve your information</p>
+            @if(!$enrollmentEnabled)
+                <div class="glass rounded-3xl shadow-2xl p-8 text-center">
+                    <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-lock text-slate-400 text-3xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-800 mb-2">Enrollment is Closed</h2>
+                    <p class="text-slate-500">Online enrollment is not open at this time. Please contact the school administration.</p>
+                </div>
+            @else
+                <!-- Choice Cards -->
+                <div class="space-y-4">
                     
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                <i class="fas fa-id-card text-indigo-500 mr-2"></i>LRN (Learner Reference Number)
-                            </label>
-                            <input type="text" x-model="lrn" placeholder="12-digit LRN" maxlength="12"
-                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-center text-lg tracking-wider">
+                    <!-- Returning Pupil -->
+                    <a href="{{ route('login') }}" class="glass rounded-2xl p-6 flex items-center gap-5 hover:shadow-2xl transition-all duration-300 group cursor-pointer block">
+                        <div class="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 transition-colors">
+                            <i class="fas fa-sign-in-alt text-indigo-600 text-xl group-hover:text-white transition-colors"></i>
                         </div>
-                        
-                        <button @click="lookupStudent()" :disabled="loading" 
-                                class="w-full py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-semibold transition-all flex items-center justify-center gap-2">
-                            <i class="fas fa-search" x-show="!loading"></i>
-                            <i class="fas fa-spinner fa-spin" x-show="loading"></i>
-                            <span x-text="loading ? 'Looking up...' : 'Find My Record'"></span>
-                        </button>
-                        
-                        <p x-show="error" x-text="error" class="text-rose-600 text-sm text-center"></p>
-                    </div>
-                </div>
-
-                <!-- Step 2: Confirm & Enroll -->
-                <div x-show="step === 2" x-transition style="display: none;">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-slate-800">Confirm Enrollment</h2>
-                        <button @click="step = 1" class="text-sm text-slate-500 hover:text-indigo-600">
-                            <i class="fas fa-arrow-left mr-1"></i> Back
-                        </button>
-                    </div>
-
-                    <!-- Student Info Display -->
-                    <div class="bg-indigo-50 rounded-xl p-4 mb-6">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-user text-indigo-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-slate-800" x-text="studentName"></p>
-                                <p class="text-sm text-slate-500">LRN: <span x-text="lrn"></span></p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                                <span class="text-slate-500">Last Grade:</span>
-                                <span class="font-medium ml-1" x-text="lastGrade"></span>
-                            </div>
-                            <div>
-                                <span class="text-slate-500">School Year:</span>
-                                <span class="font-medium ml-1" x-text="lastSchoolYear"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <form action="{{ route('enrollment.submit') }}" method="POST" @submit="clearState()">
-                        @csrf
-                        <input type="hidden" name="application_type" value="continuing">
-                        <input type="hidden" name="school_year_id" value="{{ $currentSchoolYear->id ?? '' }}">
-                        <input type="hidden" name="student_lrn" x-model="lrn">
-                        <input type="hidden" name="student_id" x-model="studentId">
-
-                        <!-- Active School Year Info -->
-                        @if($currentSchoolYear)
-                            <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                                <div class="flex items-center gap-2 text-emerald-700">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <span class="font-semibold">Enrolling for: {{ $currentSchoolYear->name }}</span>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Grade Level to Enroll -->
-                        <div class="mb-6">
-                            <label class="block text-sm font-semibold text-slate-700 mb-3">
-                                <i class="fas fa-award text-indigo-500 mr-2"></i>Grade Level to Enroll <span class="text-rose-500">*</span>
-                            </label>
-                            <select name="grade_level_id" required
-                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer">
-                                <option value="">Select Grade Level</option>
-                                @foreach($gradeLevels as $grade)
-                                    <option value="{{ $grade->id }}">{{ $grade->name }}</option>
-                                @endforeach
-                            </select>
-                            <p class="text-xs text-slate-500 mt-1">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Select the grade level you will be enrolling in for the new school year
+                        <div class="flex-1">
+                            <h3 class="font-bold text-slate-800 text-lg group-hover:text-indigo-700 transition-colors">Returning Pupil</h3>
+                            <p class="text-sm text-slate-500 mt-0.5">
+                                I already have a Pupil Portal account and want to enroll for the new school year.
                             </p>
                         </div>
+                        <i class="fas fa-chevron-right text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"></i>
+                    </a>
 
-                        <!-- Parent Email -->
-                        <div class="mb-6">
-                            <label class="block text-sm font-semibold text-slate-700 mb-3">
-                                <i class="fas fa-envelope text-indigo-500 mr-2"></i>Parent Email <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="email" name="parent_email" placeholder="parent@email.com" required
-                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all">
-                            <p class="text-xs text-slate-500 mt-1">We'll send enrollment confirmation to this email</p>
+                    <!-- New / Transferee Pupil -->
+                    <a href="{{ route('register') }}" class="glass rounded-2xl p-6 flex items-center gap-5 hover:shadow-2xl transition-all duration-300 group cursor-pointer block">
+                        <div class="w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-emerald-600 transition-colors">
+                            <i class="fas fa-user-plus text-emerald-600 text-xl group-hover:text-white transition-colors"></i>
                         </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-slate-800 text-lg group-hover:text-emerald-700 transition-colors">New or Transferee Pupil</h3>
+                            <p class="text-sm text-slate-500 mt-0.5">
+                                I am enrolling for the first time or transferring from another school.
+                            </p>
+                        </div>
+                        <i class="fas fa-chevron-right text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all"></i>
+                    </a>
 
-                        <!-- Submit -->
-                        <button type="submit" class="btn-primary w-full py-4 text-white font-semibold rounded-xl flex items-center justify-center gap-2">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Confirm Enrollment</span>
-                        </button>
-                    </form>
                 </div>
-            </div>
 
-            <!-- Check Status Link -->
-            <div class="text-center mt-6">
-                <a href="{{ route('enrollment.check') }}" class="text-white/80 hover:text-white text-sm">
-                    <i class="fas fa-search mr-1"></i> Already enrolled? Check your status
-                </a>
-            </div>
+                <!-- Check Status -->
+                <div class="text-center mt-6">
+                    <a href="{{ route('enrollment.check') }}" class="text-white/80 hover:text-white text-sm">
+                        <i class="fas fa-search mr-1"></i> Already applied? Check your application status
+                    </a>
+                </div>
+            @endif
         </div>
     </main>
-
-    <script>
-        function continuingEnrollment() {
-            return {
-                step: 1,
-                lrn: '',
-                studentId: '',
-                studentName: '',
-                lastGrade: '',
-                lastSchoolYear: '',
-                loading: false,
-                error: '',
-
-                init() {
-                    // Restore state from localStorage on page load
-                    const saved = localStorage.getItem('enrollment_state');
-                    if (saved) {
-                        try {
-                            const data = JSON.parse(saved);
-                            this.step = data.step ?? 1;
-                            this.lrn = data.lrn ?? '';
-                            this.studentId = data.studentId ?? '';
-                            this.studentName = data.studentName ?? '';
-                            this.lastGrade = data.lastGrade ?? '';
-                            this.lastSchoolYear = data.lastSchoolYear ?? '';
-                        } catch (e) {
-                            localStorage.removeItem('enrollment_state');
-                        }
-                    }
-
-                    // Watch for changes and save to localStorage
-                    this.$watch('step', () => this.saveState());
-                    this.$watch('lrn', () => this.saveState());
-                    this.$watch('studentId', () => this.saveState());
-                    this.$watch('studentName', () => this.saveState());
-                    this.$watch('lastGrade', () => this.saveState());
-                    this.$watch('lastSchoolYear', () => this.saveState());
-                },
-
-                saveState() {
-                    const data = {
-                        step: this.step,
-                        lrn: this.lrn,
-                        studentId: this.studentId,
-                        studentName: this.studentName,
-                        lastGrade: this.lastGrade,
-                        lastSchoolYear: this.lastSchoolYear
-                    };
-                    localStorage.setItem('enrollment_state', JSON.stringify(data));
-                },
-
-                clearState() {
-                    localStorage.removeItem('enrollment_state');
-                },
-
-                async lookupStudent() {
-                    // Clean the LRN - remove any non-digit characters
-                    this.lrn = this.lrn.replace(/\D/g, '');
-                    
-                    if (this.lrn.length !== 12) {
-                        this.error = 'Please enter a valid 12-digit LRN';
-                        return;
-                    }
-
-                    this.loading = true;
-                    this.error = '';
-
-                    try {
-                        const response = await fetch(`/api/students/lookup?lrn=${this.lrn}`, {
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        });
-                        
-                        if (!response.ok) {
-                            const errorText = await response.text();
-                            console.error('Server error:', response.status, errorText);
-                            this.error = 'Server error. Please try again later.';
-                            return;
-                        }
-                        
-                        const data = await response.json();
-
-                        if (data.found) {
-                            this.studentId = data.student.id;
-                            this.studentName = data.student.full_name;
-                            this.lastGrade = data.student.grade_level;
-                            this.lastSchoolYear = data.student.school_year;
-                            this.step = 2;
-                        } else {
-                            this.error = 'Student not found. Please check your LRN or register as a new student.';
-                        }
-                    } catch (err) {
-                        console.error('Lookup error:', err);
-                        this.error = 'Network error. Please check your connection and try again.';
-                    } finally {
-                        this.loading = false;
-                    }
-                }
-            }
-        }
-    </script>
 </body>
 </html>
