@@ -70,6 +70,7 @@ class ElementarySubjectsSeeder extends Seeder
         foreach ($subjects as $grade => $gradeSubjects) {
             foreach ($gradeSubjects as $subject) {
                 DB::table('subjects')->insert([
+                    'grade_level_id' => $grade,
                     'name' => $subject['name'],
                     'code' => $subject['code'],
                     'description' => "Grade $grade subject: {$subject['name']}",

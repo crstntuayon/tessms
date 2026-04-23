@@ -277,9 +277,6 @@
     // Use Carbon with explicit timezone (adjust to your timezone)
     $hour = now()->timezone('Asia/Manila')->format('H'); // or your local timezone
     
-    // Debug: Uncomment to check current hour
-    // dd($hour);
-    
     if ($hour >= 5 && $hour < 12) {
         $greeting = 'Maayong Buntag'; // Good Morning (5:00 AM - 11:59 AM)
     } elseif ($hour >= 12 && $hour < 18) {

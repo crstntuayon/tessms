@@ -21,7 +21,9 @@ class TestUserSeeder extends Seeder
         User::firstOrCreate([
             'email' => 'admin@tugaweES.edu.ph'
         ], [
-            'name' => 'System Admin',
+            'first_name' => 'System',
+            'last_name' => 'Admin',
+            'username' => 'admin',
             'password' => Hash::make('password'),
             'role_id' => $adminRole->id
         ]);
@@ -30,7 +32,9 @@ class TestUserSeeder extends Seeder
         User::firstOrCreate([
             'email' => 'registrar@tugaweES.edu.ph'
         ], [
-            'name' => 'Registrar User',
+            'first_name' => 'Registrar',
+            'last_name' => 'User',
+            'username' => 'registrar',
             'password' => Hash::make('password'),
             'role_id' => $registrarRole->id
         ]);
@@ -39,7 +43,9 @@ class TestUserSeeder extends Seeder
         $teacher = User::firstOrCreate([
             'email' => 'teacher@tugaweES.edu.ph'
         ], [
-            'name' => 'Teacher One',
+            'first_name' => 'Teacher',
+            'last_name' => 'One',
+            'username' => 'teacher',
             'password' => Hash::make('password'),
             'role_id' => $teacherRole->id
         ]);
@@ -48,7 +54,9 @@ class TestUserSeeder extends Seeder
         $studentUser = User::firstOrCreate([
             'email' => 'student@tugaweES.edu.ph'
         ], [
-            'name' => 'Juan Dela Cruz',
+            'first_name' => 'Juan',
+            'last_name' => 'Dela Cruz',
+            'username' => 'juan.delacruz',
             'password' => Hash::make('password'),
             'role_id' => $studentRole->id
         ]);
@@ -56,9 +64,12 @@ class TestUserSeeder extends Seeder
         Student::firstOrCreate([
             'user_id' => $studentUser->id
         ], [
-            'first_name' => 'Juan',
-            'last_name' => 'Dela Cruz',
-            'section_id' => 1 // make sure section ID exists
+            'lrn' => '123456789012',
+            'birthdate' => '2015-01-15',
+            'gender' => 'Male',
+            'nationality' => 'Filipino',
+            'religion' => 'Roman Catholic',
+            'status' => 'active'
         ]);
     }
 }
