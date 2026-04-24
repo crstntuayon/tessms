@@ -1,111 +1,65 @@
-# TESSMS Deployment Guide — Sevalla (Step by Step)
+# TESSMS Deployment Guide — Sevalla (Detailed Step-by-Step)
 
-> This guide walks you through deploying the **Tugawe Elementary School Management System (TESSMS)** on [Sevalla](https://sevalla.com/) — a PaaS platform by the team behind Kinsta.
-
----
-
-## Step 0: Before You Start (Pre-Deployment Checklist)
-
-Make sure these are done **on your local machine** before deploying:
-
-- [ ] `npm run build` succeeds and `public/build/manifest.json` exists
-- [ ] `php artisan migrate:status` shows no pending migrations
-- [ ] No debug code left (`dd()`, `dump()`, `var_dump()` removed from `app/` and `resources/views/`)
-- [ ] `.env.example` is up to date (no secrets hardcoded)
-- [ ] Your code is pushed to a **GitHub repository** (Sevalla deploys from Git)
-- [ ] Migration files exist in `database/migrations/` (you should have ~100+ files)
+> This guide walks you through deploying the **Tugawe Elementary School Management System (TESSMS)** on [Sevalla](https://sevalla.com/).
 
 ---
 
-## Step 1: Push Your Code to GitHub
+## Phase 1: Prepare Your Project (Local Machine)
 
-Sevalla deploys directly from Git. Make sure your latest code is on GitHub:
+### 1.1 Verify Everything Works Locally
+
+Before deploying, make sure your app runs on your local AMPPS:
 
 ```bash
-git add .
-git commit -m "Prepare for Sevalla deployment"
-git push origin main
+# 1. Check migrations exist (you should have ~100 files)
+php artisan migrate:status
+
+# 2. Test the database connection
+php artisan tinker
+>>> DB::connection()->getPdo();
+# Should return a PDO object — press Ctrl+C to exit
+
+# 3. Build frontend assets
+npm run build
+
+# 4. Verify manifest exists
+# Check that public/build/manifest.json exists
 ```
 
-> Make sure `.env`, `node_modules/`, `vendor/`, and `storage/logs/` are in your `.gitignore`. They should already be there if you used Laravel's default.
+### 1.2 Generate Required Keys
 
----
+Run these commands on your local machine and **save the outputs**:
 
-## Step 2: Create a Sevalla Account
+```bash
+# Application encryption key (should already exist in your .env)
+php artisan key:generate
 
-1. Go to [https://sevalla.com](https://sevalla.com) and sign up
-2. **Use GitHub to authenticate** — this lets Sevalla pull your repositories automatically
-3. Sevalla gives you **$50 free credit** to start
+# Real-time broadcasting keys (for notifications/chat)
+php artisan reverb:generate
 
----
+# Push notification keys (for PWA)
+# If this fails on Windows, use:
+npx web-push generate-vapid-keys --json
+```
 
-## Step 3: Create a Database on Sevalla
+### 1.3 Update Your Local .env File
 
-Your app needs MySQL. Create it **before** the application:
-
-1. In Sevalla dashboard → click **"Databases"**
-2. Click **"Create Database"**
-3. Choose **MySQL 8.0**
-4. Pick a name (e.g., `tessms-db`)
-5. Choose a server location close to your users (e.g., **Singapore / Tokyo** for Philippines)
-6. Choose the **Hobby** plan ($5/month) to start
-7. Click **Create**
-
-After creation, Sevalla will show you:
-- **Host** (e.g., `mysql-xxx.sevalla.com`)
-- **Port** (usually `3306`)
-- **Database name**
-- **Username**
-- **Password**
-
-**Copy these values** — you'll need them in Step 5.
-
----
-
-## Step 4: Create the Application on Sevalla
-
-1. Go to **"Applications"** → click **"Create an app"**
-2. Under repositories, **choose your GitHub repo** (`tessms` or whatever you named it)
-3. Select the **branch** you want to deploy (usually `main`)
-4. Check **"Automatic deployment on commit"** — so every `git push` auto-deploys
-5. **Application name**: `tessms` (or your preferred name)
-6. **Server location**: Choose the **same region as your database** for low latency
-7. **Resources**: Choose **Hobby** ($5/month) to start. You can scale later.
-
-> **Important**: Do NOT click "Create and Deploy" yet. Click just **"Create"** — you need to add environment variables first.
-
----
-
-## Step 5: Add Environment Variables
-
-Sevalla needs your `.env` values. Go to your app → **"Environment variables"**.
-
-Copy-paste ALL of these at once into the text box. Sevalla will auto-parse them:
+Make sure your local `.env` file has all these values filled in:
 
 ```env
 APP_NAME="TugaweES SMS"
 APP_ENV=production
-APP_KEY=
+APP_KEY=base64:YOUR_KEY_HERE
 APP_DEBUG=false
 APP_URL=https://your-app-name.sevalla.app
 
-APP_LOCALE=en
-APP_FALLBACK_LOCALE=en
-APP_FAKER_LOCALE=en_US
-
-BCRYPT_ROUNDS=12
-
-LOG_CHANNEL=stack
-LOG_STACK=single
-LOG_DEPRECATIONS_CHANNEL=null
-LOG_LEVEL=error
-
+# Database (local AMPPS credentials)
 DB_CONNECTION=mysql
-DB_HOST=YOUR_SEVALLA_DB_HOST
+DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=YOUR_SEVALLA_DB_NAME
-DB_USERNAME=YOUR_SEVALLA_DB_USER
-DB_PASSWORD=YOUR_SEVALLA_DB_PASSWORD
+DB_DATABASE=smscapstone_db
+DB_USERNAME=root
+DB_PASSWORD=mysql
 
 SESSION_DRIVER=database
 SESSION_LIFETIME=480
@@ -117,120 +71,192 @@ SESSION_HTTP_ONLY=true
 SESSION_SAME_SITE=lax
 
 BROADCAST_CONNECTION=reverb
-
-REVERB_APP_ID=
-REVERB_APP_KEY=
-REVERB_APP_SECRET=
+REVERB_APP_ID=YOUR_ID
+REVERB_APP_KEY=YOUR_KEY
+REVERB_APP_SECRET=YOUR_SECRET
 REVERB_HOST=127.0.0.1
 REVERB_PORT=8080
 REVERB_SCHEME=http
 
-FILESYSTEM_DISK=local
 QUEUE_CONNECTION=database
-
 CACHE_STORE=database
-
-MEMCACHED_HOST=127.0.0.1
-
-REDIS_CLIENT=phpredis
-REDIS_HOST=127.0.0.1
-REDIS_PASSWORD=null
-REDIS_PORT=6379
+FILESYSTEM_DISK=local
 
 MAIL_MAILER=log
-MAIL_SCHEME=null
-MAIL_HOST=127.0.0.1
-MAIL_PORT=2525
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_FROM_ADDRESS="admin@your-domain.com"
+MAIL_FROM_ADDRESS="admin@tugawees.edu"
 MAIL_FROM_NAME="${APP_NAME}"
 
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_DEFAULT_REGION=us-east-1
-AWS_BUCKET=
-AWS_USE_PATH_STYLE_ENDPOINT=false
-
-VITE_APP_NAME="${APP_NAME}"
-VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
-VITE_REVERB_HOST="${REVERB_HOST}"
-VITE_REVERB_PORT="${REVERB_PORT}"
-VITE_REVERB_SCHEME="${REVERB_SCHEME}"
-
-VAPID_SUBJECT="mailto:admin@your-domain.com"
-VAPID_PUBLIC_KEY=
-VAPID_PRIVATE_KEY=
-VAPID_PEM_FILE=
+# VAPID Keys for Push Notifications
+VAPID_SUBJECT="mailto:admin@tugawees.edu"
+VAPID_PUBLIC_KEY=YOUR_PUBLIC_KEY
+VAPID_PRIVATE_KEY=YOUR_PRIVATE_KEY
 
 WEBPUSH_DB_TABLE=push_subscriptions
 WEBPUSH_AUTOMATIC_PADDING=true
 ```
 
-### Critical values to replace:
-
-| Variable | What to put |
-|----------|-------------|
-| `APP_KEY` | Run `php artisan key:generate` locally, copy the output |
-| `APP_URL` | Your Sevalla URL (e.g., `https://tessms.sevalla.app`) |
-| `DB_HOST` | From Step 3 (Sevalla database host) |
-| `DB_DATABASE` | From Step 3 |
-| `DB_USERNAME` | From Step 3 |
-| `DB_PASSWORD` | From Step 3 |
-| `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET` | Run `php artisan reverb:generate` locally |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Run `php artisan webpush:vapid` locally |
-
-Click **Save**.
-
----
-
-## Step 6: Configure Build Settings
-
-Your app uses **Vite** for asset building. Go to your app → **"Build settings"**:
-
-1. **Build command**: leave as detected (Sevalla auto-detects Laravel)
-2. If you need to customize, add this as the **build command**:
-   ```bash
-   npm install && npm run build
-   ```
-3. **Node version**: Use **20.x** (or whatever matches your local `node -v`)
-
-Sevalla handles the rest — it runs `composer install` automatically for Laravel projects.
-
----
-
-## Step 7: Deploy!
-
-1. Go to **"Deployments"**
-2. Click **"Deploy now"**
-3. Wait 2–5 minutes while Sevalla:
-   - Pulls your code from GitHub
-   - Runs `composer install`
-   - Runs `npm install && npm run build`
-   - Caches Laravel config/routes/views automatically
-
-4. Once the status shows **"Deployed"**, click **"Visit App"**
-
----
-
-## Step 8: Post-Deployment Setup (Run These Commands)
-
-After the first deployment, you need to run some Laravel setup commands. Sevalla provides a **web terminal**:
-
-1. Go to your app → **"Terminal"**
-2. Run these commands one by one:
+### 1.4 Push to GitHub
 
 ```bash
-# 1. Generate application key (if you haven't already)
-php artisan key:generate
+git add .
+git commit -m "Ready for Sevalla deployment"
+git push origin main
+```
 
-# 2. Run database migrations
+---
+
+## Phase 2: Set Up Sevalla Infrastructure
+
+### 2.1 Create Your Sevalla Account
+
+1. Go to [https://sevalla.com](https://sevalla.com)
+2. Click **"Get Started"** or **"Sign Up"**
+3. Choose **"Continue with GitHub"** (this connects your repos automatically)
+4. Complete your profile
+
+### 2.2 Create the MySQL Database
+
+**Important: Create the database BEFORE the application.**
+
+1. In the Sevalla dashboard, click **"Databases"** in the main navigation
+2. Click **"Create Database"**
+3. Fill in:
+   - **Type**: MySQL 8.0
+   - **Name**: `tugawesms-db` (or any name)
+   - **Region**: Choose the same region as your app (e.g., Singapore for Philippines users)
+   - **Plan**: Hobby ($5/month)
+4. Click **"Create"**
+5. Wait for it to be ready (status shows a green dot)
+
+**Copy the connection details** — you'll need them in the next step:
+- Host (e.g., `mysql-abcd123.sevalla.com`)
+- Port (usually `3306`)
+- Database name
+- Username
+- Password
+
+### 2.3 Create the Application
+
+1. Go to **"Applications"** in the main navigation
+2. Click **"Create an app"**
+3. Under **Repository**, select your GitHub repo (`crstntuayon/tessms`)
+4. Select **Branch**: `main`
+5. Check **"Automatic deployment on commit"** (auto-deploys when you push code)
+6. **Application name**: `tugawesms` (this becomes your URL: `tugawesms-xxxxx.sevalla.app`)
+7. **Region**: Choose the **same region as your database** (important for low latency)
+8. **Resources**: Hobby ($5/month)
+9. Click **"Create"** (NOT "Create and Deploy" — you need to add env vars first)
+
+---
+
+## Phase 3: Configure Environment Variables
+
+This is the **most critical step**. Missing variables cause 504 errors.
+
+### 3.1 Where to Add Variables
+
+In your app dashboard:
+1. Click **"Environment variables"** in the left sidebar
+2. You'll see a text box where you can paste multiple variables
+
+### 3.2 What to Paste
+
+**Copy your entire local `.env` file content**, then **replace only the database lines** with your Sevalla database credentials.
+
+**Example — Change ONLY these 5 lines:**
+
+```env
+# BEFORE (your local .env):
+DB_HOST=127.0.0.1
+DB_DATABASE=smscapstone_db
+DB_USERNAME=root
+DB_PASSWORD=mysql
+
+# AFTER (what you paste into Sevalla):
+DB_HOST=mysql-abcd123.sevalla.com      ← from Step 2.2
+DB_PORT=3306
+DB_DATABASE=tugawesms_db               ← from Step 2.2
+DB_USERNAME=tugawesms_user             ← from Step 2.2
+DB_PASSWORD=your_sevalla_password      ← from Step 2.2
+```
+
+**Everything else stays exactly the same** — `APP_KEY`, `APP_URL`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `REVERB_APP_ID`, etc.
+
+### 3.3 Important APP_URL
+
+Make sure `APP_URL` matches your Sevalla domain:
+
+```env
+APP_URL=https://tugawesms-xxxxx.sevalla.app
+```
+
+(Replace `xxxxx` with your actual app ID shown in Sevalla.)
+
+### 3.4 Save
+
+Click **"Save"** or **"Add environment variables"**.
+
+> **Warning:** If you forget to add these variables, your app will show a **504 Gateway Timeout** error because Laravel hangs trying to connect to a missing database.
+
+---
+
+## Phase 4: Deploy the Application
+
+### 4.1 First Deploy
+
+1. Go to **"Overview"** or **"Deployments"**
+2. Click **"Deploy now"**
+3. Wait 3–5 minutes
+
+### 4.2 Check Deployment Status
+
+Go to **"Deployments"** in the left sidebar:
+
+| Status | Icon | Meaning |
+|--------|------|---------|
+| Success | 🟢 Green checkmark | ✅ Ready to use |
+| Failed | 🔴 Red X | ❌ Check logs for errors |
+| Building | 🟡 Spinner | ⏳ Wait a few more minutes |
+
+**Normal build time: 2–5 minutes**
+
+If it takes longer than 10 minutes, something is stuck. Cancel and redeploy.
+
+---
+
+## Phase 5: Post-Deployment Setup (Critical)
+
+After the deployment shows ✅ **Success**, you MUST run these commands.
+
+### 5.1 Open the Web Terminal
+
+1. Go to **"Web terminal"** in the left sidebar
+2. A terminal window opens — this is a Linux shell inside your server
+
+### 5.2 Run These Commands One by One
+
+```bash
+# 1. Create database tables
 php artisan migrate --force
+```
 
-# 3. Create storage symlink (for uploaded files)
+You should see output like:
+```
+Migration: 2026_04_23_003700_create_achievements_table ............ 115ms DONE
+Migration: 2026_04_23_003700_create_activities_table .............. 115ms DONE
+... (101 migrations total)
+```
+
+If this fails with a database error, your `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, or `DB_PASSWORD` is wrong. Go back to Environment Variables and fix it.
+
+```bash
+# 2. Create storage symlink for file uploads
 php artisan storage:link
 
-# 4. Cache Laravel for performance
+# 3. Seed default data (roles, subjects, school years, test users)
+php artisan db:seed --force
+
+# 4. Cache Laravel for better performance
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
@@ -239,245 +265,155 @@ php artisan view:cache
 php artisan cache:clear
 ```
 
-### Run Migrations
-
-Now that migrations are generated, you can create the database schema:
+### 5.3 Verify the Database
 
 ```bash
-php artisan migrate --force
+php artisan tinker
+>>> DB::connection()->getPdo();
 ```
 
-### Import Existing Data (Optional)
+If it returns a PDO object, your database connection is working.
 
-If you want to migrate your local data to Sevalla:
+```
+>>> \App\Models\User::count();
+```
 
-1. Export your local AMPPS database via phpMyAdmin as a `.sql` file
-2. Upload it to Sevalla via the terminal or SFTP
-3. Import it:
-   ```bash
-   mysql -h YOUR_DB_HOST -u YOUR_DB_USER -p YOUR_DB_NAME < your-dump.sql
-   ```
+This should return a number (e.g., `5`) — the number of users seeded.
+
+Press `Ctrl+D` or type `exit` to quit tinker.
 
 ---
 
-## Step 9: Set Up the Queue Worker
+## Phase 6: Test Your Live Site
 
-Your app uses `QUEUE_CONNECTION=database` for background jobs (notifications, emails, exports).
+### 6.1 Visit Your URL
 
-Sevalla handles this via **background processes**:
+Click the domain shown in your Overview page, or open:
+```
+https://tugawesms-xxxxx.sevalla.app
+```
 
-1. Go to your app → **"Processes"** (or "Daemons")
-2. Click **"Add process"**
+### 6.2 Checklist
+
+- [ ] Homepage loads with school logo and styling
+- [ ] "Enroll Now" button opens the terms modal
+- [ ] "Location" button opens the map modal
+- [ ] "Sign In" button opens the login side panel
+- [ ] No 404 or 500 errors
+
+### 6.3 If You See a 504 Gateway Timeout
+
+This means Laravel is hanging. Check:
+
+1. **Environment variables** — Did you add `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `APP_KEY`?
+2. **Logs** — Go to **"Logs"** in the left sidebar, look for red error lines
+3. **Database connection** — Run `php artisan tinker` → `DB::connection()->getPdo();` in Web Terminal
+
+---
+
+## Phase 7: Set Up Background Processes
+
+Your app uses queues for notifications and background jobs.
+
+### 7.1 Queue Worker
+
+1. Go to **"Processes"** in the left sidebar
+2. Click **"Create new process"**
 3. Fill in:
    - **Name**: `queue-worker`
    - **Command**: `php artisan queue:work --sleep=3 --tries=3 --max-time=3600`
-   - **Count**: `1` (increase if you have high traffic)
+   - **Count**: `1`
 4. Click **Create**
 
-Sevalla will keep this process running 24/7.
+### 7.2 Task Scheduler (Cron Job)
 
----
-
-## Step 10: Set Up the Scheduler (Cron Jobs)
-
-Laravel's task scheduler needs to run every minute:
-
-1. Go to your app → **"Cron jobs"**
-2. Click **"Add cron job"**
-3. Set:
+1. Go to **"Settings"** in the left sidebar
+2. Find **"Cron jobs"** or **"Scheduler"**
+3. Add:
    - **Command**: `php artisan schedule:run`
-   - **Frequency**: `* * * * *` (every minute)
-4. Click **Create**
+   - **Frequency**: Every minute (`* * * * *`)
+4. Save
 
 ---
 
-## Step 11: Fix Storage Permissions
+## Phase 8: Add a Custom Domain (Optional)
 
-Your app handles file uploads (profile photos, documents). Make sure the `storage` folder is writable:
+### 8.1 Connect Your Domain
 
-In the Sevalla terminal, run:
-
-```bash
-chmod -R 775 storage
-chmod -R 775 bootstrap/cache
-```
-
-Sevalla usually handles this, but run it just in case uploads fail.
-
----
-
-## Step 12: Add a Custom Domain (Optional)
-
-1. Buy a domain (e.g., from Namecheap, Cloudflare, or GoDaddy)
+1. Buy a domain (Namecheap, Cloudflare, etc.)
 2. In Sevalla → your app → **"Domains"**
 3. Click **"Add domain"**
 4. Enter your domain (e.g., `tugawees.edu` or `sms.tugawees.edu`)
-5. Sevalla will give you DNS records (A record / CNAME)
-6. Go to your domain registrar → DNS settings → add the records Sevalla provided
-7. Wait 5–30 minutes for DNS to propagate
+5. Sevalla gives you DNS records
+6. Go to your domain registrar → DNS settings → add the records
+7. Wait 5–30 minutes
 8. Back in Sevalla → click **"Verify"**
-9. Sevalla automatically provisions a **free SSL certificate** (Let's Encrypt)
+9. Sevalla auto-provisions a free SSL certificate
 
-### Update APP_URL
+### 8.2 Update APP_URL
 
-After adding your custom domain, update the environment variable:
+After adding your custom domain:
 
-1. Go to **"Environment variables"**
-2. Change `APP_URL` to your custom domain (e.g., `https://sms.tugawees.edu`)
-3. Click **Save**
-4. Run: `php artisan config:cache` in the terminal
-
----
-
-## Step 13: PWA-Specific Post-Deployment
-
-Your app is a PWA with push notifications, service workers, and biometric auth. These require **HTTPS** (which Sevalla provides automatically).
-
-### Update manifest.json
-
-In the Sevalla terminal:
-
-```bash
-nano public/manifest.json
-```
-
-Update:
-```json
-{
-  "start_url": "https://your-domain.com/dashboard",
-  "scope": "https://your-domain.com/"
-}
-```
-
-### Test PWA
-
-1. Visit your live site in Chrome
-2. Open DevTools → **Lighthouse**
-3. Run a **PWA audit**
-4. Check for any errors
-
----
-
-## Step 14: Verify Everything Works
-
-Test these critical features:
-
-- [ ] Homepage loads: `https://your-domain.com`
-- [ ] Admin login works
-- [ ] Teacher login works
-- [ ] Student registration / enrollment flow works
-- [ ] File uploads work (profile photos, documents)
-- [ ] PWA manifest loads: `https://your-domain.com/manifest.json`
-- [ ] Service worker loads: `https://your-domain.com/sw.js`
-- [ ] No errors in logs (check Sevalla's **"Logs"** tab)
+1. Go to **Environment variables**
+2. Change `APP_URL` to your custom domain:
+   ```env
+   APP_URL=https://sms.tugawees.edu
+   ```
+3. Save
+4. Run in Web Terminal:
+   ```bash
+   php artisan config:cache
+   ```
 
 ---
 
 ## Troubleshooting
 
-### 500 Internal Server Error
+### 504 Gateway Timeout
 
-1. Check Sevalla **Logs** tab
-2. Run in terminal:
-   ```bash
-   tail -f storage/logs/laravel.log
-   ```
-3. Common fix:
-   ```bash
-   php artisan cache:clear
-   php artisan config:clear
-   php artisan view:clear
-   chmod -R 775 storage bootstrap/cache
-   ```
+**Cause:** Laravel can't connect to the database or is missing `APP_KEY`.
+
+**Fix:**
+1. Check Environment Variables for `APP_KEY`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
+2. Make sure the database region matches the app region
+3. Redeploy after fixing
 
 ### Database Connection Failed
 
-- Double-check `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` in environment variables
-- Make sure the database and app are in the **same region**
-- Run: `php artisan migrate:status` in the terminal
-
-### CSS/JS Not Loading (404 on build assets)
-
-1. Check that `npm run build` ran successfully (check deployment logs)
-2. Run manually in terminal:
-   ```bash
-   npm install && npm run build
-   ```
-3. Clear caches:
-   ```bash
-   php artisan cache:clear
-   php artisan view:clear
-   ```
-
-### File Uploads Not Working
-
+**Test in Web Terminal:**
 ```bash
-php artisan storage:link
-chmod -R 775 storage/app/public
+php artisan tinker
+>>> DB::connection()->getPdo();
 ```
 
-### Queue Jobs Not Processing
+If it fails, your DB credentials are wrong. Get the correct ones from **Databases** in Sevalla.
 
-1. Check that the queue worker process is running (Step 9)
-2. Check `failed_jobs` table:
-   ```bash
-   php artisan queue:failed
-   ```
+### CSS/JS Not Loading (Unstyled Page)
+
+**Cause:** `npm run build` failed during deployment.
+
+**Fix:**
+1. Go to **Deployments** → click the latest deployment
+2. Check build logs for npm errors
+3. Make sure `package.json` and `vite.config.js` are committed to GitHub
+
+### "No application encryption key has been specified"
+
+**Fix:** Add `APP_KEY` to Environment Variables and redeploy.
 
 ---
 
-## Quick Reference: Useful Sevalla Terminal Commands
+## Cost Summary
 
-```bash
-# View Laravel logs in real-time
-tail -f storage/logs/laravel.log
-
-# Clear all caches
-php artisan cache:clear
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-
-# Re-cache for production
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Check migration status
-php artisan migrate:status
-
-# Run migrations
-php artisan migrate --force
-
-# Check queue failed jobs
-php artisan queue:failed
-
-# Retry failed jobs
-php artisan queue:retry all
-
-# Maintenance mode ON
-php artisan down
-
-# Maintenance mode OFF
-php artisan up
-
-# Check storage link
-ls -la public/storage
-```
-
----
-
-## Estimated Monthly Cost on Sevalla
-
-| Service | Cost |
-|---------|------|
-| Application (Hobby) | ~$5/month |
-| Database (Hobby) | ~$5/month |
-| Domain | ~$10–20/year |
+| Service | Monthly Cost |
+|---------|-------------|
+| Application (Hobby) | ~$5 |
+| Database (Hobby) | ~$5 |
+| Domain (optional) | ~$10–20/year |
 | **Total** | **~$10/month** |
 
-> You can start with the $50 free credit. Scale up resources only when you need more traffic.
+> You start with $50 free credit from Sevalla.
 
 ---
 
-**Happy Deploying! 🚀**
+**Need help?** If you get stuck on any step, take a screenshot of the error and ask for help.

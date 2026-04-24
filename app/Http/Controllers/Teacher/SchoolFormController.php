@@ -103,11 +103,7 @@ public function sf1(Request $request)
         $enrollments = Enrollment::with(['student.user'])
             ->where('section_id', $selectedSection->id)
             ->where('school_year_id', $activeSchoolYear->id)
-            ->where('status', 'enrolled')
-            // Filter out students with completed or inactive status
-            ->whereHas('student', function ($query) {
-                $query->whereNotIn('status', ['completed', 'inactive']);
-            })
+            ->whereIn('status', ['enrolled', 'completed'])
             ->get()
             ->sortBy(function ($enrollment) {
                 $student = $enrollment->student;
@@ -250,11 +246,7 @@ public function sf2(Request $request)
         $enrollments = Enrollment::with(['student.user'])
             ->where('section_id', $selectedSection->id)
             ->where('school_year_id', $activeSchoolYear->id)
-            ->where('status', 'enrolled')
-            // Filter out students with completed or inactive status
-            ->whereHas('student', function ($query) {
-                $query->whereNotIn('status', ['completed', 'inactive']);
-            })
+            ->whereIn('status', ['enrolled', 'completed'])
             ->get()
             ->sortBy(function ($enrollment) {
                 $student = $enrollment->student;
@@ -438,10 +430,7 @@ public function sf3(Request $request)
         $enrollments = Enrollment::with(['student.user'])
             ->where('section_id', $selectedSection->id)
             ->where('school_year_id', $activeSchoolYear->id)
-            ->where('status', 'enrolled')
-            ->whereHas('student', function ($query) {
-                $query->whereNotIn('status', ['completed', 'inactive']);
-            })
+            ->whereIn('status', ['enrolled', 'completed'])
             ->get();
 
         // Separate Male and Female
@@ -580,10 +569,7 @@ public function sf3(Request $request)
             $enrollments = Enrollment::with(['student.user'])
                 ->where('section_id', $selectedSection->id)
                 ->where('school_year_id', $activeSchoolYear->id)
-                ->where('status', 'enrolled')  // FIXED: Changed from 'active' to 'enrolled'
-                ->whereHas('student', function ($query) {
-                    $query->whereNotIn('status', ['completed', 'inactive']);  // Same as SF2
-                })
+                ->whereIn('status', ['enrolled', 'completed'])
                 ->get()
                 ->sortBy(function ($enrollment) {
                     $student = $enrollment->student;
@@ -770,11 +756,7 @@ public function sf5(Request $request)
         $enrollments = Enrollment::with(['student.user'])
             ->where('section_id', $selectedSection->id)
             ->where('school_year_id', $activeSchoolYear->id)
-            ->where('status', 'enrolled')
-            // Filter out students with completed or inactive status
-            ->whereHas('student', function ($query) {
-                $query->whereNotIn('status', ['completed', 'inactive']);
-            })
+            ->whereIn('status', ['enrolled', 'completed'])
             ->get()
             ->sortBy(function ($enrollment) {
                 $student = $enrollment->student;
@@ -884,10 +866,7 @@ public function calculateFinal($grade)
             ])
             ->where('section_id', $selectedSection->id)
             ->where('school_year_id', $activeSchoolYear->id)
-            ->where('status', 'enrolled')
-            ->whereHas('student', function ($query) {
-                $query->whereNotIn('status', ['completed', 'inactive']);
-            })
+            ->whereIn('status', ['enrolled', 'completed'])
             ->get()
             ->sortBy(function ($enrollment) {
                 $student = $enrollment->student;
@@ -1101,10 +1080,7 @@ private function getRemarks($status, $finalAverage, $selectedSection)
             // Get ONLY currently enrolled students (not completed, not inactive)
             $enrollments = Enrollment::where('section_id', $selectedSection->id)
                 ->where('school_year_id', $activeSchoolYear->id)
-                ->where('status', 'enrolled')
-                ->whereHas('student', function ($query) {
-                    $query->whereNotIn('status', ['completed', 'inactive', 'dropped']);
-                })
+                ->whereIn('status', ['enrolled', 'completed'])
                 ->with('student')
                 ->get();
             
@@ -1328,10 +1304,7 @@ private function getRemarks($status, $finalAverage, $selectedSection)
             $enrollments = Enrollment::with(['student.user', 'student.healthRecords'])
                 ->where('section_id', $selectedSection->id)
                 ->where('school_year_id', $activeSchoolYear->id)
-                ->where('status', 'enrolled')
-                ->whereHas('student', function ($query) {
-                    $query->whereNotIn('status', ['completed', 'inactive', 'dropped']);
-                })
+                ->whereIn('status', ['enrolled', 'completed'])
                 ->get()
                 ->sortBy(function ($enrollment) {
                     $student = $enrollment->student;
@@ -1575,7 +1548,7 @@ public function sf9(Request $request)
         $sectionStudents = Student::with(['user', 'section.gradeLevel'])
             ->whereHas('enrollments', function($q) use ($activeSchoolYear) {
                 $q->where('school_year_id', $activeSchoolYear->id)
-                  ->where('status', 'enrolled');
+                  ->whereIn('status', ['enrolled', 'completed']);
             })
             // Filter out students with completed or inactive status
             ->whereNotIn('status', ['completed', 'inactive'])
@@ -1763,7 +1736,7 @@ public function sf10(Request $request)
         $sectionStudents = Student::with(['user', 'section.gradeLevel'])
             ->whereHas('enrollments', function($q) use ($activeSchoolYear) {
                 $q->where('school_year_id', $activeSchoolYear->id)
-                  ->where('status', 'enrolled');
+                  ->whereIn('status', ['enrolled', 'completed']);
             })
             // Filter out students with completed or inactive status
             ->whereNotIn('status', ['completed', 'inactive'])
@@ -2007,7 +1980,7 @@ public function sf10(Request $request)
                 ->where('section_id', $selectedSection->id)
                 ->whereHas('enrollments', function($q) use ($activeSchoolYear) {
                     $q->where('school_year_id', $activeSchoolYear->id)
-                      ->where('status', 'enrolled');
+                      ->whereIn('status', ['enrolled', 'completed']);
                 })
                 ->whereNotIn('status', ['completed', 'inactive'])
                 ->orderBy('created_at')

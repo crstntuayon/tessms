@@ -67,10 +67,12 @@ class ReportingController extends Controller
         $schoolYearId = $currentSchoolYear?->id;
 
         return [
-            'total_students' => Student::count(),
+            'total_students' => $schoolYearId
+                ? Enrollment::where('school_year_id', $schoolYearId)->where('status', 'enrolled')->count()
+                : Student::where('status', 'active')->count(),
             'total_teachers' => Teacher::count(),
-            'total_sections' => Section::count(),
-            'active_enrollments' => $schoolYearId ? Enrollment::where('school_year_id', $schoolYearId)->count() : 0,
+            'total_sections' => Section::where('is_active', true)->count(),
+            'active_enrollments' => $schoolYearId ? Enrollment::where('school_year_id', $schoolYearId)->where('status', 'enrolled')->count() : 0,
             'today_attendance' => $this->getTodayAttendanceStats(),
             'grade_averages' => $this->getGradeAverages(),
             'enrollment_trend' => $this->getEnrollmentTrend(),

@@ -341,7 +341,7 @@
                             <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Pupils Management</h2>
                             <p class="text-sm text-slate-500 font-medium flex items-center gap-2 mt-0.5">
                                 <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                Manage and view all enrolled pupils
+                                {{ ($schoolYear ?? $activeSchoolYear)?->name ?? 'No School Year Selected' }}
                             </p>
                         </div>
                     </div>
@@ -373,17 +373,28 @@
             <main class="main-content">
                 
                 @php
-                    $allGrades = \App\Models\GradeLevel::whereHas('sections.enrollments', function($q) use ($activeSchoolYear) {
-                        $q->where('school_year_id', $activeSchoolYear?->id)->where('status', 'enrolled');
+                    $selectedYear = $schoolYear ?? $activeSchoolYear;
+                    $allGrades = \App\Models\GradeLevel::whereHas('sections.enrollments', function($q) use ($selectedYear) {
+                        $q->where('school_year_id', $selectedYear?->id);
                     })->orderBy('name')->pluck('name');
 
-                    $allSections = \App\Models\Section::whereHas('enrollments', function($q) use ($activeSchoolYear) {
-                        $q->where('school_year_id', $activeSchoolYear?->id)->where('status', 'enrolled');
+                    $allSections = \App\Models\Section::whereHas('enrollments', function($q) use ($selectedYear) {
+                        $q->where('school_year_id', $selectedYear?->id);
                     })->orderBy('name')->pluck('name');
                 @endphp
                 <!-- Filters & Actions Bar -->
                 <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in-up">
                     <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+                            <i class="fas fa-calendar text-slate-400"></i>
+                            <select class="bg-transparent border-none outline-none text-sm text-slate-700 cursor-pointer font-medium" onchange="updateFilter('school_year_id', this.value)">
+                                @php $allSchoolYears = \App\Models\SchoolYear::orderBy('start_date', 'desc')->get(); @endphp
+                                @foreach($allSchoolYears as $sy)
+                                    <option value="{{ $sy->id }}" {{ ($schoolYear->id ?? $activeSchoolYear?->id) == $sy->id ? 'selected' : '' }}>{{ $sy->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
                             <i class="fas fa-filter text-slate-400"></i>
                             <select class="bg-transparent border-none outline-none text-sm text-slate-700 cursor-pointer font-medium" onchange="updateFilter('grade', this.value)">

@@ -20,19 +20,33 @@ class StudentController extends Controller
     public function index(Request $request)
     {
         $activeSchoolYear = \App\Models\SchoolYear::where('is_active', true)->first();
+        $schoolYearId = $request->get('school_year_id', $activeSchoolYear?->id);
+        $schoolYear = \App\Models\SchoolYear::find($schoolYearId) ?? $activeSchoolYear;
         
-        $query = Student::with(['user', 'section', 'gradeLevel', 'enrollments' => function ($query) use ($activeSchoolYear) {
-                $query->where('school_year_id', $activeSchoolYear?->id)
-                      ->where('status', 'enrolled')
-                      ->with('section.gradeLevel');
-            }])
-            ->whereHas('enrollments', function ($query) use ($activeSchoolYear) {
-                $query->where('school_year_id', $activeSchoolYear?->id)
-                      ->where('status', 'enrolled')
+        $isActiveYear = $schoolYearId == $activeSchoolYear?->id;
+        $enrollmentStatuses = $isActiveYear ? ['enrolled'] : ['enrolled', 'completed'];
+        
+        $query = Student::with([
+                'user',
+                'section',
+                'gradeLevel',
+                'enrollments' => function ($query) use ($schoolYearId, $enrollmentStatuses) {
+                    $query->where('school_year_id', $schoolYearId)
+                          ->whereIn('status', $enrollmentStatuses);
+                },
+                'enrollments.section.gradeLevel',
+            ])
+            ->whereHas('enrollments', function ($query) use ($schoolYearId, $enrollmentStatuses) {
+                $query->where('school_year_id', $schoolYearId)
+                      ->whereIn('status', $enrollmentStatuses)
                       ->whereNotNull('section_id');
-            })
-            ->where('students.status', 'active')
-            ->join('users', 'users.id', '=', 'students.user_id');
+            });
+        
+        if ($isActiveYear) {
+            $query->where('students.status', 'active');
+        }
+        
+        $query->join('users', 'users.id', '=', 'students.user_id');
 
         // Server-side grade filter
         if ($request->filled('grade')) {
@@ -62,9 +76,8 @@ class StudentController extends Controller
                 JOIN grade_levels ON grade_levels.id = sections.grade_level_id
                 WHERE enrollments.student_id = students.id
                 AND enrollments.school_year_id = ?
-                AND enrollments.status = 'enrolled'
                 LIMIT 1
-            ) ASC", [$activeSchoolYear?->id])
+            ) ASC", [$schoolYearId])
             ->orderBy('users.last_name', 'asc')
             ->orderBy('users.first_name', 'asc');
         } else {
@@ -75,9 +88,8 @@ class StudentController extends Controller
                 JOIN sections ON sections.id = enrollments.section_id 
                 WHERE enrollments.student_id = students.id 
                 AND enrollments.school_year_id = ? 
-                AND enrollments.status = 'enrolled' 
                 LIMIT 1
-            ) ASC", [$activeSchoolYear?->id])
+            ) ASC", [$schoolYearId])
             ->orderByRaw("CASE WHEN students.gender = 'Male' THEN 0 ELSE 1 END")
             ->orderBy('users.last_name', 'asc')
             ->orderBy('users.first_name', 'asc');
@@ -86,9 +98,9 @@ class StudentController extends Controller
         $students = $query
             ->select('students.*')
             ->paginate(10)
-            ->appends($request->only(['grade', 'section', 'sort']));
+            ->appends($request->only(['grade', 'section', 'sort', 'school_year_id']));
         
-        return view('admin.students.index', compact('students', 'activeSchoolYear'));
+        return view('admin.students.index', compact('students', 'activeSchoolYear', 'schoolYear'));
     }
 
     public function create()

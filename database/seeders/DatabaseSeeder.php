@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ElementarySubjectsSeeder::class,
             SettingsSeeder::class,
             TestUserSeeder::class,
+            ReportTemplatesSeeder::class,
         ]);
     }
 }

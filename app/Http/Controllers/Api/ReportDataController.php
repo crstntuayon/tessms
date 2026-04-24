@@ -191,8 +191,10 @@ class ReportDataController extends Controller
 
         return response()->json([
             'students' => [
-                'total' => Student::count(),
-                'active' => $schoolYearId ? DB::table('enrollments')->where('school_year_id', $schoolYearId)->count() : 0,
+                'total' => $schoolYearId
+                    ? DB::table('enrollments')->where('school_year_id', $schoolYearId)->where('status', 'enrolled')->count()
+                    : Student::where('status', 'active')->count(),
+                'active' => $schoolYearId ? DB::table('enrollments')->where('school_year_id', $schoolYearId)->where('status', 'enrolled')->count() : 0,
                 'new_today' => Student::whereDate('created_at', $today)->count(),
             ],
             'teachers' => [
@@ -200,8 +202,8 @@ class ReportDataController extends Controller
                 'active' => DB::table('teachers')->where('employment_status', 'active')->count(),
             ],
             'sections' => [
-                'total' => Section::count(),
-                'active' => $schoolYearId ? Section::where('school_year_id', $schoolYearId)->count() : 0,
+                'total' => Section::where('is_active', true)->count(),
+                'active' => $schoolYearId ? Section::where('school_year_id', $schoolYearId)->where('is_active', true)->count() : 0,
             ],
             'attendance_today' => [
                 'total' => $todayTotal,
