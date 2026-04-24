@@ -34,7 +34,7 @@ class UserTyping implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('App.Models.User.' . $this->recipientId),
+            new PrivateChannel('user.' . $this->recipientId),
         ];
     }
 

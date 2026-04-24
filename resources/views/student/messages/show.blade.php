@@ -45,7 +45,7 @@
         .animate-fade-in { animation: fadeIn 0.3s ease-out; }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 font-sans antialiased"
+<body class="min-h-[100dvh] bg-slate-50 font-sans antialiased"
       x-data="{ sidebarCollapsed: false, mobileOpen: false }"
       x-init="if (window.innerWidth >= 1024) { sidebarCollapsed = false; }">
 
@@ -56,15 +56,13 @@
     <!-- Mobile Toggle Button -->
     <button @click="mobileOpen = !mobileOpen" 
             class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all border border-slate-100">
-        <i class="fas fa-bars text-lg" x-show="!mobileOpen"></i>
-        <i class="fas fa-times text-lg" x-show="mobileOpen"></i>
-    </button>
+        <i class="fas fa-bars text-lg"></i>    </button>
 
     <!-- Sidebar -->
     @include('student.includes.sidebar')
 
     <!-- Main Content -->
-    <main class="min-h-screen transition-all duration-300 flex flex-col" :class="sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'">
+    <main class="min-h-[100dvh] transition-all duration-300 flex flex-col" :class="sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'">
         
         @php
             $otherPerson = $message->sender_id === auth()->id() ? $message->recipient : $message->sender;

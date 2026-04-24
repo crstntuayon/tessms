@@ -273,8 +273,9 @@
             background: rgba(255, 255, 255, 0.6);
         }
     </style>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="bg-slate-50 text-slate-800 antialiased" x-data="{ mobileOpen: false }">
 
     {{-- Success Message --}}
     @if(session('success'))
@@ -316,7 +317,7 @@
 
     {{-- Mobile Header --}}
     <div class="lg:hidden fixed top-0 left-0 right-0 z-40 glass-panel border-b border-white/50 px-4 py-3 flex items-center justify-between">
-        <button onclick="toggleMobileSidebar()" class="p-2.5 rounded-xl hover:bg-white/60 transition-all active:scale-95">
+        <button @click="mobileOpen = !mobileOpen" class="p-2.5 rounded-xl hover:bg-white/60 transition-all active:scale-95">
             <i class="fas fa-bars text-slate-700 text-lg"></i>
         </button>
         <div class="flex items-center gap-2">
@@ -328,14 +329,21 @@
     </div>
 
     {{-- Mobile Sidebar Overlay --}}
-    <div id="mobile-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 z-40 mobile-overlay hidden lg:hidden opacity-0 transition-opacity duration-300"></div>
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 z-40 lg:hidden bg-slate-900/30 backdrop-blur-sm"
+         style="display: none;"></div>
 
     <div class="flex h-screen overflow-hidden pt-14 lg:pt-0">
         
-        {{-- Sidebar Container --}}
-        <div id="sidebar-container" class="sidebar-transition fixed lg:fixed z-50 lg:z-30 h-full -translate-x-full lg:translate-x-0 w-72 flex-shrink-0">
-            @include('teacher.includes.sidebar')
-        </div>
+        {{-- Sidebar --}}
+        @include('teacher.includes.sidebar')
 
         {{-- Main Content --}}
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden lg:ml-72 relative">
@@ -1028,48 +1036,10 @@
         activeTab.classList.remove('text-slate-600');
     }
 
-    // Mobile sidebar toggle
-    function toggleMobileSidebar() {
-        const sidebar = document.getElementById('sidebar-container');
-        const overlay = document.getElementById('mobile-overlay');
-        
-        if (sidebar.classList.contains('-translate-x-full')) {
-            sidebar.classList.remove('-translate-x-full');
-            overlay.classList.remove('hidden');
-            setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-            }, 10);
-            document.body.style.overflow = 'hidden';
-        } else {
-            sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('opacity-0');
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-            }, 300);
-            document.body.style.overflow = '';
-        }
-    }
-
-    // Close mobile sidebar on window resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth >= 1024) {
-            const sidebar = document.getElementById('sidebar-container');
-            const overlay = document.getElementById('mobile-overlay');
-            sidebar.classList.remove('-translate-x-full');
-            overlay.classList.add('hidden', 'opacity-0');
-            document.body.style.overflow = '';
-        }
-    });
-
     // Keyboard navigation
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            const overlay = document.getElementById('mobile-overlay');
             const deleteModal = document.getElementById('delete-modal');
-            
-            if (!overlay.classList.contains('hidden')) {
-                toggleMobileSidebar();
-            }
             if (!deleteModal.classList.contains('hidden')) {
                 closeDeleteModal();
             }

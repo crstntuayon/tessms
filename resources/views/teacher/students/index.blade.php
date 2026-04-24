@@ -62,8 +62,21 @@
             background: #94a3b8;
         }
     </style>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800">
+<body class="bg-slate-50 font-sans text-slate-800" x-data="{ mobileOpen: false }">
+
+<!-- Mobile Overlay -->
+<div x-show="mobileOpen" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="mobileOpen = false"
+     class="fixed inset-0 z-40 lg:hidden bg-slate-900/30 backdrop-blur-sm"
+     style="display: none;"></div>
 
 <div class="flex min-h-screen">
     
@@ -77,23 +90,18 @@
         <header class="glass-effect sticky top-0 z-30 border-b border-slate-200 px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <button class="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                    <button @click="mobileOpen = !mobileOpen" class="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors">
                         <i class="fas fa-bars text-slate-600"></i>
                     </button>
                     <div class="relative hidden md:block">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <input type="text" placeholder="Search students..." 
-                            class="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all w-64">
+                            class="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all w-64">
                     </div>
                 </div>
                 
                 <div class="flex items-center gap-4">
-                    <button class="relative p-2 hover:bg-slate-100 rounded-xl transition-colors">
-                        <i class="fas fa-bell text-slate-600"></i>
-                        @if(auth()->user()->unreadNotifications->count() > 0)
-                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        @endif
-                    </button>
+                    @include('components.notification-bell')
                     <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
                         <div class="text-right hidden sm:block">
                             <p class="text-sm font-semibold text-slate-800">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</p>
@@ -107,7 +115,7 @@
                                 @endif
                             </p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-sm">
                             {{ strtoupper(substr(auth()->user()->first_name, 0, 1)) }}{{ strtoupper(substr(auth()->user()->last_name, 0, 1)) }}
                         </div>
                     </div>
@@ -121,9 +129,9 @@
             <!-- Breadcrumb & Header -->
             <div class="mb-8 animate-fade-in">
                 <nav class="flex items-center gap-2 text-sm text-slate-500 mb-4">
-                    <a href="{{ route('teacher.dashboard') }}" class="hover:text-primary-600 transition-colors">Dashboard</a>
+                    <a href="{{ route('teacher.dashboard') }}" class="hover:text-indigo-600 transition-colors">Dashboard</a>
                     <i class="fas fa-chevron-right text-xs"></i>
-                    <a href="{{ route('teacher.sections.index') }}" class="hover:text-primary-600 transition-colors">My Sections</a>
+                    <a href="{{ route('teacher.sections.index') }}" class="hover:text-indigo-600 transition-colors">My Sections</a>
                     <i class="fas fa-chevron-right text-xs"></i>
                     <span class="text-slate-800 font-medium">Grade {{ $section->grade_level }} - {{ $section->name }}</span>
                 </nav>
@@ -139,10 +147,10 @@
                             </span>
                         </div>
                         <p class="text-slate-500 flex items-center gap-2">
-                            <i class="fas fa-chalkboard-teacher text-primary-500"></i>
+                            <i class="fas fa-chalkboard-teacher text-indigo-500"></i>
                             Adviser: <span class="font-medium text-slate-700">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</span>
                             <span class="text-slate-300">|</span>
-                            <i class="fas fa-school text-primary-500"></i>
+                            <i class="fas fa-school text-indigo-500"></i>
                             School Year: {{ $section->schoolYear->name ?? ' ' }}
                         </p>
                     </div>
@@ -151,7 +159,7 @@
                             <i class="fas fa-print"></i>
                             Print
                         </button>
-                        <a href="{{ route('teacher.students.create', $section->id) }}" class="px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-all flex items-center gap-2 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-0.5">
+                        <a href="{{ route('teacher.students.create', $section->id) }}" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 hover:-translate-y-0.5">
                             <i class="fas fa-user-plus"></i>
                             Enroll Student
                         </a>
@@ -230,7 +238,7 @@
                 <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
                         <h2 class="text-lg font-bold text-slate-800">Class Roster</h2>
-                        <span class="px-3 py-1 bg-primary-50 text-primary-700 text-xs font-semibold rounded-full border border-primary-100">
+                        <span class="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full border border-indigo-100">
                             Grade {{ $section->grade_level }}
                         </span>
                         @if($section->max_capacity)
@@ -244,16 +252,16 @@
                         <div class="relative">
                             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                             <input type="text" id="searchInput" placeholder="Find student..." 
-                                class="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all w-full sm:w-48">
+                                class="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all w-full sm:w-48">
                         </div>
                         
-                        <select id="genderFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-primary-500">
+                        <select id="genderFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-indigo-500">
                             <option value="">All Gender</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
                         
-                        <select id="statusFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-primary-500">
+                        <select id="statusFilter" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:ring-2 focus:ring-indigo-500">
                             <option value="">All Status</option>
                             <option value="active">Enrolled</option>
                             <option value="dropped">Dropped</option>
@@ -268,7 +276,7 @@
                         <thead>
                             <tr class="bg-slate-50/50 border-b border-slate-100">
                                 <th class="px-6 py-4 text-left font-semibold text-slate-700 w-16">
-                                    <input type="checkbox" id="selectAll" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+                                    <input type="checkbox" id="selectAll" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                                 </th>
                                 <th class="px-6 py-4 text-left font-semibold text-slate-700">Learner's Name</th>
                                 <th class="px-6 py-4 text-left font-semibold text-slate-700">LRN</th>
@@ -290,7 +298,7 @@
                                     data-gender="{{ strtolower($user->gender ?? '') }}" 
                                     data-status="{{ strtolower($student->enrollment_status ?? 'active') }}">
                                     <td class="px-6 py-4">
-                                        <input type="checkbox" class="student-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500" value="{{ $student->id }}">
+                                        <input type="checkbox" class="student-checkbox rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" value="{{ $student->id }}">
                                     </td>
                                     
                                     <td class="px-6 py-4">
@@ -301,7 +309,7 @@
                                                         {{ strtoupper(substr($user->first_name, 0, 1)) }}{{ strtoupper(substr($user->last_name, 0, 1)) }}
                                                     </div>
                                                 @else
-                                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-primary-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
                                                         {{ strtoupper(substr($user->first_name, 0, 1)) }}{{ strtoupper(substr($user->last_name, 0, 1)) }}
                                                     </div>
                                                 @endif
@@ -310,7 +318,7 @@
                                                 @endif
                                             </div>
                                             <div>
-                                                <p class="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
+                                                <p class="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
                                                     {{ $user->last_name }}, {{ $user->first_name }} {{ $user->middle_name ? substr($user->middle_name, 0, 1) . '.' : '' }}
                                                 </p>
                                                 <p class="text-xs text-slate-500">
@@ -403,7 +411,7 @@
 
         <!-- View Profile -->
         <a href="{{ route('teacher.students.show', $student->id) }}" 
-           class="p-2 hover:bg-primary-50 text-slate-400 hover:text-primary-600 rounded-lg transition-colors" 
+           class="p-2 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 rounded-lg transition-colors" 
            title="View Profile">
             <i class="fas fa-eye"></i>
         </a>
@@ -436,7 +444,7 @@
                                             <p class="text-lg font-medium text-slate-600 mb-1">No students enrolled</p>
                                             <p class="text-sm mb-4">This section currently has no students</p>
                                             <a href="{{ route('teacher.students.create', $section->id) }}" 
-                                                class="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors">
+                                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
                                                 <i class="fas fa-user-plus mr-2"></i>Enroll First Student
                                             </a>
                                         </div>
@@ -466,14 +474,14 @@
             <!-- Quick Actions -->
             <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
                  <a href="{{ route('teacher.sections.attendance', $section) }}" 
-                    class="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-6 text-white relative overflow-hidden group cursor-pointer hover:shadow-xl transition-all block">
+                    class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden group cursor-pointer hover:shadow-xl transition-all block">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:scale-110 transition-transform"></div>
                     <div class="relative z-10">
                         <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
                             <i class="fas fa-clipboard-check text-2xl"></i>
                         </div>
                         <h3 class="text-lg font-bold mb-1">Daily Attendance</h3>
-                        <p class="text-primary-100 text-sm mb-4">Mark attendance for Grade {{ $section->grade_level }}</p>
+                        <p class="text-indigo-100 text-sm mb-4">Mark attendance for Grade {{ $section->grade_level }}</p>
                         <span class="inline-flex items-center gap-2 text-sm font-medium">
                             Take Attendance <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                         </span>

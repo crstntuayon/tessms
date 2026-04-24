@@ -15,11 +15,11 @@
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        body { overflow: hidden; }
+        body { overflow-x: hidden; }
         
         .dashboard-container {
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
             width: 100vw;
         }
 
@@ -28,8 +28,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
         }
 
         .main-header {
@@ -46,21 +45,8 @@
 
         .main-content {
             flex: 1;
-            overflow-y: auto;
             overflow-x: hidden;
-            padding: 32px;
             background: #f8fafc;
-        }
-
-        .main-content::-webkit-scrollbar { 
-            width: 8px; 
-        }
-        .main-content::-webkit-scrollbar-track { 
-            background: transparent; 
-        }
-        .main-content::-webkit-scrollbar-thumb { 
-            background: #cbd5e1; 
-            border-radius: 4px; 
         }
 
         .glass-card {
@@ -188,7 +174,25 @@
 }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 antialiased overflow-x-hidden" x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
+
+    <!-- Mobile Overlay -->
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"
+         @click="mobileOpen = false"
+         style="display: none;"></div>
+
+    <!-- Mobile Hamburger -->
+    <button @click="mobileOpen = !mobileOpen" 
+            class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all border border-slate-100">
+        <i class="fas fa-bars text-lg"></i>
+    </button>
 
 <div class="dashboard-container">
     <!-- Include Sidebar -->

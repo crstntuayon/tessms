@@ -188,14 +188,24 @@
             transition: stroke-dashoffset 0.5s ease-in-out;
         }
     </style>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased overflow-x-hidden">
+<body class="bg-slate-50 text-slate-800 antialiased overflow-x-hidden" x-data="{ mobileOpen: false }">
 
     <!-- Toast Container -->
     <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
 
     <!-- Mobile Overlay -->
-    <div id="mobileOverlay" class="fixed inset-0 z-40 hidden lg:hidden bg-slate-900/30 backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar()"></div>
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 z-40 lg:hidden bg-slate-900/30 backdrop-blur-sm"
+         style="display: none;"></div>
 
     <!-- Main Layout -->
     <div class="flex min-h-screen">
@@ -210,7 +220,7 @@
             <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 h-16 flex-shrink-0">
                 <div class="flex items-center justify-between h-full px-4 lg:px-8">
                     <div class="flex items-center gap-4">
-                        <button class="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all" onclick="toggleMobileMenu()">
+                        <button @click="mobileOpen = !mobileOpen" class="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
                             <i class="fas fa-bars text-xl"></i>
                         </button>
                         <div class="hidden sm:block">
@@ -1189,19 +1199,6 @@ generateCalendar();
         }
         
         // UI Functions
-        function toggleMobileMenu() {
-            const sidebar = document.querySelector('aside');
-            const overlay = document.getElementById('mobileOverlay');
-            sidebar?.classList.toggle('-translate-x-full');
-            overlay?.classList.toggle('hidden');
-        }
-        
-        function toggleSidebar() {
-            const sidebar = document.querySelector('aside');
-            const overlay = document.getElementById('mobileOverlay');
-            sidebar?.classList.add('-translate-x-full');
-            overlay?.classList.add('hidden');
-        }
         
 function printClassRecord() {
     // Redirect to the class record route in the same tab

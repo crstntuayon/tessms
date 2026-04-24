@@ -143,9 +143,7 @@ $isStudent = $roleLower === 'student' || auth()->user()->student !== null;
         <!-- Mobile Toggle Button -->
         <button @click="mobileOpen = !mobileOpen"
                 class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg shadow-slate-200/50 flex items-center justify-center text-slate-600 hover:text-indigo-600 hover:scale-105 hover:shadow-xl transition-all duration-200 border border-slate-100">
-            <i class="fas fa-bars text-lg" x-show="!mobileOpen"></i>
-            <i class="fas fa-times text-lg" x-show="mobileOpen"></i>
-        </button>
+            <i class="fas fa-bars text-lg"></i>        </button>
 
         @include('student.includes.sidebar')
 

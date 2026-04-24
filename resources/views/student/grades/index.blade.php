@@ -356,9 +356,7 @@
     <!-- Mobile Toggle Button -->
     <button @click="mobileOpen = !mobileOpen" 
             class="mobile-toggle fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg shadow-slate-200/50 flex items-center justify-center text-slate-600 hover:text-indigo-600 hover:scale-105 hover:shadow-xl transition-all duration-200 border border-slate-100">
-        <i class="fas fa-bars text-lg" x-show="!mobileOpen"></i>
-        <i class="fas fa-times text-lg" x-show="mobileOpen"></i>
-    </button>
+        <i class="fas fa-bars text-lg"></i>    </button>
 
     <!-- Sidebar - Pass the shared state to sidebar -->
     <div x-data="{ parentCollapsed: sidebarCollapsed, parentMobile: mobileOpen }" 

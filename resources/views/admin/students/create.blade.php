@@ -433,7 +433,16 @@
 <body class="text-slate-800">
 
     <!-- Mobile Overlay -->
-    <div id="mobileOverlay" class="mobile-overlay fixed inset-0 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"
+         style="display: none;"></div>
 
     <!-- Floating Back Button -->
     <a href="{{ route('admin.students.index') }}" class="floating-back-btn" title="Back to List">
@@ -452,7 +461,7 @@
             <header class="main-header">
                 <div class="flex items-center justify-between w-full">
                     <div class="flex items-center gap-4">
-                        <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2.5 hover:bg-slate-100 rounded-xl transition-colors">
+                        <button type="button" @click="mobileOpen = !mobileOpen" class="lg:hidden p-2.5 hover:bg-slate-100 rounded-xl transition-colors">
                             <i class="fas fa-bars text-slate-600"></i>
                         </button>
                         <div>
@@ -705,9 +714,7 @@ function validateMatch() {
             <div id="photoPreview" class="w-32 h-32 rounded-full bg-slate-100 border-4 border-white shadow-lg flex items-center justify-center overflow-hidden">
                 <i class="fas fa-user text-4xl text-slate-300"></i>
             </div>
-            <button type="button" id="removePhoto" class="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full shadow-md hidden hover:bg-red-600 transition-colors">
-                <i class="fas fa-times text-xs"></i>
-            </button>
+            <button type="button" id="removePhoto" class="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full shadow-md hidden hover:bg-red-600 transition-colors">            </button>
         </div>
 
         <div class="flex-1">

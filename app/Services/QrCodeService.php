@@ -25,7 +25,7 @@ class QrCodeService
         $token = Str::random(32);
 
         // Build enrollment URL using prefixed route
-        $enrollmentUrl = route('admin.enrollment.form', ['token' => $token]);
+        $enrollmentUrl = route('admin.enrollment.form.qr', ['token' => $token]);
 
         // Generate QR code image
         $qrCode = QrCode::create($enrollmentUrl)

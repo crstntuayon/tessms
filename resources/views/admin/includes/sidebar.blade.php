@@ -105,9 +105,28 @@ if ($activeSchoolYear) {
 
 <!-- Sidebar -->
 <aside id="sidebar" 
-       class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 flex flex-col sidebar-transition transform -translate-x-full lg:translate-x-0"
-       :class="{ 'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen && window.innerWidth < 1024 }"
-       @click.outside="if (window.innerWidth < 1024) sidebarOpen = false">
+       x-cloak
+       x-data="{
+           init() {
+               this.handleResize();
+               window.addEventListener('resize', () => this.handleResize());
+           },
+           handleResize() {
+               if (window.innerWidth >= 1024) {
+                   this.$dispatch('force-desktop');
+               }
+           }
+       }"
+       x-on:force-desktop.window="
+           if (window.innerWidth >= 1024) {
+               mobileOpen = false;
+           }
+       "
+       :class="{
+           '-translate-x-full': window.innerWidth < 1024 && !mobileOpen,
+           'translate-x-0': window.innerWidth >= 1024 || mobileOpen
+       }"
+       class="fixed inset-y-0 left-0 z-40 w-72 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-out overflow-hidden">
     
     <!-- Logo -->
     <div class="p-4 lg:p-6 border-b border-slate-100 flex-shrink-0">
@@ -125,7 +144,7 @@ if ($activeSchoolYear) {
     <!-- Navigation -->
     <nav class="flex-1 px-3 lg:px-4 py-4 lg:py-6 space-y-1 overflow-y-auto sidebar-nav custom-scrollbar">
         <a href="{{ route('admin.dashboard') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-semibold transition-all {{ request()->routeIs('admin.dashboard') ? 'text-blue-600 bg-blue-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-blue-100' : 'bg-slate-100' }} flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-chart-pie text-sm {{ request()->routeIs('admin.dashboard') ? 'text-blue-600' : '' }}"></i>
@@ -134,7 +153,7 @@ if ($activeSchoolYear) {
         </a>
         
         <a href="{{ route('admin.students.index') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.students.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.students.*') ? 'text-blue-600 bg-blue-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.students.*') ? 'bg-blue-100' : 'bg-slate-100 group-hover:bg-blue-50' }} flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-users text-sm {{ request()->routeIs('admin.students.*') ? 'text-blue-600' : 'group-hover:text-blue-600' }}"></i>
@@ -144,7 +163,7 @@ if ($activeSchoolYear) {
         </a>
         
         <a href="{{ route('admin.teachers.index') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.teachers.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.teachers.*') ? 'text-purple-600 bg-purple-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.teachers.*') ? 'bg-purple-100' : 'bg-slate-100 group-hover:bg-purple-50' }} flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-chalkboard-teacher text-sm {{ request()->routeIs('admin.teachers.*') ? 'text-purple-600' : 'group-hover:text-purple-600' }}"></i>
@@ -154,7 +173,7 @@ if ($activeSchoolYear) {
         </a>
         
         <a href="{{ route('admin.sections.index') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.sections.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.sections.*') ? 'text-emerald-600 bg-emerald-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.sections.*') ? 'bg-emerald-100' : 'bg-slate-100 group-hover:bg-emerald-50' }} flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-th-large text-sm {{ request()->routeIs('admin.sections.*') ? 'text-emerald-600' : 'group-hover:text-emerald-600' }}"></i>
@@ -164,7 +183,7 @@ if ($activeSchoolYear) {
         </a>
 
         <a href="{{ route('admin.users.index') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.users.*') ? 'text-blue-600 bg-blue-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.users.*') ? 'bg-blue-100' : 'bg-slate-100 group-hover:bg-blue-50' }} flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-users text-sm {{ request()->routeIs('admin.users.*') ? 'text-blue-600' : 'group-hover:text-blue-600' }}"></i>
@@ -174,7 +193,7 @@ if ($activeSchoolYear) {
         </a>
 
         <a href="{{ route('admin.pending-registrations.index') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.pending-registrations.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.pending-registrations.*') ? 'text-amber-600 bg-amber-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.pending-registrations.*') ? 'bg-amber-100' : 'bg-slate-100 group-hover:bg-amber-50' }} flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-user-clock text-sm {{ request()->routeIs('admin.pending-registrations.*') ? 'text-amber-600' : 'group-hover:text-amber-600' }}"></i>
@@ -185,7 +204,7 @@ if ($activeSchoolYear) {
 
         <!-- Online Enrollment Applications -->
         <a href="{{ route('admin.enrollment.index') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.enrollment.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.enrollment.*') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.enrollment.*') ? 'bg-indigo-100' : 'bg-slate-100 group-hover:bg-indigo-50' }} flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-file-signature text-sm {{ request()->routeIs('admin.enrollment.*') ? 'text-indigo-600' : 'group-hover:text-indigo-600' }}"></i>
@@ -197,7 +216,7 @@ if ($activeSchoolYear) {
         </a>
 
         <a href="{{ route('admin.announcements.index') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.announcements.*') ? 'text-amber-600 bg-amber-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.announcements.*') ? 'bg-amber-100' : 'bg-slate-100 group-hover:bg-amber-50' }} flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-bullhorn text-sm {{ request()->routeIs('admin.announcements.*') ? 'text-amber-600' : 'group-hover:text-amber-600' }}"></i>
@@ -206,7 +225,7 @@ if ($activeSchoolYear) {
         </a>
         
         <a href="{{ route('admin.reports.index') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl font-medium transition-all group">
             <div class="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-rose-50 flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-file-alt text-sm group-hover:text-rose-600"></i>
@@ -215,7 +234,7 @@ if ($activeSchoolYear) {
         </a>
 
         <a href="{{ route('admin.activity-logs.index') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.activity-logs.*') ? 'text-slate-900 bg-slate-100' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.activity-logs.*') ? 'bg-slate-200' : 'bg-slate-100 group-hover:bg-slate-200' }} flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-history text-sm {{ request()->routeIs('admin.activity-logs.*') ? 'text-slate-700' : 'group-hover:text-slate-700' }}"></i>
@@ -224,7 +243,7 @@ if ($activeSchoolYear) {
         </a>
         
         <a href="{{ route('admin.school-years.index') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.school-years.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.school-years.*') ? 'text-blue-600 bg-blue-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.school-years.*') ? 'bg-blue-100' : 'bg-slate-100 group-hover:bg-blue-50' }} flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-calendar-alt text-sm {{ request()->routeIs('admin.school-years.*') ? 'text-blue-600' : 'group-hover:text-blue-600' }}"></i>
@@ -233,7 +252,7 @@ if ($activeSchoolYear) {
         </a>
 
         <a href="{{ route('admin.import.students') }}" 
-           @click="if (window.innerWidth < 1024) sidebarOpen = false"
+           @click="if (window.innerWidth < 1024) mobileOpen = false"
            class="nav-item {{ request()->routeIs('admin.import.*') ? 'active' : '' }} flex items-center gap-3 px-3 lg:px-4 py-3 rounded-xl font-medium transition-all group {{ request()->routeIs('admin.import.*') ? 'text-violet-600 bg-violet-50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }}">
             <div class="w-8 h-8 rounded-lg {{ request()->routeIs('admin.import.*') ? 'bg-violet-100' : 'bg-slate-100 group-hover:bg-violet-50' }} flex items-center justify-center flex-shrink-0 transition-colors">
                 <i class="fas fa-file-csv text-sm {{ request()->routeIs('admin.import.*') ? 'text-violet-600' : 'group-hover:text-violet-600' }}"></i>

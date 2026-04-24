@@ -85,10 +85,29 @@
             }
         }
     </style>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="flex items-center justify-center p-4">
+<body class="flex items-center justify-center p-4 min-h-screen bg-slate-100" x-data="{ mobileOpen: false }" @keydown.escape.window="history.back()" @click="if ($event.target === $el) history.back()">
+
+    <!-- Mobile Overlay -->
+    <div x-show="mobileOpen"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"
+         style="display: none;"></div>
+
+    <!-- Mobile Hamburger -->
+    <button @click="mobileOpen = !mobileOpen"
+            class="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all">
+        <i class="fas fa-bars"></i>
+    </button>
     <!-- Modal Panel -->
-    <div class="modal-panel w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div class="modal-panel w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden" @click.stop>
         <!-- Header Toolbar -->
         <div class="no-print bg-white border-b border-slate-200 px-5 py-4 flex items-center justify-between sticky top-0 z-50">
             <div>
@@ -100,7 +119,7 @@
                     <i class="fas fa-print mr-2"></i> Print All
                 </button>
                 <a href="javascript:history.back()" class="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
-                    <i class="fas fa-times text-lg"></i>
+                    <i class="fas fa-times text-sm"></i>
                 </a>
             </div>
         </div>

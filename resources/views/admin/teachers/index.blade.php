@@ -15,26 +15,14 @@
         }
         
         body {
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
+            overflow-x: hidden;
             background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 50%, #faf5ff 100%);
         }
 
         .dashboard-layout {
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
             width: 100vw;
-        }
-
-        .sidebar-container {
-            width: 280px;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 50;
-            flex-shrink: 0;
         }
 
         .main-wrapper {
@@ -42,8 +30,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
             background: transparent;
         }
 
@@ -61,30 +48,10 @@
 
         .main-content {
             flex: 1;
-            overflow-y: auto;
             overflow-x: hidden;
-            padding: 32px;
-        }
-
-        .main-content::-webkit-scrollbar { 
-            width: 6px; 
-        }
-        .main-content::-webkit-scrollbar-track { 
-            background: transparent; 
-        }
-        .main-content::-webkit-scrollbar-thumb { 
-            background: linear-gradient(180deg, #c4b5fd 0%, #a78bfa 100%);
-            border-radius: 3px; 
         }
 
         @media (max-width: 1024px) {
-            .sidebar-container {
-                transform: translateX(-100%);
-                transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            }
-            .sidebar-container.open {
-                transform: translateX(0);
-            }
             .main-wrapper {
                 margin-left: 0;
             }
@@ -546,16 +513,23 @@
         }
     </style>
 </head>
-<body class="text-slate-800 antialiased">
+<body class="text-slate-800 antialiased overflow-x-hidden" x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
 
     <!-- Mobile Overlay -->
-    <div id="mobileOverlay" class="mobile-overlay fixed inset-0 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"
+         style="display: none;"></div>
 
     <div class="dashboard-layout">
-        <!-- Fixed Sidebar -->
-        <div class="sidebar-container">
-            @include('admin.includes.sidebar')
-        </div>
+        <!-- Sidebar -->
+        @include('admin.includes.sidebar')
 
         <!-- Main Content Wrapper -->
         <div class="main-wrapper">
@@ -563,7 +537,7 @@
             <header class="main-header">
                 <div class="flex items-center justify-between w-full">
                     <div class="flex items-center gap-4">
-                        <button onclick="toggleSidebar()" class="lg:hidden p-2.5 hover:bg-slate-100 rounded-xl transition-colors">
+                        <button @click="mobileOpen = !mobileOpen" class="lg:hidden p-2.5 hover:bg-slate-100 rounded-xl transition-colors">
                             <i class="fas fa-bars text-slate-600"></i>
                         </button>
                         <div>
@@ -933,13 +907,6 @@
     </a>
 
     <script>
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar-container');
-            const overlay = document.getElementById('mobileOverlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('hidden');
-        }
-
         // Enhanced Search with debounce
         let searchTimeout;
         document.getElementById('searchInput')?.addEventListener('input', function(e) {

@@ -128,9 +128,19 @@ class ConversationController extends Controller
                 ];
             });
 
+            // Check if the other user is online
+            $isOnline = Cache::has('user-online-' . $userId);
+            $otherUser = User::find($userId);
+
             return response()->json([
                 'messages' => $formattedMessages,
                 'has_more' => false,
+                'contact' => $otherUser ? [
+                    'id' => $otherUser->id,
+                    'name' => $otherUser->full_name,
+                    'initials' => $this->getInitials($otherUser->full_name),
+                    'is_online' => $isOnline,
+                ] : null,
             ]);
             
         } catch (\Exception $e) {

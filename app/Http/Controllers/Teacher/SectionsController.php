@@ -29,9 +29,16 @@ class SectionsController extends Controller
     }
 
     public function index()
-{
-    return view('teacher.sections.index');
-}
+    {
+        $teacher = auth()->user()->teacher;
+        $sections = $teacher
+            ? \App\Models\Section::with('gradeLevel')
+                ->where('teacher_id', $teacher->id)
+                ->where('is_active', true)
+                ->get()
+            : collect();
+        return view('teacher.sections.index', compact('sections'));
+    }
 
   // Custom method for grades
   /**

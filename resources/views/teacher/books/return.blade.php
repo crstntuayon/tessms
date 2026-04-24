@@ -8,13 +8,31 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50" x-data="{ mobileOpen: false }">
+
+<!-- Mobile Overlay -->
+<div x-show="mobileOpen" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="mobileOpen = false"
+     class="fixed inset-0 z-40 lg:hidden bg-slate-900/30 backdrop-blur-sm"
+     style="display: none;"></div>
+
+<!-- Mobile Toggle Button -->
+<button @click="mobileOpen = !mobileOpen" 
+        class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all border border-slate-100">
+    <i class="fas fa-bars text-lg"></i>
+</button>
 
 <div class="flex">
     @include('teacher.includes.sidebar')
 
     <!-- Main Content -->
-    <div class="ml-72 w-full min-h-screen p-8">
+    <div class="lg:ml-72 w-full min-h-screen p-8">
         
         <!-- Header -->
         <div class="mb-8">

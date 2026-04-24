@@ -14,7 +14,7 @@
             margin: 0; 
             padding: 0; 
             background: #f8fafc;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .dashboard-container {
@@ -29,7 +29,7 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .main-content {
@@ -107,7 +107,7 @@
             padding: 24px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .stat-card::before {
@@ -238,7 +238,7 @@
             height: 8px;
             background: #e2e8f0;
             border-radius: 4px;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .capacity-fill {
@@ -364,8 +364,27 @@
             position: fixed;
         }
     </style>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="antialiased text-slate-800">
+<body class="antialiased text-slate-800" x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
+
+    <!-- Mobile Overlay -->
+    <div x-show="mobileOpen"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"
+         style="display: none;"></div>
+
+    <!-- Mobile Hamburger -->
+    <button @click="mobileOpen = !mobileOpen"
+            class="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all">
+        <i class="fas fa-bars"></i>
+    </button>
 
 <div class="dashboard-container">
     @include('admin.includes.sidebar')

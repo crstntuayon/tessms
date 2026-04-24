@@ -11,12 +11,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        [x-cloak] { display: none !important; }
         
         body { 
             margin: 0; 
             padding: 0; 
             background: #f8fafc;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .dashboard-container {
@@ -552,7 +553,25 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="antialiased text-slate-800" x-data="settingsApp()">
+<body class="antialiased text-slate-800" x-data="settingsApp()" @keydown.escape.window="mobileOpen = false">
+
+    <!-- Mobile Overlay -->
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"
+         style="display: none;"></div>
+
+    <!-- Mobile Hamburger -->
+    <button @click="mobileOpen = !mobileOpen" 
+            class="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all">
+        <i class="fas fa-bars"></i>
+    </button>
 
     <!-- Toast Notification -->
     @if(session('success'))
@@ -1731,6 +1750,9 @@
         // Alpine.js Data
         function settingsApp() {
             return {
+                // Mobile sidebar
+                mobileOpen: false,
+                
                 // Logs
                 logs: [],
                 logsLoading: false,

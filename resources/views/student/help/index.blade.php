@@ -15,6 +15,24 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased" x-data="helpApp()">
 
+    <!-- Mobile Overlay -->
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 lg:hidden"
+         style="display: none;">
+    </div>
+
+    <!-- Mobile Toggle Button -->
+    <button @click="mobileOpen = !mobileOpen" 
+            class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all border border-slate-100">
+        <i class="fas fa-bars text-lg"></i>    </button>
+
     <!-- Include Sidebar -->
     @include('student.includes.sidebar')
 
@@ -42,7 +60,7 @@
         <!-- Header -->
         <div class="mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
+                <div class="lg:ml-0 ml-14">
                     <h1 class="text-2xl font-bold text-slate-900">Help & Support</h1>
                     <p class="text-slate-500 mt-1">Find answers or get assistance from our support team</p>
                 </div>
@@ -498,7 +516,7 @@
                 replyMessage: '',
                 toast: { show: false, message: '', type: 'success' },
                 sidebarCollapsed: false,
-                sidebarMobileOpen: false,
+                mobileOpen: false,
                 isMobile: window.innerWidth < 1024,
                 
                 ticketForm: {
@@ -578,7 +596,7 @@
 
                 get mainContentClass() {
                     if (this.isMobile) {
-                        return this.sidebarMobileOpen ? 'ml-72' : 'ml-0';
+                        return this.mobileOpen ? 'ml-72' : 'ml-0';
                     }
                     return this.sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72';
                 },
@@ -591,7 +609,7 @@
                     });
                     
                     window.addEventListener('sidebar-mobile-toggle', (e) => {
-                        this.sidebarMobileOpen = e.detail.open;
+                        this.mobileOpen = e.detail.open;
                     });
 
                     window.addEventListener('resize', () => {

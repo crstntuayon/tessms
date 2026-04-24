@@ -19,14 +19,33 @@
             }
         }
     </script>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="bg-slate-50/50 min-h-screen">
+<body class="bg-slate-50/50 min-h-screen" x-data="{ mobileOpen: false }">
+
+<!-- Mobile Overlay -->
+<div x-show="mobileOpen" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="mobileOpen = false"
+     class="fixed inset-0 z-40 lg:hidden bg-slate-900/30 backdrop-blur-sm"
+     style="display: none;"></div>
+
+<!-- Mobile Toggle Button -->
+<button @click="mobileOpen = !mobileOpen" 
+        class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all border border-slate-100">
+    <i class="fas fa-bars text-lg"></i>
+</button>
 
 <div class="flex">
     @include('teacher.includes.sidebar')
 
     <!-- Main Content -->
-    <div class="ml-72 w-full min-h-screen p-8">
+    <div class="lg:ml-72 w-full min-h-screen p-8">
         
         <!-- Breadcrumb & Header -->
         <div class="mb-8">
@@ -1128,9 +1147,9 @@
         if (transmutedEl) {
             transmutedEl.textContent = transmuted.toFixed(0);
             transmutedEl.className = 'transmuted-grade text-xl font-bold ';
-            if (transmuted >= 90) transmutedEl.classList.add('text-emerald-300');
-            else if (transmuted >= 75) transmutedEl.classList.add('text-white');
-            else transmutedEl.classList.add('text-red-300');
+            if (transmuted >= 90) transmutedEl.classList.add('text-emerald-600');
+            else if (transmuted >= 75) transmutedEl.classList.add('text-blue-600');
+            else transmutedEl.classList.add('text-red-600');
         }
         
         if (remarksEl) {

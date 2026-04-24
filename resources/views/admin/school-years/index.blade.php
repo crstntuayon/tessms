@@ -118,7 +118,7 @@
                                 <code class="flex-1 bg-slate-800 text-emerald-400 px-4 py-3.5 rounded-xl text-sm break-all font-mono min-w-0">
                                     {{ route('admin.enrollment.form.qr', ['token' => session('qr_code')->qr_code_token]) }}
                                 </code>
-                                <button onclick="copyToClipboard('{{ route('admin.enrollment.form.qr', ['token' => session('qr_code')->qr_code_token]) }}')" 
+                                <button onclick="copyToClipboard('{{ route('admin.enrollment.form.qr', ['token' => session('qr_code')->qr_code_token]) }}', this)" 
                                         class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-500/30 flex items-center gap-2 font-semibold whitespace-nowrap"
                                         title="Copy URL">
                                     <i class="fas fa-copy"></i>
@@ -199,7 +199,7 @@
                                 <code class="flex-1 bg-slate-800 text-emerald-400 px-4 py-3.5 rounded-xl text-sm break-all font-mono min-w-0">
                                     {{ route('admin.enrollment.form.qr', ['token' => $activeSchoolYear->qrCode->qr_code_token]) }}
                                 </code>
-                                <button onclick="copyToClipboard('{{ route('admin.enrollment.form.qr', ['token' => $activeSchoolYear->qrCode->qr_code_token]) }}')" 
+                                <button onclick="copyToClipboard('{{ route('admin.enrollment.form.qr', ['token' => $activeSchoolYear->qrCode->qr_code_token]) }}', this)" 
                                         class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-500/30 flex items-center gap-2 font-semibold whitespace-nowrap"
                                         title="Copy URL">
                                     <i class="fas fa-copy"></i>
@@ -640,10 +640,22 @@
             document.getElementById('sidebar')?.classList.toggle('open');
         });
 
-        // Copy to clipboard with toast notification
-        function copyToClipboard(text) {
+        // Copy to clipboard with toast notification and button feedback
+        function copyToClipboard(text, btn) {
             navigator.clipboard.writeText(text).then(function() {
-                showToast('URL copied to clipboard!', 'success');
+                showToast('Enrollment URL copied to clipboard!', 'success');
+                // Button feedback: change to checkmark
+                if (btn) {
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i><span class="hidden sm:inline">Copied!</span>';
+                    btn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-500/30');
+                    btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'shadow-emerald-500/30');
+                    setTimeout(() => {
+                        btn.innerHTML = originalHtml;
+                        btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700', 'shadow-emerald-500/30');
+                        btn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-500/30');
+                    }, 2000);
+                }
             }, function(err) {
                 console.error('Could not copy text: ', err);
                 showToast('Failed to copy URL. Please copy manually.', 'error');
@@ -672,12 +684,12 @@
                 toast.style.opacity = '1';
             });
             
-            /* Remove after 3 seconds
+            // Remove after 3 seconds
             setTimeout(() => {
                 toast.style.transform = 'translateY(10px)';
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
-            }, 3000); */
+            }, 3000);
         }
 
         /* Auto-hide alerts after 5 seconds

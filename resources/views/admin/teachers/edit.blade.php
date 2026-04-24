@@ -1,6 +1,3 @@
-@include('admin.includes.sidebar') 
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,171 +35,17 @@
             min-height: 100vh;
         }
 
-        /* Sidebar Collapse/Expand Styles */
-        .sidebar {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sidebar.collapsed {
-            width: 80px;
-        }
-
-        .sidebar.collapsed .sidebar-text,
-        .sidebar.collapsed .sidebar-footer,
-        .sidebar.collapsed .menu-section-title {
-            opacity: 0;
-            visibility: hidden;
-            display: none;
-        }
-
-        .sidebar.collapsed .menu-item {
-            justify-content: center;
-            padding: 12px;
-        }
-
-        .sidebar.collapsed .menu-icon {
-            margin: 0;
-        }
-
-        .sidebar.collapsed .sidebar-logo {
-            justify-content: center;
-        }
-
-        .sidebar.collapsed .sidebar-logo-text {
-            display: none;
-        }
-
-        .sidebar.collapsed .collapse-btn {
-            transform: rotate(180deg);
-        }
-
-        /* Collapse Button */
-        .collapse-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            position: absolute;
-            right: -16px;
-            top: 24px;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .collapse-btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
         /* Main Content Adjustment */
         .main-wrapper {
             margin-left: 280px;
             flex: 1;
             min-height: 100vh;
-            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .main-wrapper.expanded {
-            margin-left: 80px;
-        }
-
-        /* Mobile Header */
-        .mobile-header {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 64px;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            z-index: 40;
-            padding: 0 16px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .hamburger-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .hamburger-btn:hover {
-            background: rgba(255,255,255,0.2);
         }
 
         /* Responsive */
         @media (max-width: 1024px) {
-            .sidebar {
-                transform: translateX(-100%);
-                width: 280px !important;
-            }
-            
-            .sidebar.collapsed {
-                width: 280px !important;
-            }
-            
-            .sidebar.collapsed .sidebar-text,
-            .sidebar.collapsed .sidebar-footer,
-            .sidebar.collapsed .menu-section-title {
-                opacity: 1;
-                visibility: visible;
-                display: block;
-            }
-            
-            .sidebar.collapsed .menu-item {
-                justify-content: flex-start;
-                padding: 12px 16px;
-            }
-            
-            .sidebar.collapsed .sidebar-logo-text {
-                display: block;
-            }
-            
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            
             .main-wrapper {
-                margin-left: 0 !important;
-                padding-top: 64px;
-            }
-            
-            .mobile-header {
-                display: flex;
-            }
-            
-            .collapse-btn {
-                display: none;
-            }
-            
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 35;
-            }
-            
-            .sidebar-overlay.show {
-                display: block;
+                margin-left: 0;
             }
         }
 
@@ -212,6 +55,7 @@
             max-width: 1400px;
             margin: 0 auto;
             padding-bottom: 120px;
+            overflow-x: hidden;
         }
 
         /* Glass Cards */
@@ -666,27 +510,28 @@
         }
     </style>
 </head>
-<body class="text-slate-800 antialiased">
+<body class="text-slate-800 antialiased overflow-x-hidden" x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
 
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <button class="hamburger-btn" onclick="toggleSidebarMobile()">
-            <i class="fas fa-bars"></i>
-        </button>
-        <div class="text-white font-bold text-lg">Tugawe Elementary</div>
-        <div class="w-10"></div>
-    </div>
+    <!-- Mobile Overlay -->
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"
+         @click="mobileOpen = false"
+         style="display: none;"></div>
 
-    <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebarMobile()"></div>
+    <!-- Mobile Hamburger -->
+    <button @click="mobileOpen = !mobileOpen" 
+            class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all border border-slate-100">
+        <i class="fas fa-bars text-lg"></i>
+    </button>
 
     <!-- Sidebar Include -->
     @include('admin.includes.sidebar')
-
-    <!-- Collapse Button (Desktop Only) -->
-    <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarDesktop()" title="Collapse/Expand Menu">
-        <i class="fas fa-chevron-left"></i>
-    </button>
 
     <!-- Main Content -->
     <div class="main-wrapper" id="mainWrapper">
@@ -1104,9 +949,7 @@
                 </span>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('admin.teachers.index') }}" class="btn-secondary">
-                    <i class="fas fa-times mr-2"></i>
-                    Cancel
+                <a href="{{ route('admin.teachers.index') }}" class="btn-secondary">                    Cancel
                 </a>
                 <button type="button" class="btn-danger" onclick="confirmDelete()">
                     <i class="fas fa-trash-alt mr-2"></i>
@@ -1132,55 +975,6 @@
     </div>
 
     <script>
-        // Desktop Sidebar Toggle (Collapse/Expand)
-        function toggleSidebarDesktop() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainWrapper = document.getElementById('mainWrapper');
-            const stickyFooter = document.getElementById('stickyFooter');
-            const collapseBtn = document.getElementById('collapseBtn');
-            
-            sidebar.classList.toggle('collapsed');
-            mainWrapper.classList.toggle('expanded');
-            stickyFooter.classList.toggle('expanded');
-            
-            // Rotate button icon
-            if (sidebar.classList.contains('collapsed')) {
-                collapseBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            } else {
-                collapseBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            }
-            
-            // Save state to localStorage
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
-        }
-
-        // Mobile Sidebar Toggle
-        function toggleSidebarMobile() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('show');
-        }
-
-        // Restore sidebar state on load (Desktop only)
-        document.addEventListener('DOMContentLoaded', function() {
-            if (window.innerWidth > 1024) {
-                const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-                if (isCollapsed) {
-                    const sidebar = document.querySelector('.sidebar');
-                    const mainWrapper = document.getElementById('mainWrapper');
-                    const stickyFooter = document.getElementById('stickyFooter');
-                    const collapseBtn = document.getElementById('collapseBtn');
-                    
-                    sidebar.classList.add('collapsed');
-                    mainWrapper.classList.add('expanded');
-                    stickyFooter.classList.add('expanded');
-                    collapseBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-                }
-            }
-        });
-
         // Track changes
         let originalValues = {};
         const form = document.getElementById('teacherForm');

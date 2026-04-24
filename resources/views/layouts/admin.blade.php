@@ -104,19 +104,25 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 antialiased" x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
+<body class="bg-slate-50 antialiased" x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
     
     <!-- Mobile Overlay -->
-    <div x-show="sidebarOpen" 
-         x-transition:enter="transition-opacity duration-300"
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
-         x-transition:leave="transition-opacity duration-300"
+         x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-40 lg:hidden mobile-overlay"
-         @click="sidebarOpen = false">
+         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"
+         @click="mobileOpen = false"
+         style="display: none;">
     </div>
+
+    <!-- Mobile Toggle Button -->
+    <button @click="mobileOpen = !mobileOpen" 
+            class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all border border-slate-100">
+        <i class="fas fa-bars text-lg"></i>    </button>
 
     <div class="flex min-h-screen">
         <!-- Sidebar -->
@@ -127,12 +133,9 @@
             
             <!-- Mobile Header -->
             <header class="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200 h-16 flex-shrink-0">
-                <div class="flex items-center justify-between h-full px-4">
+                <div class="flex items-center justify-between h-full px-4 pl-16">
                     <div class="flex items-center gap-3">
-                        <button @click="sidebarOpen = !sidebarOpen" 
-                                class="p-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
-                            <i class="fas fa-bars text-xl"></i>
-                        </button>
+                        <!-- Hamburger moved to fixed button above -->
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white">
                                 <i class="fas fa-graduation-cap text-sm"></i>

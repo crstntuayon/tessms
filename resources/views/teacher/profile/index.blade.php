@@ -227,8 +227,9 @@
             transform: translateY(-50%) scale(1);
         }
     </style>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="bg-slate-50 text-slate-800 antialiased" x-data="{ mobileOpen: false }">
 
     {{-- Success Message --}}
     @if(session('success'))
@@ -250,7 +251,7 @@
 
     {{-- Mobile Header --}}
     <div class="lg:hidden fixed top-0 left-0 right-0 z-40 glass-panel border-b border-white/50 px-4 py-3 flex items-center justify-between">
-        <button onclick="toggleMobileSidebar()" class="p-2.5 rounded-xl hover:bg-white/60 transition-all active:scale-95">
+        <button @click="mobileOpen = !mobileOpen" class="p-2.5 rounded-xl hover:bg-white/60 transition-all active:scale-95">
             <i class="fas fa-bars text-slate-700 text-lg"></i>
         </button>
         <div class="flex items-center gap-2">
@@ -266,14 +267,21 @@
     </div>
 
     {{-- Mobile Sidebar Overlay --}}
-    <div id="mobile-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 z-40 mobile-overlay hidden lg:hidden opacity-0 transition-opacity duration-300"></div>
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 z-40 lg:hidden bg-slate-900/30 backdrop-blur-sm"
+         style="display: none;"></div>
 
     <div class="flex h-screen overflow-hidden pt-14 lg:pt-0">
         
-        {{-- Sidebar Container - Fixed width w-72 (288px) --}}
-        <div id="sidebar-container" class="sidebar-transition fixed lg:fixed z-50 lg:z-30 h-full -translate-x-full lg:translate-x-0 w-72 flex-shrink-0">
-            @include('teacher.includes.sidebar')
-        </div>
+        {{-- Sidebar --}}
+        @include('teacher.includes.sidebar')
 
         {{-- Main Content - Offset by sidebar width on desktop --}}
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden lg:ml-72 relative">
@@ -333,7 +341,7 @@
                     <div class="glass-card rounded-3xl p-5 lg:p-8 shadow-lg border border-white/60">
                         <div class="section-header rounded-2xl p-5 mb-8 border border-white/60 shadow-sm">
                             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white shadow-lg">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
                                     <i class="fas fa-shield-alt"></i>
                                 </div>
                                 Account Information
@@ -341,7 +349,7 @@
                         </div>
 
                         {{-- Profile Photo Card --}}
-                        <div class="mb-8 p-6 bg-gradient-to-br from-primary-50 to-white rounded-2xl border border-primary-100">
+                        <div class="mb-8 p-6 bg-gradient-to-br from-indigo-50 to-white rounded-2xl border border-indigo-100">
                             <div class="flex flex-col sm:flex-row items-center gap-6">
                                 {{-- Photo Display --}}
                                 <div class="relative">
@@ -362,7 +370,7 @@
                                 <div class="flex-1 text-center sm:text-left">
                                     <h3 class="text-lg font-bold text-slate-800">{{ $user->first_name }} {{ $user->last_name }}</h3>
                                     <p class="text-sm text-slate-500 mb-3">{{ $teacher->position ?? 'Teacher' }}</p>
-                                    <a href="{{ route('teacher.profile.edit') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-md shadow-primary-500/20">
+                                    <a href="{{ route('teacher.profile.edit') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-md shadow-indigo-500/20">
                                         <i class="fas fa-camera"></i>
                                         <span>Change Photo</span>
                                     </a>
@@ -378,7 +386,7 @@
                             <div class="info-card bg-white rounded-2xl p-5 shadow-sm">
                                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Email Address</p>
                                 <p class="text-base font-bold text-slate-800 flex items-center gap-2 break-all">
-                                    <i class="fas fa-envelope text-primary-400 flex-shrink-0"></i>
+                                    <i class="fas fa-envelope text-indigo-400 flex-shrink-0"></i>
                                     <span class="truncate">{{ $user->email }}</span>
                                 </p>
                             </div>
@@ -389,7 +397,7 @@
 @php
 use Carbon\Carbon;
 
-$dob = $user->teacher->date_of_birth ?? null;
+$dob = $teacher->date_of_birth ?? null;
 if ($dob) {
     $birthDate = Carbon::parse($dob)->format('d/m/Y'); // format as 10/10/1998
     $age = Carbon::parse($dob)->age; // calculate age
@@ -402,14 +410,14 @@ if ($dob) {
 <div class="info-card bg-white rounded-2xl p-5 shadow-sm">
     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Birthday</p>
     <p class="text-base font-bold text-slate-800 flex items-center gap-2">
-        <i class="fas fa-birthday-cake text-primary-400"></i>
+        <i class="fas fa-birthday-cake text-indigo-400"></i>
         {{ $display }}
     </p>
 </div>
                             <div class="info-card bg-white rounded-2xl p-5 shadow-sm">
                                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Role</p>
-                                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-primary-100 text-primary-700 border border-primary-200">
-                                    {{ $user->role_id }}
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">
+                                    {{ $user->role->name ?? 'Teacher' }}
                                 </span>
                             </div>
                             <div class="info-card bg-white rounded-2xl p-5 shadow-sm">
@@ -428,7 +436,7 @@ if ($dob) {
                     <div class="glass-card rounded-3xl p-5 lg:p-8 shadow-lg border border-white/60">
                         <div class="section-header rounded-2xl p-5 mb-8 border border-white/60 shadow-sm">
                             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white shadow-lg">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
                                     <i class="fas fa-id-badge"></i>
                                 </div>
                                 Personal Information
@@ -483,7 +491,7 @@ if ($dob) {
                     <div class="glass-card rounded-3xl p-5 lg:p-8 shadow-lg border border-white/60">
                         <div class="section-header rounded-2xl p-5 mb-8 border border-white/60 shadow-sm">
                             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white shadow-lg">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
                                     <i class="fas fa-map-marker-alt"></i>
                                 </div>
                                 Contact Information
@@ -493,7 +501,7 @@ if ($dob) {
                             <div class="info-card bg-white rounded-2xl p-5 shadow-sm">
                                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Mobile Number</p>
                                 <p class="text-base font-bold text-slate-800 flex items-center gap-2">
-                                    <i class="fas fa-mobile-alt text-primary-400"></i>
+                                    <i class="fas fa-mobile-alt text-indigo-400"></i>
                                     {{ $teacher->mobile_number ?? 'N/A' }}
                                 </p>
                             </div>
@@ -534,7 +542,7 @@ if ($dob) {
                     <div class="glass-card rounded-3xl p-5 lg:p-8 shadow-lg border border-white/60">
                         <div class="section-header rounded-2xl p-5 mb-8 border border-white/60 shadow-sm">
                             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white shadow-lg">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
                                     <i class="fas fa-building"></i>
                                 </div>
                                 Employment Details
@@ -565,7 +573,7 @@ if ($dob) {
                             </div>
                             <div class="info-card bg-white rounded-2xl p-5 shadow-sm">
                                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Position</p>
-                                <p class="text-base font-bold text-primary-700">{{ $teacher->position ?? 'N/A' }}</p>
+                                <p class="text-base font-bold text-indigo-700">{{ $teacher->position ?? 'N/A' }}</p>
                             </div>
                             <div class="info-card bg-white rounded-2xl p-5 shadow-sm">
                                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Designation</p>
@@ -584,7 +592,7 @@ if ($dob) {
                     <div class="glass-card rounded-3xl p-5 lg:p-8 shadow-lg border border-white/60">
                         <div class="section-header rounded-2xl p-5 mb-8 border border-white/60 shadow-sm">
                             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white shadow-lg">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
                                     <i class="fas fa-university"></i>
                                 </div>
                                 Educational Background
@@ -684,40 +692,7 @@ if ($dob) {
         activeTab.classList.remove('text-slate-600');
     }
 
-    // Mobile sidebar toggle with overlay fade
-    function toggleMobileSidebar() {
-        const sidebar = document.getElementById('sidebar-container');
-        const overlay = document.getElementById('mobile-overlay');
-        
-        if (sidebar.classList.contains('-translate-x-full')) {
-            // Open sidebar
-            sidebar.classList.remove('-translate-x-full');
-            overlay.classList.remove('hidden');
-            setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-            }, 10);
-            document.body.style.overflow = 'hidden';
-        } else {
-            // Close sidebar
-            sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('opacity-0');
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-            }, 300);
-            document.body.style.overflow = '';
-        }
-    }
 
-    // Close mobile sidebar on window resize (if going to desktop)
-    window.addEventListener('resize', function() {
-        if (window.innerWidth >= 1024) {
-            const sidebar = document.getElementById('sidebar-container');
-            const overlay = document.getElementById('mobile-overlay');
-            sidebar.classList.remove('-translate-x-full');
-            overlay.classList.add('hidden', 'opacity-0');
-            document.body.style.overflow = '';
-        }
-    });
 
     // Success message functions with smooth animation
     function closeSuccessMessage() {
@@ -740,26 +715,9 @@ if ($dob) {
             }, 5000);
         }
         
-        // Close sidebar when clicking on a link (for mobile)
-        const sidebarLinks = document.querySelectorAll('#sidebar-container a');
-        sidebarLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth < 1024) {
-                    toggleMobileSidebar();
-                }
-            });
-        });
     });
 
-    // Keyboard navigation support
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            const overlay = document.getElementById('mobile-overlay');
-            if (!overlay.classList.contains('hidden')) {
-                toggleMobileSidebar();
-            }
-        }
-    });
+
 </script>
 
 </body>

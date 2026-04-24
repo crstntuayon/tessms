@@ -14,7 +14,7 @@
             margin: 0; 
             padding: 0; 
             background: #f8fafc;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .dashboard-container {
@@ -29,7 +29,7 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .main-content {
@@ -129,7 +129,7 @@
             padding: 24px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .stat-card::before {
@@ -165,7 +165,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px -3px rgba(16, 185, 129, 0.4);
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -248,7 +248,7 @@
             height: 8px;
             background: #e2e8f0;
             border-radius: 4px;
-            overflow: hidden;
+            overflow-x: hidden;
             margin-top: 8px;
         }
 
@@ -388,8 +388,9 @@
             .main-wrapper { margin-left: 0; }
         }
     </style>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="antialiased text-slate-800">
+<body class="antialiased text-slate-800" x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">   <!-- Mobile Overlay -->   <div x-show="mobileOpen"        x-transition:enter="transition ease-out duration-300"       x-transition:enter-start="opacity-0"        x-transition:enter-end="opacity-100"        x-transition:leave="transition ease-in duration-200"         x-transition:leave-start="opacity-100"         x-transition:leave-end="opacity-0"        @click="mobileOpen = false"         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"        style="display: none;"></div>   <!-- Mobile Hamburger -->   <button @click="mobileOpen = !mobileOpen"           class="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all">        <i class="fas fa-bars"></i>    </button>
 
 <div class="dashboard-container">
     @include('admin.includes.sidebar')
@@ -474,9 +475,7 @@
                             <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search sections..." class="search-input">
                             @if(request('search'))
-                                <a href="{{ route('admin.sections.index') }}" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                                    <i class="fas fa-times"></i>
-                                </a>
+                                <a href="{{ route('admin.sections.index') }}" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">                                </a>
                             @endif
                         </form>
                         
@@ -508,7 +507,8 @@
 
             <!-- Table -->
             <div class="glass-card overflow-hidden animate-fade-in stagger-2">
-                <table class="modern-table w-full">
+                <div class="overflow-x-auto">
+                    <table class="modern-table w-full">
                     <thead>
                         <tr>
                             <th>Section Details</th>
@@ -659,7 +659,8 @@
                             </tr>
                         @endforelse
                     </tbody>
-                </table>
+                    </table>
+                </div>
 
                 @if($sections instanceof \Illuminate\Pagination\LengthAwarePaginator && $sections->hasPages())
                     <div class="p-6 border-t border-slate-100">

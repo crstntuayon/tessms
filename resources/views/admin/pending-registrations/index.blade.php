@@ -11,7 +11,7 @@
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        body { background: #f8fafc; overflow: hidden; }
+        body { background: #f8fafc; overflow-x: hidden; }
         
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
@@ -89,39 +89,57 @@
         }
     </style>
 </head>
-<body class="h-screen flex">
+<body class="min-h-screen flex flex-col lg:flex-row overflow-x-hidden" x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
+
+    <!-- Mobile Overlay -->
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"
+         @click="mobileOpen = false"
+         style="display: none;"></div>
+
+    <!-- Mobile Hamburger -->
+    <button @click="mobileOpen = !mobileOpen" 
+            class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all border border-slate-100">
+        <i class="fas fa-bars text-lg"></i>
+    </button>
 
     <!-- Sidebar -->
     @include('admin.includes.sidebar')
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col h-screen ml-72">
+    <div class="flex-1 flex flex-col min-h-screen lg:ml-72">
         
         <!-- Header -->
-        <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-30">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
-                    <i class="fas fa-user-clock text-xl"></i>
+        <header class="min-h-[5rem] bg-white/80 backdrop-blur-md border-b border-slate-200 flex flex-col lg:flex-row items-start lg:items-center justify-between px-4 lg:px-8 py-3 lg:py-0 sticky top-0 z-30 gap-3 lg:gap-0 pl-14 lg:pl-8">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/30 flex-shrink-0">
+                    <i class="fas fa-user-clock text-lg lg:text-xl"></i>
                 </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900">Pending Registrations</h1>
-                    <p class="text-sm text-slate-500">
-                        Review and enroll new student applications 
-                        <span class="font-semibold text-blue-600">— {{ $schoolYear->name ?? 'No School Year Selected' }}</span>
+                <div class="min-w-0">
+                    <h1 class="text-lg lg:text-2xl font-bold text-slate-900 truncate">Pending Registrations</h1>
+                    <p class="text-xs lg:text-sm text-slate-500 truncate">
+                        Review and enroll new student applications
+                        <span class="font-semibold text-blue-600">— {{ $schoolYear->name ?? 'No School Year' }}</span>
                         @if($schoolYear && $schoolYear->is_active)
-                            <span class="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full">Active</span>
+                            <span class="ml-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] lg:text-xs rounded-full">Active</span>
                         @endif
                     </p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 w-full lg:w-auto">
                 <!-- School Year Selector -->
-                <form method="GET" action="{{ route('admin.pending-registrations.index') }}" class="flex items-center gap-2" id="schoolYearForm">
-                    <div class="relative">
+                <form method="GET" action="{{ route('admin.pending-registrations.index') }}" class="flex items-center gap-2 flex-1 lg:flex-none" id="schoolYearForm">
+                    <div class="relative w-full lg:w-auto">
                         <i class="fas fa-calendar-alt absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <select name="school_year" onchange="document.getElementById('schoolYearForm').submit()"
-                                class="pl-10 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 cursor-pointer hover:border-slate-300 transition-all min-w-[200px]">
+                                class="pl-10 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 cursor-pointer hover:border-slate-300 transition-all w-full lg:min-w-[200px]">
                             @foreach($schoolYears as $year)
                                 <option value="{{ $year->id }}" {{ $schoolYear?->id == $year->id ? 'selected' : '' }}>
                                     {{ $year->name }} {{ $year->is_active ? '(Current)' : '' }}
@@ -131,10 +149,10 @@
                     </div>
                 </form>
 
-                <div class="relative">
+                <div class="relative flex-1 lg:flex-none">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input type="text" id="searchInput" placeholder="Search students..." 
-                           class="pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 w-64 transition-all">
+                           class="pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 w-full lg:w-64 transition-all">
                 </div>
             </div>
         </header>
@@ -216,7 +234,7 @@
         </script>
 
         <!-- Content -->
-        <main class="flex-1 overflow-auto p-8 custom-scroll">
+        <main class="flex-1 overflow-auto p-4 lg:p-8 custom-scroll">
 
             <!-- Stats -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -260,21 +278,22 @@
 
             <!-- Bulk Actions Bar -->
             @if($students->total() > 0 && $schoolYear)
-            <div class="glass-card rounded-2xl p-4 mb-6 flex items-center justify-between">
+            <div class="glass-card rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
                         <i class="fas fa-layer-group"></i>
                     </div>
-                    <div>
+                    <div class="min-w-0">
                         <h3 class="font-bold text-slate-900">Bulk Actions</h3>
                         <p class="text-sm text-slate-500">Auto-assign pending students to available sections</p>
                     </div>
                 </div>
                 <form method="POST" action="{{ route('admin.pending-registrations.bulk-approve') }}" 
-                      onsubmit="return confirm('Are you sure you want to bulk approve all pending registrations for {{ $schoolYear->name }}? Students will be assigned to sections with available capacity.')">
+                      onsubmit="return confirm('Are you sure you want to bulk approve all pending registrations for {{ $schoolYear->name }}? Students will be assigned to sections with available capacity.')"
+                      class="w-full sm:w-auto">
                     @csrf
                     <input type="hidden" name="school_year_id" value="{{ $schoolYear->id }}">
-                    <button type="submit" class="btn-enroll px-6 py-2.5 rounded-xl text-white font-semibold flex items-center gap-2 transition-all {{ $sections->isEmpty() ? 'opacity-50 cursor-not-allowed' : '' }}" 
+                    <button type="submit" class="btn-enroll w-full sm:w-auto px-6 py-2.5 rounded-xl text-white font-semibold flex items-center justify-center gap-2 transition-all {{ $sections->isEmpty() ? 'opacity-50 cursor-not-allowed' : '' }}" 
                             {{ $sections->isEmpty() ? 'disabled' : '' }}>
                         <i class="fas fa-check-double"></i>
                         <span>Bulk Approve All</span>
@@ -285,19 +304,19 @@
 
             <!-- Table -->
             <div class="glass-card rounded-2xl overflow-hidden">
-                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-900">Registration Requests</h2>
-                        <p class="text-sm text-slate-500 mt-1">
-                            Showing pending enrollments for 
+                <div class="p-4 lg:p-6 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <h2 class="text-base lg:text-lg font-bold text-slate-900">Registration Requests</h2>
+                        <p class="text-xs lg:text-sm text-slate-500 mt-1">
+                            Showing pending enrollments for
                             <span class="font-semibold text-blue-600">{{ $schoolYear->name ?? 'selected school year' }}</span>
                             @if($students->total() > 0)
-                                <span class="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{{ $students->total() }} pending</span>
+                                <span class="ml-1 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{{ $students->total() }} pending</span>
                             @endif
                         </p>
                     </div>
-                    <span class="text-sm text-slate-500">
-                        Showing <span class="font-semibold text-slate-900">{{ $students->count() }}</span> of 
+                    <span class="text-xs lg:text-sm text-slate-500 whitespace-nowrap">
+                        Showing <span class="font-semibold text-slate-900">{{ $students->count() }}</span> of
                         <span class="font-semibold text-slate-900">{{ $students->total() }}</span>
                     </span>
                 </div>
@@ -463,11 +482,11 @@
                     
                     <!-- Student Header Card -->
                     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-                        <div class="flex items-start gap-4">
-                            <div id="modalPhoto" class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg shrink-0">
+                        <div class="flex items-start gap-3 sm:gap-4">
+                            <div id="modalPhoto" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-lg shrink-0">
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h4 id="modalName" class="text-2xl font-bold text-slate-900 mb-1 truncate">-</h4>
+                                <h4 id="modalName" class="text-xl sm:text-2xl font-bold text-slate-900 mb-1 truncate">-</h4>
                                 <p id="modalEmail" class="text-slate-500 mb-3 truncate">-</p>
                                 <div class="flex flex-wrap gap-2">
                                     <span id="modalGrade" class="px-3 py-1 rounded-lg bg-blue-100 text-blue-700 text-sm font-semibold">-</span>
@@ -485,7 +504,7 @@
                     </div>
 
                     <!-- Personal Info Grid -->
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Full Name</p>
                             <p id="modalFullName" class="font-semibold text-slate-900 truncate">-</p>
@@ -567,7 +586,7 @@
                     <!-- Academic Info -->
                     <div class="space-y-3">
                         <h5 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Academic Details</h5>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Grade Level</p>
                                 <p id="modalGradeLevel" class="font-semibold text-slate-900">-</p>
@@ -584,7 +603,7 @@
                                 <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">Date Applied</p>
                                 <p id="modalDateApplied" class="font-semibold text-slate-900">-</p>
                             </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 col-span-2">
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 sm:col-span-2">
                                 <p class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-medium">School Year</p>
                                 <p class="font-semibold text-green-700">{{ $schoolYear->name ?? 'Not specified' }}</p>
                             </div>
@@ -652,7 +671,7 @@
                 </div>
 
                 <!-- Action Buttons Row -->
-                <div class="flex items-center gap-3 pt-2">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                     
                     <!-- Approve/Enroll Form -->
                     <form id="modalApproveForm" method="POST" action="" class="flex-1">
@@ -671,7 +690,7 @@
                         @csrf
                         <input type="hidden" name="school_year_id" value="{{ $schoolYear?->id }}">
                         <button type="submit" 
-                                class="btn-reject px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2 transition-all"
+                                class="btn-reject w-full sm:w-auto px-6 py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2 transition-all"
                                 onclick="return confirm('Are you sure you want to reject this application for {{ $schoolYear->name ?? 'this school year' }}? This action cannot be undone.')">
                             <i class="fas fa-times"></i>
                             <span>Reject</span>

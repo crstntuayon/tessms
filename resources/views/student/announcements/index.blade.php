@@ -16,15 +16,33 @@ $student = $user->student;
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased h-screen overflow-hidden" x-data="announcementFeed()" x-init="init(); if (window.innerWidth < 1024) mobileOpen = false">
 
+<!-- Mobile Overlay -->
+<div x-show="mobileOpen" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="mobileOpen = false"
+     class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 lg:hidden"
+     style="display: none;">
+</div>
+
 <div class="flex h-screen">
     @include('student.includes.sidebar')
 
     <div class="flex-1 lg:ml-72 h-screen flex flex-col bg-slate-50 overflow-hidden">
         {{-- Header --}}
         <div class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0">
-            <div>
-                <h1 class="text-xl font-bold text-slate-900">Announcements</h1>
-                <p class="text-sm text-slate-500 mt-0.5">Important updates from your teachers and school</p>
+            <div class="flex items-center gap-4">
+                <button @click="mobileOpen = !mobileOpen" class="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900">Announcements</h1>
+                    <p class="text-sm text-slate-500 mt-0.5">Important updates from your teachers and school</p>
+                </div>
             </div>
             @if($unreadCount > 0)
                 <button @click="markAllAsRead()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors" :disabled="markingAll">

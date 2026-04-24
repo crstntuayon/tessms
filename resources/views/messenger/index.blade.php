@@ -10,11 +10,13 @@ $contactsData = $contacts->map(function($c) use ($user) {
         ->where('recipient_id', $user->id)
         ->where('is_read', false)->count();
     $lastMsg = \App\Models\Message::betweenUsers($user->id, $c->id)->latest()->first();
+    $isOnline = \Illuminate\Support\Facades\Cache::has('user-online-' . $c->id);
     return [
         'id' => $c->id,
         'name' => $c->full_name,
         'initials' => strtoupper(substr($c->first_name, 0, 1)) . strtoupper(substr($c->last_name, 0, 1)),
         'unread' => $unread,
+        'is_online' => $isOnline,
         'lastMessage' => $lastMsg 
             ? \Illuminate\Support\Str::limit($lastMsg->body, 25)
             : 'Click to start chat',
@@ -177,6 +179,9 @@ if ($isStudent) {
                                       class="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm border-2 border-white"
                                       x-text="contact.unread > 9 ? '9+' : contact.unread">
                                 </span>
+                                <span x-show="contact.is_online"
+                                      class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white shadow-sm">
+                                </span>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between">
@@ -222,8 +227,13 @@ if ($isStudent) {
                             <button @click="activeContact = null; sidebarOpen = true" class="lg:hidden p-2 text-slate-500 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-all">
                                 <i class="fas fa-arrow-left"></i>
                             </button>
-                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-md"
-                                 x-text="activeContact.initials">
+                            <div class="relative flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-md"
+                                     x-text="activeContact.initials">
+                                </div>
+                                <span x-show="activeContactOnline"
+                                      class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white shadow-sm">
+                                </span>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <h3 class="font-bold text-slate-900 text-sm truncate" x-text="activeContact.name"></h3>
@@ -385,6 +395,25 @@ if ($isStudent) {
                             </template>
                         </div>
                         
+                        {{-- Typing Indicator --}}
+                        <div x-show="typingContactId && activeContact && typingContactId === activeContact.id"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 translate-y-2"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 translate-y-2"
+                             class="px-4 py-2 flex items-center gap-2 shrink-0">
+                            <div class="flex items-center gap-1.5 bg-white border border-slate-100 shadow-sm rounded-2xl rounded-bl-md px-3 py-2">
+                                <div class="flex gap-0.5">
+                                    <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></div>
+                                    <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></div>
+                                    <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></div>
+                                </div>
+                                <span class="text-[11px] text-slate-400" x-text="activeContact.name + ' is typing...'"></span>
+                            </div>
+                        </div>
+                        
                         {{-- Input Area --}}
                         <div class="p-4 bg-white border-t border-slate-200 flex-shrink-0">
                             {{-- Selected Files Preview --}}
@@ -428,7 +457,7 @@ if ($isStudent) {
                                           @keydown.enter.prevent="sendMessage()"
                                           rows="1" 
                                           x-ref="messageInput"
-                                          @input="autoResize($event)"
+                                          @input="autoResize($event); broadcastTyping()"
                                           class="flex-1 px-4 py-3 border border-slate-200 rounded-xl resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent max-h-32 bg-slate-50 focus:bg-white transition-all text-sm"
                                           placeholder="Type a message..."></textarea>
                                 <button type="submit" 
@@ -541,6 +570,9 @@ function messenger() {
         lightboxOpen: false,
         lightboxImage: '',
         activeContactOnline: false,
+        typingContactId: null,
+        typingTimer: null,
+        typingBroadcastTimer: null,
         toasts: [],
         
         // Delete modal state
@@ -553,8 +585,11 @@ function messenger() {
             // Setup real-time listeners
             this.setupEchoListener();
             
-            // Start heartbeat for online status
+            // Start heartbeat for online status (tells server we're online)
             this.startHeartbeat();
+            
+            // Start polling contact online status
+            this.startOnlineStatusPolling();
             
             // Check for URL parameter to open specific contact
             const urlParams = new URLSearchParams(window.location.search);
@@ -584,6 +619,14 @@ function messenger() {
                 Echo.private('user.' + this.currentUserId)
                     // New message received
                     .listen('.message.sent', (e) => {
+                        // Sender is online since they just sent a message
+                        if (e.sender) {
+                            const contact = this.contacts.find(c => c.id === e.sender.id);
+                            if (contact) contact.is_online = true;
+                            if (this.activeContact && this.activeContact.id === e.sender.id) {
+                                this.activeContactOnline = true;
+                            }
+                        }
                         // If currently chatting with sender, add message
                         if (this.activeContact && e.sender && e.sender.id === this.activeContact.id) {
                             this.messages.push({
@@ -647,12 +690,24 @@ function messenger() {
                                 msg.is_read = true;
                             }
                         });
+                    })
+                    // Typing indicator
+                    .listen('.user.typing', (e) => {
+                        if (this.activeContact && e.user_id === this.activeContact.id) {
+                            this.typingContactId = e.user_id;
+                            this.scrollToBottom();
+                            // Clear typing indicator after 3 seconds
+                            clearTimeout(this.typingTimer);
+                            this.typingTimer = setTimeout(() => {
+                                this.typingContactId = null;
+                            }, 3000);
+                        }
                     });
             }
         },
 
         startHeartbeat() {
-            // Send heartbeat every 30 seconds
+            // Send heartbeat every 30 seconds to tell server we're online
             setInterval(() => {
                 fetch('/api/heartbeat', {
                     method: 'POST',
@@ -662,6 +717,39 @@ function messenger() {
                     }
                 }).catch(() => {});
             }, 30000);
+        },
+
+        startOnlineStatusPolling() {
+            // Poll contact online status every 15 seconds
+            setInterval(() => {
+                if (!this.activeContact) return;
+                fetch(`/api/conversations/${this.activeContact.id}`)
+                    .then(r => r.ok ? r.json() : null)
+                    .then(data => {
+                        if (data && data.contact) {
+                            this.activeContactOnline = data.contact.is_online || false;
+                            // Also update in contacts list
+                            const c = this.contacts.find(c => c.id === this.activeContact.id);
+                            if (c) c.is_online = data.contact.is_online || false;
+                        }
+                    })
+                    .catch(() => {});
+            }, 15000);
+        },
+
+        broadcastTyping() {
+            if (!this.activeContact) return;
+            // Debounce: only send if we haven't typed in the last 300ms
+            clearTimeout(this.typingBroadcastTimer);
+            this.typingBroadcastTimer = setTimeout(() => {
+                fetch(`/api/typing/${this.activeContact.id}`, {
+                    method: 'POST',
+                    headers: { 
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                }).catch(() => {});
+            }, 300);
         },
 
         updateContactPreview(userId, message) {
@@ -695,6 +783,7 @@ function messenger() {
         
         async openChat(contact) {
             this.activeContact = contact;
+            this.activeContactOnline = contact.is_online || false;
             this.sidebarOpen = false;
             this.loadingMessages = true;
             this.messages = [];

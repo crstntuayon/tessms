@@ -235,7 +235,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="bg-slate-50 text-slate-800 antialiased" x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
 
     @php
         // Get active school year once at the top
@@ -280,7 +280,16 @@
     @endphp
 
     <!-- Mobile Overlay -->
-    <div id="mobileOverlay" class="mobile-overlay fixed inset-0 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+    <div x-show="mobileOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="mobileOpen = false"
+         class="fixed inset-0 z-30 lg:hidden bg-slate-900/50 backdrop-blur-sm"
+         style="display: none;"></div>
 
     <div class="dashboard-container">
         <!-- Sidebar -->
@@ -292,7 +301,7 @@
             <header class="main-header">
                 <div class="flex items-center justify-between w-full gap-4">
                     <div class="flex items-center gap-3 min-w-0">
-                        <button onclick="toggleSidebar()" class="lg:hidden p-2.5 hover:bg-slate-100 rounded-xl transition-colors flex-shrink-0">
+                        <button @click="mobileOpen = !mobileOpen" class="lg:hidden p-2.5 hover:bg-slate-100 rounded-xl transition-colors flex-shrink-0">
                             <i class="fas fa-bars text-slate-600"></i>
                         </button>
                         <div class="min-w-0">
@@ -868,15 +877,6 @@
     </div>
 
     <script>
-        // Sidebar Toggle
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            sidebar.classList.toggle('mobile-open');
-            overlay.classList.toggle('hidden');
-            document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
-        }
-
         // Quick Actions Modal
         function openQuickActions() {
             document.getElementById('quickActionsModal').classList.remove('hidden');
@@ -901,17 +901,6 @@
         }
         setInterval(updateClock, 1000);
         updateClock();
-
-        // Close sidebar on window resize if going to desktop
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 1024) {
-                const sidebar = document.getElementById('sidebar');
-                const overlay = document.getElementById('mobileOverlay');
-                sidebar.classList.remove('mobile-open');
-                overlay.classList.add('hidden');
-                document.body.style.overflow = '';
-            }
-        });
 
         // Attendance Chart
         @php

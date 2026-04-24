@@ -35,9 +35,7 @@
     <!-- Mobile Toggle Button -->
     <button @click="mobileOpen = !mobileOpen" 
             class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all border border-slate-100">
-        <i class="fas fa-bars text-lg" x-show="!mobileOpen"></i>
-        <i class="fas fa-times text-lg" x-show="mobileOpen"></i>
-    </button>
+        <i class="fas fa-bars text-lg"></i>    </button>
 
     <!-- Sidebar -->
     @include('student.includes.sidebar')

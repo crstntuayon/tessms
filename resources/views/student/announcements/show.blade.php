@@ -15,12 +15,28 @@ $student = $user->student;
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased h-screen overflow-hidden" x-data="{ mobileOpen: false, sidebarCollapsed: false, lightboxOpen: false, lightboxImage: '' }" x-init="if (window.innerWidth < 1024) mobileOpen = false">
 
+<!-- Mobile Overlay -->
+<div x-show="mobileOpen" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="mobileOpen = false"
+     class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 lg:hidden"
+     style="display: none;">
+</div>
+
 <div class="flex h-screen">
     @include('student.includes.sidebar')
 
     <div class="flex-1 lg:ml-72 h-screen flex flex-col bg-slate-50 overflow-hidden">
         {{-- Header --}}
         <div class="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-3 shrink-0">
+            <button @click="mobileOpen = !mobileOpen" class="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all mr-1">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
             <a href="{{ route('student.announcements') }}" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                 <i class="fas fa-arrow-left"></i>
             </a>

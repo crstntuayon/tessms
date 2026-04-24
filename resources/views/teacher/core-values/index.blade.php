@@ -101,15 +101,34 @@
             animation: shake-animation 0.5s ease-in-out;
         }
     </style>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50" x-data="{ mobileOpen: false }">
+
+<!-- Mobile Overlay -->
+<div x-show="mobileOpen" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="mobileOpen = false"
+     class="fixed inset-0 z-40 lg:hidden bg-slate-900/30 backdrop-blur-sm"
+     style="display: none;"></div>
+
+<!-- Mobile Toggle Button -->
+<button @click="mobileOpen = !mobileOpen" 
+        class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-slate-600 hover:text-indigo-600 transition-all border border-slate-100">
+    <i class="fas fa-bars text-lg"></i>
+</button>
 
 <div class="flex">
     <!-- Include Sidebar -->
     @include('teacher.includes.sidebar')
 
     <!-- Main Content -->
-    <div class="flex-1 ml-72 min-h-screen">
+    <div class="flex-1 lg:ml-72 min-h-screen">
         
         <!-- Finalization Warning -->
         @if(!$isEditable)
